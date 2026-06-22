@@ -61,10 +61,8 @@
 ```
 rf4trends/
 ├── README.md         # 이 문서 (포트폴리오 + 패치노트)
-├── CHANGELOG.md      # 개발 변천사 상세
 ├── PRD.md            # 제품 요구사항 + 결정 로그 (D-1~D-33)
 ├── SCREENS.md        # 화면 정의서
-├── TERMUX_SETUP.md   # 배포 가이드
 ├── screenshots/      # 스크린샷
 └── rf4site/          # 실제 구현
     ├── app.py            # FastAPI 서버 + 15분 수집 스레드 + 하루 1회 정리 (단일 프로세스)
@@ -75,7 +73,8 @@ rf4trends/
     ├── maintenance.py    # 7일 초과분 archive.db로 분리
     ├── trophy_weights.csv# 트로피 기준 251종
     ├── templates/        # base / dashboard / species / login / onboarding
-    └── test_*.py         # 테스트 (app / auth / labels)
+    ├── test_*.py         # 테스트 (app / auth / labels)
+    └── TERMUX_SETUP.md   # 배포 가이드 (개발/운영용)
 ```
 
 ---
@@ -105,14 +104,13 @@ python app.py                       # http://0.0.0.0:8000
 python test_app.py && python test_auth.py && python test_labels.py
 ```
 
-배포(Termux + Cloudflare Named Tunnel)는 [TERMUX_SETUP.md](TERMUX_SETUP.md) 참고.
+배포(Termux + Cloudflare Named Tunnel)는 [rf4site/TERMUX_SETUP.md](rf4site/TERMUX_SETUP.md) 참고.
 
 ---
 
 ## 데이터 출처
 
-- 주간기록: [rf4game.kr](https://rf4game.kr)
-- 트로피 기준: rf4kr.com (1회 추출)
+- 주간기록: [rf4game.kr](https://rf4game.kr) (게임 공식)
 
 ---
 ## 개발 변천사 (패치노트)
@@ -145,9 +143,9 @@ python test_app.py && python test_auth.py && python test_labels.py
 
 `[변경]` **미끼를 색상 코드까지 구분.** 인게임에서 같은 미끼라도 색상별로 전혀 다르게 작용하기 때문. 표시와 일관성 계산 모두에 적용.
 
-`[변경]` **트로피 기준은 rf4kr.com에서 1회 추출**(251종, trophy_weights.csv). 한국어 어종명 일치. 공개 시 출처 표기 예정.
+`[변경]` **트로피 기준(251종, trophy_weights.csv)을 사전 추출해 내장.** 어종별 트로피/레어트로피 판정에 사용.
 
-`[변경]` **제품 방향 전환 — 전체 기록 브라우저를 버리고 "선호 어종 대시보드"로 재정의.** 처음엔 전체 기록을 보여주려 했으나, RF4-STAT 등 기존 사이트와 중복. 차별점은 "내가 등록한 어종만, 활성도 순으로"라는 개인화. 이 결정이 제품의 핵심 정체성이 됨.
+`[변경]` **제품 방향 전환 — 전체 기록 브라우저를 버리고 "선호 어종 대시보드"로 재정의.** 처음엔 전체 기록을 보여주려 했으나, 단순 기록 조회는 차별점이 없다고 판단. 차별점은 "내가 등록한 어종만, 활성도 순으로"라는 개인화. 이 결정이 제품의 핵심 정체성이 됨.
 
 `[변경]` **추천 로직은 임시 수식으로 시작하고, 모듈(scoring.py)을 분리.** 추천 성능은 계속 개선할 대상이므로, 나중에 모델만 갈아끼울 수 있게 경계를 그음. 이 설계가 이후 모든 ML 논의의 전제가 됨.
 
