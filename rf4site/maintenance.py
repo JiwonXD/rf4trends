@@ -1,6 +1,9 @@
 # maintenance.py — 데이터 보존 정리
 # 운영 rf4.db는 first_seen 7일 이내만 유지(추천은 최대 72h만 쓰므로 충분).
-# 7일 초과 catches는 삭제 전 archive.db로 복사 (향후 추천 모델 학습/검증 데이터, D-19).
+# 7일 초과 catches는 삭제 전, 미끼 분석용으로 archive.db에 어종·미끼·무게만 남긴다.
+# (장소·시각·플레이어는 미끼 분석에 불필요하므로 버려 용량을 절감.)
+# 미끼는 원본 그대로 보관 — RF4는 채비에 미끼를 최대 2종까지 달 수 있어
+# "꿀 반죽; 옥수수씨"처럼 세미콜론으로 묶여 들어오며, 이 조합 정보를 분석에 쓴다.
 # users/favorites/labels는 절대 건드리지 않는다.
 
 import sqlite3
@@ -8,19 +11,22 @@ from pathlib import Path
 
 RETAIN_DAYS = 7
 
+# 미끼 분석 전용 보관 테이블. 기록별로 남겨 무게 분포까지 분석 가능.
+# 분석 예: 미끼별 평균/분포 무게, 어종별 미끼 사용 빈도, 미끼 조합(2종) 연관성.
 ARCHIVE_SCHEMA = """
-CREATE TABLE IF NOT EXISTS catches (
-    id          INTEGER PRIMARY KEY,
-    species     TEXT, weight_g INTEGER, waterbody TEXT, bait TEXT,
-    player      TEXT, caught_date TEXT, source TEXT, first_seen TEXT
+CREATE TABLE IF NOT EXISTS bait_records (
+    species   TEXT,
+    bait      TEXT,    -- 원본 그대로 (2종 조합은 '미끼A; 미끼B' 형태)
+    weight_g  INTEGER
 );
-CREATE INDEX IF NOT EXISTS idx_arch_species ON catches(species, first_seen);
+CREATE INDEX IF NOT EXISTS idx_bait_species ON bait_records(species);
+CREATE INDEX IF NOT EXISTS idx_bait_bait ON bait_records(bait);
 """
 
 
 def archive_and_prune(db_path, archive_path=None):
-    """7일 초과 catches를 archive.db로 옮기고 운영 DB에서 삭제.
-    반환: (아카이브된 건수, 삭제된 catches 건수)."""
+    """7일 초과 catches를 삭제하기 전, 미끼 분석용으로 어종·미끼·무게만 archive.db에 보관.
+    반환: (보관된 건수, 삭제된 catches 건수)."""
     db_path = Path(db_path)
     if archive_path is None:
         archive_path = db_path.parent / "archive.db"
@@ -29,21 +35,19 @@ def archive_and_prune(db_path, archive_path=None):
     try:
         cutoff = f"datetime('now', '-{RETAIN_DAYS} day')"
         old = conn.execute(
-            f"SELECT id, species, weight_g, waterbody, bait, player, "
-            f"caught_date, source, first_seen FROM catches "
+            f"SELECT id, species, bait, weight_g FROM catches "
             f"WHERE first_seen < {cutoff}").fetchall()
         if not old:
             return 0, 0
 
-        # 1) 아카이브로 복사
+        # 1) 미끼 분석용으로 어종·미끼·무게만 보관 (미끼 없는 기록은 분석 의미 없어 제외)
         arch = sqlite3.connect(archive_path, timeout=30)
         try:
             arch.executescript(ARCHIVE_SCHEMA)
             arch.executemany(
-                "INSERT OR IGNORE INTO catches "
-                "(id, species, weight_g, waterbody, bait, player, "
-                "caught_date, source, first_seen) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", old)
+                "INSERT INTO bait_records (species, bait, weight_g) "
+                "VALUES (?, ?, ?)",
+                [(r[1], r[2], r[3]) for r in old if r[2]])
             arch.commit()
         finally:
             arch.close()

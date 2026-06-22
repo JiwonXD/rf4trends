@@ -69,9 +69,12 @@ check("운영DB에 최근 6건만 남음", remaining==6)
 check("orphan appearances도 정리됨", orphan==6)
 
 arch = sqlite3.connect("archive.db")
-acount = arch.execute("SELECT COUNT(*) FROM catches").fetchone()[0]
+acount = arch.execute("SELECT COUNT(*) FROM bait_records").fetchone()[0]
+# 어종·미끼·무게만 보관되는지 확인
+sample = arch.execute("SELECT species, bait, weight_g FROM bait_records LIMIT 1").fetchone()
 arch.close()
-check("archive.db에 5건 보존", acount==5)
+check("archive.db(bait_records)에 5건 보존", acount==5)
+check("어종·미끼·무게 보관됨", sample is not None and sample[0]=="검은 잉어" and sample[1]=="크랜베리" and sample[2] is not None)
 
 # 라벨은 정리 후에도 남아있는지 (절대 안 건드려야)
 conn = sqlite3.connect("rf4.db")

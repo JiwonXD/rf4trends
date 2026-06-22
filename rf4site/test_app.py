@@ -63,7 +63,7 @@ check("불명도 미끼 분산 표기", "분산" in t)
 r = c.get("/species/검은 잉어")
 t = r.text
 check("어종 상세 200", r.status_code == 200)
-check("트로피 기준선 표기", "28.0kg" in t and "40.0kg" in t)
+check("트로피 기준선 표기", "28.0 kg" in t and "40.0 kg" in t)
 check("미끼 순위 블록", "미끼 순위" in t and "크랜베리 팝업 26" in t)
 check("장소/트로피 기록 블록", "장소 분포" in t and "최근 트로피 기록" in t)
 check("레어 뱃지", "레어" in t)

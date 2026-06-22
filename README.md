@@ -271,6 +271,16 @@ python test_app.py && python test_auth.py && python test_labels.py
 `[인프라]` **Cloudflare Named Tunnel로 rf4trends.com 고정 연결.** 기존 Quick Tunnel은 재부팅마다 주소가 바뀌어 도메인을 붙일 수 없었음. 도메인을 Cloudflare에 등록(네임서버 변경) → Named Tunnel 생성 → config.yml의 ingress로 localhost:8000 연결 → 부팅 스크립트를 `tunnel run`으로 교체. 재부팅해도 주소 고정.
 - **트러블슈팅**: config.yml을 잘못된 위치에 둬서 "No ingress rules" 503 발생 → `~/.cloudflared/config.yml`에 정확히 배치해 해결.
 
+### 06-22 · 미끼 분석용 보관 구조
+
+`[변경]` **7일 초과분 보관 방식을 미끼 분석 전용으로 교체(D-34).** 기존에는 7일 초과 catches를 archive.db에 전체 컬럼 그대로 복사했으나 — 보관의 실제 용도가 미끼·무게 분석임을 고려해, 어종·미끼·무게만 남기는 bait_records 테이블로 변경.
+- 장소·시각·플레이어는 미끼 분석에 불필요하므로 버려 용량 절감.
+- 미끼는 원본 그대로 보관. RF4는 채비에 미끼를 최대 2종까지 달 수 있어 "꿀 반죽; 옥수수씨"처럼 세미콜론으로 묶여 들어오며, 이 조합 정보가 분석 대상.
+- 기록별 보관(집계 아님)이라 무게 분포까지 분석 가능. 미끼 없는 기록은 보관에서 제외(분석 의미 없음), 단 운영 DB 삭제는 전건 수행.
+- 가능해진 분석: 미끼별 평균/분포 무게, 어종별 미끼 사용 빈도, 미끼 2종 조합 연관성.
+- 운영 DB(rf4.db)의 기존 구조는 변경 없음 — archive.db에 테이블이 추가되는 형태.
+- **파일**: maintenance.py
+
 ---
 
 ## 부록 — 운영 환경
