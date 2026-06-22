@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}내 어종 대시보드{% endblock %}
+{% block content %}
+
+{% if not has_data %}
+  <div class="empty">
+    수집된 데이터가 없습니다.<br>
+    <span style="font-size:13px">collector.py를 먼저 실행해 rf4.db를 만들어주세요.</span>
+  </div>
+{% else %}
+  {% set state_cls = {'강한 활성': 'strong', '활성': 'active', '불명': 'unclear', '비활성': 'off'} %}
+  {% for c in cards %}
+    {% set cls = state_cls[c.state] %}
+    {% if c.state != '비활성' %}
+    <a class="card" href="/species/{{ c.species | urlencode }}?window={{ window }}"
+       style="display:block; border-left-color: var(--{{ cls }});">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:16px; font-weight:700;">{{ c.species }}</span>
+          <span class="badge b-{{ cls }}">{{ c.state }}</span>
+        </div>
+        <span style="font-size:13px; color:var(--muted);">활성도 {{ c.score }}</span>
+      </div>
+      <div style="display:flex; gap:18px; margin-top:8px; font-size:13px; color:var(--muted); flex-wrap:wrap;">
+        <span>트로피 {{ c.n_rare + c.n_trophy }}건{% if c.n_rare %} (레어 {{ c.n_rare }}){% endif %} · 일반 {{ c.n_normal }}건</span>
+        <span>일관성 {{ c.consistency }}%{% if c.state == '불명' %} — 미끼 분산{% endif %}</span>
+        {% if c.top_waterbody %}<span>{{ c.top_waterbody }}</span>{% endif %}
+        {% if c.top_bait %}<span style="color:var(--text);">{{ c.top_bait }}</span>{% endif %}
+      </div>
+    </a>
+    {% else %}
+    <a class="card" href="/species/{{ c.species | urlencode }}?window={{ window }}"
+       style="display:flex; justify-content:space-between; align-items:center; opacity:.5; padding:10px 18px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:15px;">{{ c.species }}</span>
+        <span class="badge b-off">비활성</span>
+      </div>
+      <span style="font-size:13px; color:var(--faint);">기록 {{ c.n_total }}건 — 표본 부족</span>
+    </a>
+    {% endif %}
+  {% endfor %}
+
+  {% if cards and cards[0].state == '비활성' and window == 'today' %}
+    <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:16px;">
+      오늘 창에는 표본이 적습니다 — <a href="?window=3d" style="color:var(--accent);">3일로 넓혀보세요</a>
+    </p>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

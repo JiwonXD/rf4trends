@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ name }} — RF4 트렌드{% endblock %}
+{% block content %}
+
+{% set state_cls = {'강한 활성': 'strong', '활성': 'active', '불명': 'unclear', '비활성': 'off'} %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <a href="/?window={{ window }}" style="color:var(--muted); font-size:18px;">&#8592;</a>
+    <span style="font-size:18px; font-weight:700;">{{ name }}</span>
+    <span class="badge b-{{ state_cls[d.card.state] }}">{{ d.card.state }}</span>
+    {% if d.trophy_str %}
+      <span style="font-size:12px; color:var(--faint);">
+        트로피 {{ d.trophy_str }}{% if d.rare_str %} · 레어 {{ d.rare_str }}{% endif %}
+      </span>
+    {% endif %}
+    {% if not is_favorite %}
+      <button id="addfav" class="btn" style="font-size:12px; padding:4px 10px;">☆ 선호에 추가</button>
+    {% endif %}
+  </div>
+  <a class="btn" href="?window={{ window }}&trophy_only={{ 0 if trophy_only else 1 }}"
+     style="{{ 'background:var(--surface-2); font-weight:600;' if trophy_only }}">
+    트로피만{{ ' ✓' if trophy_only }}
+  </a>
+</div>
+
+{% if can_label %}
+<div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;
+            padding:10px 14px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">
+  <span style="font-size:13px; color:var(--muted); margin-right:4px;">
+    이 어종 오늘 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '72h' }} 기준)</span>:
+  </span>
+  {% for lb, cls in [('강한 활성','strong'), ('활성','active'), ('불명','unclear'), ('비활성','off')] %}
+    <button class="label-btn btn" data-label="{{ lb }}"
+            style="font-size:13px; padding:5px 12px;">{{ lb }}</button>
+  {% endfor %}
+  <span id="label-msg" style="font-size:13px; color:var(--ok); margin-left:6px;"></span>
+</div>
+{% endif %}
+
+{% if d.card.n_total == 0 %}
+  <div class="empty">
+    최근 기록 없음{% if window == 'today' %} — <a href="?window=3d" style="color:var(--accent);">3일로 넓혀보기</a>{% endif %}
+  </div>
+{% else %}
+
+<div class="card" style="border-left:none;">
+  <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:10px;">
+    미끼 순위{{ ' — 트로피이상만' if trophy_only }}
+  </p>
+  {% for b in d.baits %}
+  <div style="display:flex; align-items:center; gap:10px; padding:6px 0;
+              {% if not loop.last %}border-bottom:1px solid var(--line);{% endif %}">
+    <span style="width:20px; font-size:13px; color:var(--faint);">{{ loop.index }}</span>
+    <span style="flex:1; font-size:14px;">{{ b.bait }}</span>
+    <div style="width:130px; height:7px; background:var(--surface-2); border-radius:4px;">
+      <div style="width:{{ b.share }}%; height:100%; background:var(--accent); border-radius:4px;"></div>
+    </div>
+    <span style="width:80px; text-align:right; font-size:13px; color:var(--muted);">
+      {{ b.n }}건 · {{ b.share }}%
+    </span>
+  </div>
+  {% endfor %}
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+  <div class="card" style="border-left:none; margin-bottom:0;">
+    <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;">장소 분포</p>
+    {% for p in d.places %}
+    <div style="display:flex; justify-content:space-between; padding:5px 0; font-size:14px;">
+      <span>{{ p.waterbody }}</span>
+      <span style="color:var(--muted);">{{ p.n }}건</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card" style="border-left:none; margin-bottom:0;">
+    <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;">최근 트로피 기록</p>
+    {% if d.trophy_records %}
+      {% for r in d.trophy_records[:8] %}
+      <div style="display:flex; justify-content:space-between; padding:5px 0; font-size:13px;">
+        <span>{{ r.weight }}{% if r.rare %} <span class="badge b-rare" style="font-size:11px;">레어</span>{% endif %}</span>
+        <span style="color:var(--faint);">{{ r.date }} · {{ r.waterbody }}</span>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="font-size:13px; color:var(--faint);">시간창 내 트로피 기록 없음</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endif %}
+
+{% if can_label %}
+<script>
+document.querySelectorAll('.label-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const body = new URLSearchParams({ label: btn.dataset.label, window: '{{ window }}' });
+    const res = await fetch('/api/label/' + encodeURIComponent('{{ name }}'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    const msg = document.getElementById('label-msg');
+    if (res.ok) {
+      msg.textContent = '"' + btn.dataset.label + '" 기록됨';
+      msg.style.color = 'var(--ok)';
+    } else {
+      msg.textContent = '저장 실패';
+      msg.style.color = 'var(--err)';
+    }
+  });
+});
+</script>
+{% endif %}
+
+{% if not is_favorite %}
+<script>
+document.getElementById('addfav').addEventListener('click', async (e) => {
+  const res = await fetch('/api/favorites/' + encodeURIComponent('{{ name }}'), { method: 'POST' });
+  if (res.ok) { e.target.textContent = '★ 추가됨'; e.target.disabled = true; }
+});
+</script>
+{% endif %}
+
+{% endblock %}

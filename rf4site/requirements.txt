@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+jinja2
+requests
+beautifulsoup4
+bcrypt
+itsdangerous
+python-multipart

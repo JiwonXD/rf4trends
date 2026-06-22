@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}RF4 트렌드{% endblock %}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root {
+  --bg: #0d141d;          /* 새벽 수면 */
+  --surface: #141e2a;
+  --surface-2: #1a2736;
+  --line: #243447;
+  --text: #e6edf3;
+  --muted: #8b9aab;
+  --faint: #5c6b7a;
+  --strong: #49A9FF;      /* 강한 활성 (레어트로피 파랑) */
+  --active: #E4C630;      /* 활성 (트로피 노랑) */
+  --unclear: #687C3E;     /* 불명 (다크 올리브) */
+  --warn: #e0a13e;        /* 수집 지연 등 경고 (주황) */
+  --star: #E4C630;        /* 선호 어종 선택 별표 (노랑) */
+  --accent: #4da3e8;      /* UI 강조 (링크·막대·포커스 등, 상태색과 무관) */
+  --ok: #36c98e;          /* 작업 성공 피드백 (라벨 저장 등) */
+  --err: #e0635a;         /* 작업 실패 피드백 (라벨 저장 실패 등) */
+  --rare: #6fb7ff;
+  --trophy: #4fd6a5;
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: Pretendard, -apple-system, sans-serif;
+  font-size: 15px; line-height: 1.55;
+  max-width: 860px; margin: 0 auto; padding: 0 20px 80px;
+}
+a { color: inherit; text-decoration: none; }
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px 0 18px; border-bottom: 1px solid var(--line);
+  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+}
+.brand { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.brand small { display: block; font-size: 12px; font-weight: 400; color: var(--faint); letter-spacing: 0; }
+.meta { font-size: 12px; color: var(--faint); }
+.meta.stale { color: var(--warn); }
+.controls { display: flex; gap: 8px; align-items: center; }
+.toggle { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.toggle a { padding: 6px 14px; font-size: 13px; color: var(--muted); }
+.toggle a.on { background: var(--surface-2); color: var(--text); font-weight: 600; }
+.btn {
+  padding: 7px 14px; font-size: 13px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface); color: var(--text); cursor: pointer;
+}
+.btn:hover { background: var(--surface-2); }
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+  border-left: 4px solid var(--line);
+}
+.badge {
+  font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px;
+}
+.b-strong  { background: rgba(73,169,255,.14); color: var(--strong); }
+.b-active  { background: rgba(228,198,48,.16); color: var(--active); }
+.b-unclear { background: rgba(104,124,62,.18); color: var(--unclear); }
+.b-off     { background: var(--surface-2); color: var(--faint); }
+.b-rare    { background: rgba(111,183,255,.16); color: var(--rare); }
+.b-trophy  { background: rgba(79,214,165,.14); color: var(--trophy); }
+.empty {
+  text-align: center; color: var(--muted); padding: 60px 0;
+  border: 1px dashed var(--line); border-radius: 10px;
+}
+</style>
+{% block head %}{% endblock %}
+</head>
+<body>
+<header>
+  <a class="brand" href="/?window={{ window }}">RF4 트렌드
+    <small>
+      {% if last_collected is defined and last_collected %}
+        마지막 수집 {{ last_collected }}
+      {% endif %}
+    </small>
+  </a>
+  <div class="controls">
+    <nav class="toggle">
+      <a href="?window=today" class="{{ 'on' if window == 'today' }}">오늘</a>
+      <a href="?window=3d" class="{{ 'on' if window == '3d' }}">3일</a>
+    </nav>
+    <a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>
+    {% if username is defined and username %}
+      <a class="btn" href="/logout" title="{{ username }} 로그아웃">로그아웃</a>
+    {% endif %}
+  </div>
+</header>
+{% block content %}{% endblock %}
+</body>
+</html>

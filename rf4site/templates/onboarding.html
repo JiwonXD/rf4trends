@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}어종 관리{% endblock %}
+{% block content %}
+
+{% if first_visit %}
+  <p style="color:var(--muted); margin-bottom:16px;">
+    노리는 어종을 등록하면 대시보드가 만들어집니다. 별표를 눌러 선택하세요.
+  </p>
+{% endif %}
+
+<input id="q" type="search" placeholder="어종 검색"
+  style="width:100%; padding:11px 14px; font-size:15px; margin-bottom:14px;
+         background:var(--surface); border:1px solid var(--line);
+         border-radius:10px; color:var(--text); outline:none;">
+
+{% if not species %}
+<div style="text-align:center; color:var(--muted); padding:40px 16px;
+            border:1px dashed var(--line); border-radius:10px;">
+  아직 수집된 어종이 없습니다.<br>
+  <span style="font-size:13px; color:var(--faint);">
+    첫 수집이 끝나면(최대 15분) 어종 목록이 채워집니다. 잠시 후 새로고침해 주세요.
+  </span>
+</div>
+{% endif %}
+
+<div id="list">
+  {% for sp in species %}
+  <div class="row" data-name="{{ sp }}"
+       style="display:flex; justify-content:space-between; align-items:center;
+              padding:9px 14px; border-bottom:1px solid var(--line);">
+    <span>{{ sp }}</span>
+    <button class="star btn" data-name="{{ sp }}"
+            data-on="{{ '1' if sp in favorites else '0' }}"
+            style="border:none; background:none; font-size:18px; padding:4px 8px;
+                   color: {{ 'var(--star)' if sp in favorites else 'var(--faint)' }};">
+      {{ '★' if sp in favorites else '☆' }}
+    </button>
+  </div>
+  {% endfor %}
+</div>
+<p id="noresult" style="display:none; text-align:center; color:var(--faint); padding:30px 0;">
+  해당 어종 없음
+</p>
+
+<div style="position:fixed; left:0; right:0; bottom:0; background:var(--surface);
+            border-top:1px solid var(--line); padding:12px 20px;">
+  <div style="max-width:860px; margin:0 auto; display:flex;
+              justify-content:space-between; align-items:center;">
+    <span style="font-size:14px; color:var(--muted);">
+      선택한 어종 <b id="count" style="color:var(--text);">{{ favorites | length }}</b>종
+    </span>
+    <a id="go" class="btn" href="/?window={{ window }}"
+       style="{{ 'opacity:.4; pointer-events:none;' if favorites | length == 0 }}">
+      대시보드 보기
+    </a>
+  </div>
+</div>
+
+<script>
+const q = document.getElementById('q');
+const rows = [...document.querySelectorAll('.row')];
+const noresult = document.getElementById('noresult');
+q.addEventListener('input', () => {
+  const v = q.value.trim();
+  let visible = 0;
+  rows.forEach(r => {
+    const show = !v || r.dataset.name.includes(v);
+    r.style.display = show ? 'flex' : 'none';
+    if (show) visible++;
+  });
+  noresult.style.display = visible ? 'none' : 'block';
+});
+
+const countEl = document.getElementById('count');
+const goEl = document.getElementById('go');
+document.querySelectorAll('.star').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const on = btn.dataset.on === '1';
+    const method = on ? 'DELETE' : 'POST';
+    const res = await fetch('/api/favorites/' + encodeURIComponent(btn.dataset.name), { method });
+    if (!res.ok) return;
+    btn.dataset.on = on ? '0' : '1';
+    btn.textContent = on ? '☆' : '★';
+    btn.style.color = on ? 'var(--faint)' : 'var(--star)';
+    const n = parseInt(countEl.textContent) + (on ? -1 : 1);
+    countEl.textContent = n;
+    goEl.style.opacity = n ? '' : '.4';
+    goEl.style.pointerEvents = n ? '' : 'none';
+  });
+});
+</script>
+
+{% endblock %}

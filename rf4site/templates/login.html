@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RF4 트렌드 — 로그인</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root {
+  --bg:#0d141d; --surface:#141e2a; --surface-2:#1a2736; --line:#243447;
+  --text:#e6edf3; --muted:#8b9aab; --faint:#5c6b7a; --accent:#4da3e8; --err:#e0635a;
+}
+* { box-sizing:border-box; margin:0; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:Pretendard,-apple-system,sans-serif;
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.box { width:100%; max-width:360px; }
+.brand { font-size:22px; font-weight:700; text-align:center; margin-bottom:4px; }
+.brand small { display:block; font-size:13px; font-weight:400; color:var(--faint); margin-top:4px; }
+.tabs { display:flex; margin:24px 0 16px; border-bottom:1px solid var(--line); }
+.tabs a {
+  flex:1; text-align:center; padding:10px; font-size:14px; color:var(--muted);
+  text-decoration:none; border-bottom:2px solid transparent;
+}
+.tabs a.on { color:var(--text); font-weight:600; border-bottom-color:var(--accent); }
+label { display:block; font-size:13px; color:var(--muted); margin:12px 0 5px; }
+input {
+  width:100%; padding:11px 13px; font-size:15px;
+  background:var(--surface); border:1px solid var(--line); border-radius:9px;
+  color:var(--text); outline:none;
+}
+input:focus { border-color:var(--accent); }
+button {
+  width:100%; margin-top:18px; padding:12px; font-size:15px; font-weight:600;
+  background:var(--accent); color:#fff; border:none; border-radius:9px; cursor:pointer;
+}
+button:hover { opacity:.92; }
+.err {
+  background:rgba(224,99,90,.12); color:var(--err); font-size:13px;
+  padding:9px 12px; border-radius:8px; margin-top:14px;
+}
+.hint { font-size:12px; color:var(--faint); margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="brand">RF4 트렌드<small>내 선호 어종 활성도 대시보드</small></div>
+
+  <div class="tabs">
+    <a href="/login?mode=login" class="{{ 'on' if mode != 'signup' }}">로그인</a>
+    <a href="/login?mode=signup" class="{{ 'on' if mode == 'signup' }}">회원가입</a>
+  </div>
+
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+
+  <form method="post" action="{{ '/signup' if mode == 'signup' else '/login' }}">
+    <label>아이디</label>
+    <input name="username" value="{{ username or '' }}" autocomplete="username"
+           autofocus required>
+    {% if mode == 'signup' %}<p class="hint">영문/숫자/밑줄 3~20자</p>{% endif %}
+
+    <label>비밀번호</label>
+    <input name="password" type="password"
+           autocomplete="{{ 'new-password' if mode == 'signup' else 'current-password' }}"
+           required>
+    {% if mode == 'signup' %}<p class="hint">6자 이상</p>{% endif %}
+
+    <button type="submit">{{ '가입하고 시작하기' if mode == 'signup' else '로그인' }}</button>
+  </form>
+</div>
+</body>
+</html>
