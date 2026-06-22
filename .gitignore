@@ -1,0 +1,22 @@
+# 데이터베이스 (런타임 생성 — 수집 데이터·계정·라벨 포함, 커밋 안 함)
+rf4site/rf4.db
+rf4site/rf4.db-wal
+rf4site/rf4.db-shm
+rf4site/archive.db
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+*.pyo
+
+# 로그
+*.log
+tunnel.log
+
+# Cloudflare 터널 자격증명 (절대 커밋 금지)
+*.json
+.cloudflared/
+
+# OS / 에디터
+.DS_Store
+*.swp
