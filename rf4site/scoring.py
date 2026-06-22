@@ -143,28 +143,22 @@ def ratio_stats(conn, species, window):
     return out
 
 
-def score_species(conn, species, window="3d"):
-    """어종 1개의 활성도 평가. 대시보드 카드 1장에 필요한 모든 값.
+def _score_from_rows(rows):
+    """기록 묶음(rows)으로 활성도 지표 1세트 계산.
+    rows: _tier_records가 반환하는 (tier, bait, waterbody, weight_g, caught_date) 리스트.
+    한 수역의 기록만 넘기면 그 수역의 활성도가 된다.
     (임시 수식 — 향후 라벨 기반 ML로 교체 예정, D-21)"""
-    rows = _tier_records(conn, species, window)
     n_rare = sum(1 for r in rows if r[0] == "rare")
     n_trophy = sum(1 for r in rows if r[0] == "trophy")
     n_normal = sum(1 for r in rows if r[0] == "normal")
     n_total = len(rows)
 
     top_bait, consistency = _top_share([r[1] for r in rows])
-    top_waterbody, _ = _top_share([r[2] for r in rows])
 
     # 점수: 무게가 클수록(레어>트로피>일반) + 미끼가 통일될수록 높게.
-    # 등급 가중합에 일관성을 곱하는 임시 수식.
     power = n_rare * 3 + n_trophy * 2 + n_normal * 1
     score = round(power * consistency, 1)
 
-    # 상태 분류 (본인 경험 기반 임시 규칙):
-    #  - 표본 부족 → 비활성
-    #  - 미끼가 통일 안 됨(일관성 낮음) → 불명
-    #  - 트로피 이상이 충분히 쏟아짐 → 강한 활성
-    #  - 그 외(기록은 통일됐으나 트로피 적음) → 활성
     trophy_plus = n_rare + n_trophy
     if n_total < MIN_SAMPLE:
         state = STATE_INACTIVE
@@ -176,16 +170,47 @@ def score_species(conn, species, window="3d"):
         state = STATE_ACTIVE
 
     return {
-        "species": species,
-        "state": state,
-        "score": score,
-        "n_rare": n_rare,
-        "n_trophy": n_trophy,
-        "n_normal": n_normal,
-        "n_total": n_total,
-        "consistency": round(consistency * 100),
+        "state": state, "score": score,
+        "n_rare": n_rare, "n_trophy": n_trophy, "n_normal": n_normal,
+        "n_total": n_total, "consistency": round(consistency * 100),
         "top_bait": top_bait,
-        "top_waterbody": top_waterbody,
+    }
+
+
+def score_species(conn, species, window="3d"):
+    """어종 1개의 활성도 평가. 대시보드 카드 1장에 필요한 모든 값.
+    수역별로 따로 집계해, 가장 활성도 점수가 높은 수역을 대표값으로 쓴다.
+    (게임이 수역별로 독립적으로 돌아가므로 — 같은 어종이라도 수역마다 먹는 미끼가
+     달라, 전체를 합치면 미끼 일관성이 희석되어 활성도가 낮게 잡히는 문제를 해결.)"""
+    rows = _tier_records(conn, species, window)
+
+    # 수역별로 기록을 나눠 각각 점수 계산
+    by_water = {}
+    for r in rows:
+        by_water.setdefault(r[2], []).append(r)
+    per_water = {wb: _score_from_rows(rs) for wb, rs in by_water.items()}
+
+    if per_water:
+        # 대표 수역 = 점수가 가장 높은 수역. 동점이면 표본 많은 쪽.
+        top_wb = max(per_water,
+                     key=lambda wb: (per_water[wb]["score"], per_water[wb]["n_total"]))
+        rep = per_water[top_wb]
+    else:
+        # 기록이 아예 없으면(트로피 미등록 등) 빈 카드
+        rep = _score_from_rows([])
+        top_wb = None
+
+    return {
+        "species": species,
+        "state": rep["state"],
+        "score": rep["score"],
+        "n_rare": rep["n_rare"],
+        "n_trophy": rep["n_trophy"],
+        "n_normal": rep["n_normal"],
+        "n_total": rep["n_total"],
+        "consistency": rep["consistency"],
+        "top_bait": rep["top_bait"],
+        "top_waterbody": top_wb,
     }
 
 
@@ -235,7 +260,17 @@ def species_detail(conn, species, window="3d", trophy_only=False):
         WHERE c.species = ? AND c.first_seen >= {wc} {tier_filter}
         GROUP BY c.waterbody ORDER BY n DESC LIMIT 10
     """, (species,)).fetchall()
-    places = [{"waterbody": r[0], "n": r[1]} for r in place_rows]
+    # 수역별 활성도 점수·상태 — 대시보드 대표값과 같은 기준(전체 기록, trophy_only 무관)으로 계산.
+    all_rows = _tier_records(conn, species, window)
+    rows_by_water = {}
+    for r in all_rows:
+        rows_by_water.setdefault(r[2], []).append(r)
+    water_score = {wb: _score_from_rows(rs) for wb, rs in rows_by_water.items()}
+    places = [{
+        "waterbody": r[0], "n": r[1],
+        "score": water_score.get(r[0], {}).get("score", 0),
+        "state": water_score.get(r[0], {}).get("state", STATE_INACTIVE),
+    } for r in place_rows]
 
     trophy_records = []
     if trophy_g:

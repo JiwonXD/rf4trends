@@ -64,11 +64,14 @@
 
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
   <div class="card" style="border-left:none; margin-bottom:0;">
-    <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;">장소 분포</p>
+    <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;">장소 분포 <span style="color:var(--faint); font-weight:400;">· 수역별 활성도</span></p>
     {% for p in d.places %}
-    <div style="display:flex; justify-content:space-between; padding:5px 0; font-size:14px;">
-      <span>{{ p.waterbody }}</span>
-      <span style="color:var(--muted);">{{ p.n }}건</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:14px;">
+      <span style="display:flex; align-items:center; gap:8px;">
+        {{ p.waterbody }}
+        <span class="badge b-{{ state_cls[p.state] }}" style="font-size:11px;">{{ p.state }}</span>
+      </span>
+      <span style="color:var(--muted);">활성도 {{ p.score }} · {{ p.n }}건</span>
     </div>
     {% endfor %}
   </div>
