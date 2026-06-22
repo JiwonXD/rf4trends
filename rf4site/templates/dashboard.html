@@ -14,20 +14,20 @@
     {% if c.state != '비활성' %}
     <a class="card" href="/species/{{ c.species | urlencode }}?window={{ window }}"
        style="display:block; border-left-color: var(--{{ cls }});">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="font-size:16px; font-weight:700;">{{ c.species }}</span>
           <span class="badge b-{{ cls }}">{{ c.state }}</span>
         </div>
-        <div style="text-align:right;">
-          <div style="font-size:13px; color:var(--muted);">활성도 {{ c.score }}</div>
-          {% if c.top_waterbody %}<div style="font-size:12px; color:var(--faint); margin-top:2px;">{{ c.top_waterbody }}</div>{% endif %}
-        </div>
+        <span style="font-size:13px; color:var(--muted);">활성도 {{ c.score }}</span>
       </div>
-      <div style="display:flex; gap:18px; margin-top:8px; font-size:13px; color:var(--muted); flex-wrap:wrap;">
-        <span>트로피 {{ c.n_rare + c.n_trophy }}건{% if c.n_rare %} (레어 {{ c.n_rare }}){% endif %} · 일반 {{ c.n_normal }}건</span>
-        <span>일관성 {{ c.consistency }}%{% if c.state == '불명' %} — 미끼 분산{% endif %}</span>
-        {% if c.top_bait %}<span style="color:var(--text);">{{ c.top_bait }}</span>{% endif %}
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13px; color:var(--muted);">
+        <div style="display:flex; gap:18px; flex-wrap:wrap;">
+          <span>트로피 {{ c.n_rare + c.n_trophy }}건{% if c.n_rare %} (레어 {{ c.n_rare }}){% endif %} · 일반 {{ c.n_normal }}건</span>
+          <span>일관성 {{ c.consistency }}%{% if c.state == '불명' %} — 미끼 분산{% endif %}</span>
+          {% if c.top_bait %}<span style="color:var(--text);">{{ c.top_bait }}</span>{% endif %}
+        </div>
+        {% if c.top_waterbody %}<span style="color:var(--text); white-space:nowrap; margin-left:12px;">{{ c.top_waterbody }}</span>{% endif %}
       </div>
     </a>
     {% else %}
