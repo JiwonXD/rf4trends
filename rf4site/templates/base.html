@@ -83,8 +83,8 @@ header {
   </a>
   <div class="controls">
     <nav class="toggle">
+      <a href="?window=6h" class="{{ 'on' if window == '6h' }}">6시간</a>
       <a href="?window=today" class="{{ 'on' if window == 'today' }}">오늘</a>
-      <a href="?window=3d" class="{{ 'on' if window == '3d' }}">3일</a>
     </nav>
     <a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>
     {% if username is defined and username %}

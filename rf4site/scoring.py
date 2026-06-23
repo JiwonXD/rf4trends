@@ -17,7 +17,7 @@ STRONG_TROPHY_MIN = 5     # 트로피이상이 이만큼이면 강한 활성
 # caught_date(잡힌 날짜)가 아니라 first_seen으로 세는 이유: 주간 탑5는 24시간 동안
 # 여러 번 갈리는데, 갈려나간 기록까지 수집기가 주워둔 "교체 빈도"가 곧 활성도다.
 # 자정 경계가 아닌 접속(수집) 시점 기준 롤링이라, 언제 봐도 꽉 찬 24/72시간 표본을 본다.
-WINDOWS = {"today": 24, "3d": 72}   # 단위: 시간(hour)
+WINDOWS = {"6h": 6, "today": 24}   # 단위: 시간(hour)
 
 STATE_STRONG = "강한 활성"
 STATE_ACTIVE = "활성"
@@ -68,7 +68,7 @@ def hours_since_reset(now_utc=None):
 # (species, trophy_only 등은 이미 ? 바인딩 또는 bool로 처리됨)
 def _window_clause(window):
     # window는 호출부에서 norm_window()로 검증된 키만 들어오며, 여기서도 .get 기본값으로 한 번 더 가둔다
-    hours = WINDOWS.get(window, WINDOWS["3d"])
+    hours = WINDOWS.get(window, WINDOWS["today"])
     return f"datetime('now', '-{int(hours)} hour')"
 
 
@@ -177,7 +177,7 @@ def _score_from_rows(rows):
     }
 
 
-def score_species(conn, species, window="3d"):
+def score_species(conn, species, window="today"):
     """어종 1개의 활성도 평가. 대시보드 카드 1장에 필요한 모든 값.
     수역별로 따로 집계해, 가장 활성도 점수가 높은 수역을 대표값으로 쓴다.
     (게임이 수역별로 독립적으로 돌아가므로 — 같은 어종이라도 수역마다 먹는 미끼가
@@ -214,7 +214,7 @@ def score_species(conn, species, window="3d"):
     }
 
 
-def dashboard(conn, favorites, window="3d"):
+def dashboard(conn, favorites, window="today"):
     """선호 어종 전체 평가. 활성도 점수 내림차순, 비활성은 항상 하단."""
     cards = [score_species(conn, sp, window) for sp in favorites]
     active = [c for c in cards if c["state"] != STATE_INACTIVE]
@@ -224,7 +224,7 @@ def dashboard(conn, favorites, window="3d"):
     return active + inactive
 
 
-def species_detail(conn, species, window="3d", trophy_only=False):
+def species_detail(conn, species, window="today", trophy_only=False):
     """어종 상세: 미끼 순위 / 장소 분포 / 최근 트로피 기록 / 기준선."""
     wc = _window_clause(window)
     thresholds = conn.execute(

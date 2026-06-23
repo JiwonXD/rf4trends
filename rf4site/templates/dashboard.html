@@ -42,9 +42,9 @@
     {% endif %}
   {% endfor %}
 
-  {% if cards and cards[0].state == '비활성' and window == 'today' %}
+  {% if cards and cards[0].state == '비활성' and window == '6h' %}
     <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:16px;">
-      오늘 창에는 표본이 적습니다 — <a href="?window=3d" style="color:var(--accent);">3일로 넓혀보세요</a>
+      6시간 창에는 표본이 적습니다 — <a href="?window=today" style="color:var(--accent);">오늘로 넓혀보세요</a>
     </p>
   {% endif %}
 {% endif %}

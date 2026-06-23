@@ -27,7 +27,7 @@
 <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;
             padding:10px 14px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">
   <span style="font-size:13px; color:var(--muted); margin-right:4px;">
-    이 어종 오늘 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '72h' }} 기준)</span>:
+    이 어종 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '6h' }} 기준)</span>:
   </span>
   {% for lb, cls in [('강한 활성','strong'), ('활성','active'), ('불명','unclear'), ('비활성','off')] %}
     <button class="label-btn btn" data-label="{{ lb }}"
@@ -39,7 +39,7 @@
 
 {% if d.card.n_total == 0 %}
   <div class="empty">
-    최근 기록 없음{% if window == 'today' %} — <a href="?window=3d" style="color:var(--accent);">3일로 넓혀보기</a>{% endif %}
+    최근 기록 없음{% if window == '6h' %} — <a href="?window=today" style="color:var(--accent);">오늘로 넓혀보기</a>{% endif %}
   </div>
 {% else %}
 

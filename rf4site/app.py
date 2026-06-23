@@ -117,7 +117,7 @@ def last_collected(conn):
 
 
 def norm_window(w):
-    return w if w in scoring.WINDOWS else "3d"
+    return w if w in scoring.WINDOWS else "today"
 
 
 def require_login(conn, request):
@@ -151,7 +151,7 @@ def dashboard(request: Request, window: str = "today"):
 
 
 @app.get("/onboarding")
-def onboarding(request: Request, window: str = "3d"):
+def onboarding(request: Request, window: str = "today"):
     conn = db()
     try:
         user = require_login(conn, request)
@@ -291,7 +291,7 @@ def logout():
 
 @app.post("/api/label/{name}")
 def add_label(request: Request, name: str,
-              label: str = Form(...), window: str = Form("3d")):
+              label: str = Form(...), window: str = Form("today")):
     window = norm_window(window)
     conn = db()
     try:

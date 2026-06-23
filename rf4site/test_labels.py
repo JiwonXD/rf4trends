@@ -32,13 +32,13 @@ c = TestClient(app)
 c.post("/signup", data={"username":"admin","password":"secret123"})
 
 # 라벨 저장
-r = c.post("/api/label/검은 잉어", data={"label":"강한 활성","window":"3d"})
+r = c.post("/api/label/검은 잉어", data={"label":"강한 활성","window":"today"})
 check("라벨 저장 성공", r.status_code==200)
 # 같은 어종 다시 라벨 (다른 값) → 새 행으로 쌓임
 r = c.post("/api/label/검은 잉어", data={"label":"활성","window":"today"})
 check("같은 어종 재라벨 성공", r.status_code==200)
 # 잘못된 라벨 거부
-r = c.post("/api/label/검은 잉어", data={"label":"이상한값","window":"3d"})
+r = c.post("/api/label/검은 잉어", data={"label":"이상한값","window":"today"})
 check("잘못된 라벨 거부", r.status_code==400)
 
 # DB 확인: 라벨 2건 쌓였는지 + 스냅샷 저장됐는지
@@ -88,7 +88,7 @@ usr.post("/signup", data={"username":"angler_x","password":"secret123"})
 usr.post("/api/favorites/검은 잉어")
 r = usr.get("/species/검은 잉어")
 check("일반유저 라벨 버튼 보임(제한 풀림)", "label-btn" in r.text)
-r = usr.post("/api/label/검은 잉어", data={"label":"활성","window":"3d"})
+r = usr.post("/api/label/검은 잉어", data={"label":"활성","window":"today"})
 check("일반유저 라벨 저장 성공(제한 풀림)", r.status_code==200)
 # source 구분 박제 확인
 _c = sqlite3.connect("rf4.db")

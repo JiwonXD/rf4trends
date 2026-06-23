@@ -84,8 +84,8 @@ check("선호 해제 반영", "붕어" not in r.text)
 # 미끼 일관성: 카드 consistency == 상세 1등 미끼 비율 (분모 일치, 미끼 15종 초과 시에도)
 import scoring as _sc
 _conn2 = sqlite3.connect("rf4.db")
-_c = _sc.score_species(_conn2, "검은 잉어", "3d")
-_d = _sc.species_detail(_conn2, "검은 잉어", "3d")
+_c = _sc.score_species(_conn2, "검은 잉어", "today")
+_d = _sc.species_detail(_conn2, "검은 잉어", "today")
 _conn2.close()
 if _d["baits"]:
     check("카드 일관성 == 상세 1등미끼 비율", _c["consistency"] == _d["baits"][0]["share"])
