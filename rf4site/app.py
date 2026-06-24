@@ -3,6 +3,7 @@
 # 같은 와이파이의 다른 기기에서 http://<태블릿IP>:8000 으로 접속
 
 import csv
+import os
 import sqlite3
 import threading
 from contextlib import asynccontextmanager
@@ -15,7 +16,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).parent
-DB_PATH = BASE_DIR / "rf4.db"
+DB_PATH = Path(os.environ.get("RF4_DB", BASE_DIR / "rf4.db"))
 TROPHY_CSV = BASE_DIR / "trophy_weights.csv"
 COLLECT_INTERVAL_MIN = 15
 
@@ -92,6 +93,8 @@ async def lifespan(app):
 
 app = FastAPI(title="RF4 선호 어종 대시보드", lifespan=lifespan)
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+# tojson 필터가 한글을 \uXXXX로 이스케이프하지 않고 그대로 출력하도록 (HTML 가독성)
+templates.env.policies["json.dumps_kwargs"] = {"ensure_ascii": False, "sort_keys": True}
 
 
 def db():
@@ -173,8 +176,7 @@ def onboarding(request: Request, window: str = "today"):
 
 
 @app.get("/species/{name}")
-def species_page(request: Request, name: str, window: str = "today",
-                 trophy_only: int = 0):
+def species_page(request: Request, name: str, window: str = "today"):
     window = norm_window(window)
     conn = db()
     try:
@@ -186,7 +188,7 @@ def species_page(request: Request, name: str, window: str = "today",
             "SELECT 1 FROM catches WHERE species = ? LIMIT 1", (name,)).fetchone()
         if not exists:
             return RedirectResponse(f"/?window={window}")
-        detail = scoring.species_detail(conn, name, window, bool(trophy_only))
+        detail = scoring.species_detail(conn, name, window)
         is_favorite = conn.execute(
             "SELECT 1 FROM favorites WHERE user_id = ? AND species = ?",
             (uid, name)).fetchone()
@@ -194,7 +196,6 @@ def species_page(request: Request, name: str, window: str = "today",
             "d": detail,
             "name": name,
             "window": window,
-            "trophy_only": bool(trophy_only),
             "is_favorite": bool(is_favorite),
             "last_collected": last_collected(conn),
             "username": username,

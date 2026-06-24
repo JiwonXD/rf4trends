@@ -65,7 +65,7 @@ def hours_since_reset(now_utc=None):
 # [SQL 안전 규율] 이 모듈은 일부 SQL을 f-string으로 조립한다.
 # 현재는 끼워넣는 값이 전부 서버 상수(WINDOWS 딕셔너리, int 캐스팅된 무게)뿐이라 안전하다.
 # 절대 규칙: 사용자 입력(어종명/미끼/검색어 등)은 f-string에 넣지 말고 반드시 ? 바인딩으로만 전달할 것.
-# (species, trophy_only 등은 이미 ? 바인딩 또는 bool로 처리됨)
+# (species 등은 이미 ? 바인딩으로 처리됨)
 def _window_clause(window):
     # window는 호출부에서 norm_window()로 검증된 키만 들어오며, 여기서도 .get 기본값으로 한 번 더 가둔다
     hours = WINDOWS.get(window, WINDOWS["today"])
@@ -74,7 +74,7 @@ def _window_clause(window):
 
 def _tier_records(conn, species, window):
     """시간창(first_seen 기준 롤링) 내 해당 어종의 **전체 기록**을
-    (tier, bait, waterbody, weight_g, caught_date)로 반환.
+    (tier, bait, waterbody, weight_g, caught_date, first_seen)로 반환.
     tier: 'rare' | 'trophy' | 'normal'. 트로피 기준 미등록 어종이면 빈 리스트.
     무게 하한 없음 — 작은 기록도 활성도 판단의 근거이므로 전부 포함."""
     q = f"""
@@ -83,7 +83,7 @@ def _tier_records(conn, species, window):
              WHEN c.weight_g >= t.trophy_g THEN 'trophy'
              ELSE 'normal'
            END AS tier,
-           c.bait, c.waterbody, c.weight_g, c.caught_date
+           c.bait, c.waterbody, c.weight_g, c.caught_date, c.first_seen
     FROM catches c
     JOIN trophies t ON t.species = c.species
     WHERE c.species = ?
@@ -224,8 +224,10 @@ def dashboard(conn, favorites, window="today"):
     return active + inactive
 
 
-def species_detail(conn, species, window="today", trophy_only=False):
-    """어종 상세: 미끼 순위 / 장소 분포 / 최근 트로피 기록 / 기준선."""
+def species_detail(conn, species, window="today"):
+    """어종 상세: 미끼 순위 / 장소 분포 / 최근 트로피 기록 / 기준선.
+    미끼·장소·트로피 집계는 초기값이며, 실제 표시·필터는 클라이언트가
+    records로 직접 재집계한다(교차 필터링). 트로피만 보기도 클라이언트 토글."""
     wc = _window_clause(window)
     thresholds = conn.execute(
         "SELECT trophy_g, rare_trophy_g FROM trophies WHERE species = ?",
@@ -233,15 +235,11 @@ def species_detail(conn, species, window="today", trophy_only=False):
     trophy_g = thresholds[0] if thresholds else None
     rare_g = thresholds[1] if thresholds else None
 
-    tier_filter = ""
-    if trophy_only and trophy_g:
-        tier_filter = f"AND c.weight_g >= {int(trophy_g)}"
-
     bait_rows = conn.execute(f"""
         SELECT c.bait, COUNT(*) AS n
         FROM catches c
         WHERE c.species = ? AND c.bait IS NOT NULL
-          AND c.first_seen >= {wc} {tier_filter}
+          AND c.first_seen >= {wc}
         GROUP BY c.bait ORDER BY n DESC LIMIT 15
     """, (species,)).fetchall()
     # 분모는 상위15개 합이 아니라 시간창 내 미끼 있는 전체 기록 수.
@@ -249,7 +247,7 @@ def species_detail(conn, species, window="today", trophy_only=False):
     bait_total = conn.execute(f"""
         SELECT COUNT(*) FROM catches c
         WHERE c.species = ? AND c.bait IS NOT NULL
-          AND c.first_seen >= {wc} {tier_filter}
+          AND c.first_seen >= {wc}
     """, (species,)).fetchone()[0] or 1
     baits = [{"bait": r[0], "n": r[1], "share": round(r[1] * 100 / bait_total)}
              for r in bait_rows]
@@ -257,10 +255,10 @@ def species_detail(conn, species, window="today", trophy_only=False):
     place_rows = conn.execute(f"""
         SELECT c.waterbody, COUNT(*) AS n
         FROM catches c
-        WHERE c.species = ? AND c.first_seen >= {wc} {tier_filter}
+        WHERE c.species = ? AND c.first_seen >= {wc}
         GROUP BY c.waterbody ORDER BY n DESC LIMIT 10
     """, (species,)).fetchall()
-    # 수역별 활성도 점수·상태 — 대시보드 대표값과 같은 기준(전체 기록, trophy_only 무관)으로 계산.
+    # 수역별 활성도 점수·상태 — 대시보드 대표값과 같은 기준(전체 기록)으로 계산.
     all_rows = _tier_records(conn, species, window)
     rows_by_water = {}
     for r in all_rows:
@@ -291,6 +289,22 @@ def species_detail(conn, species, window="today", trophy_only=False):
         } for r in rows]
 
     card = score_species(conn, species, window)
+
+    # 교차 필터링용 원본 기록 + 수역별 활성도 점수.
+    # 미끼/장소/트로피 집계는 클라이언트(JS)가 이 records로 직접 계산·필터링한다.
+    # 단 활성도 점수(score/state)는 임시 수식이라 서버가 수역별로 계산해 넘긴다
+    # (ML 교체 시 서버만 고치면 되도록 — JS에 점수 로직을 중복시키지 않음).
+    records = [{
+        "weight_g": r[3],
+        "weight": _weight_str(r[3]),
+        "waterbody": r[2],
+        "bait": r[1],
+        "tier": r[0],                       # 'rare' | 'trophy' | 'normal'
+        "date": _to_kst_str(r[5]),          # first_seen(UTC)→KST
+    } for r in all_rows]
+    water_scores = {wb: {"score": s["score"], "state": s["state"]}
+                    for wb, s in water_score.items()}
+
     return {
         "card": card,
         "trophy_str": _weight_str(trophy_g) if trophy_g else None,
@@ -298,4 +312,8 @@ def species_detail(conn, species, window="today", trophy_only=False):
         "baits": baits,
         "places": places,
         "trophy_records": trophy_records,
+        "records": records,
+        "water_scores": water_scores,
+        "trophy_g": trophy_g,
+        "rare_g": rare_g,
     }

@@ -61,20 +61,22 @@
 ```
 rf4trends/
 ├── README.md         # 이 문서 (포트폴리오 + 패치노트)
-├── PRD.md            # 제품 요구사항 + 결정 로그 (D-1~D-33)
+├── PRD.md            # 제품 요구사항 + 결정 로그
+├── EXPERIENCES.md         # 이슈 경험 — 기능 간 상충과 판단의 서사
 ├── SCREENS.md        # 화면 정의서
 ├── screenshots/      # 스크린샷
-└── rf4site/          # 실제 구현
-    ├── app.py            # FastAPI 서버 + 15분 수집 스레드 + 하루 1회 정리 (단일 프로세스)
-    ├── collector.py      # 주간기록 파싱·누적 (30개 게시판, 에러 백오프)
-    ├── scoring.py        # 활성도 계산 (교체 가능한 추천 모듈)
-    ├── labels.py         # 라벨 수집 + 활성도 스냅샷 박제
-    ├── auth.py           # 회원 인증 (bcrypt, 서명 세션)
-    ├── maintenance.py    # 7일 초과분 archive.db로 분리
-    ├── trophy_weights.csv# 트로피 기준 251종
-    ├── templates/        # base / dashboard / species / login / onboarding
+├── rf4site/          # 실제 서비스 (운영에 필요한 핵심 파일만)
+│   ├── app.py            # FastAPI 서버 + 15분 수집 스레드 + 하루 1회 정리 (단일 프로세스)
+│   ├── collector.py      # 주간기록 파싱·누적 (30개 게시판, 에러 백오프)
+│   ├── scoring.py        # 활성도 계산 (교체 가능한 추천 모듈)
+│   ├── labels.py         # 라벨 수집 + 활성도 스냅샷 박제
+│   ├── auth.py           # 회원 인증 (bcrypt, 서명 세션)
+│   ├── maintenance.py    # 7일 초과분 archive.db로 분리
+│   ├── trophy_weights.csv# 트로피 기준 251종
+│   └── templates/        # base / dashboard / species / login / onboarding
+└── tools/            # 개발용 (서비스엔 불필요, 개발·배포 시 사용)
     ├── test_*.py         # 테스트 (app / auth / labels)
-    └── TERMUX_SETUP.md   # 배포 가이드 (개발/운영용)
+    └── TERMUX_SETUP.md   # 배포 가이드
 ```
 
 ---
@@ -101,10 +103,11 @@ python app.py                       # http://0.0.0.0:8000
 
 테스트:
 ```bash
+cd tools
 python test_app.py && python test_auth.py && python test_labels.py
 ```
 
-배포(Termux + Cloudflare Named Tunnel)는 [rf4site/TERMUX_SETUP.md](rf4site/TERMUX_SETUP.md) 참고.
+배포(Termux + Cloudflare Named Tunnel)는 [tools/TERMUX_SETUP.md](tools/TERMUX_SETUP.md) 참고.
 
 ---
 
@@ -299,6 +302,36 @@ python test_app.py && python test_auth.py && python test_labels.py
 - 기본 탭은 24시간 유지. 표본이 적을 때는 6시간→24시간으로 넓히도록 안내.
 - **파일**: scoring.py(WINDOWS), app.py(기본값), templates/base.html(탭), templates/dashboard.html·species.html(안내 문구)
 
+### 06-23 · 시간창 필터 버그 (T vs 공백 구분자)
+
+`[코드버그]` **시간창 탭(6h/24h)을 눌러도 표시 데이터가 안 바뀌는 버그.**
+- **증상**: 6h와 24h 탭을 번갈아 눌러도 같은 데이터가 표시됨. 실제로는 한 어종에서 6h=249건, 24h=249건처럼 동일하게 나왔다.
+- **원인**: collector가 first_seen을 `isoformat`의 **T 구분자**(`2026-06-22T13:00`)로 저장하는데, SQLite `datetime('now')` 경계는 **공백 구분자**(`2026-06-22 13:00`)다. SQLite에서 이 둘을 문자열로 비교하면 `'T'`(ASCII 84) > `' '`(ASCII 32)라, 같은 날짜 안에서 시간 비교가 깨져 시간창 필터가 무력화된다. 6h든 24h든 모든 기록이 경계를 통과해 버림.
+- **근본 해결**: 비교할 때마다 `datetime()`으로 감싸 정규화하는 방법(반창고)도 가능했으나, 모든 쿼리에 변환을 덧대면 코드가 지저분해지고 같은 실수가 재발하기 쉽다. 대신 **데이터와 저장 포맷 자체를 통일**했다 — collector 저장을 SQLite와 동일한 공백 구분자로 바꾸고, 기존 T 데이터는 한 번의 `REPLACE` UPDATE로 정리. 비교 쿼리는 원래의 깔끔한 `c.first_seen >= ...` 형태를 유지.
+- 일회성 데이터 정리는 단일 운영 환경(태블릿 1대)이라 코드에 마이그레이션을 박지 않고 터미널에서 수동 1회 실행 — 정리되면 끝나는 작업을 영구 코드로 남기지 않는다.
+- **검증**: 실제 수집 DB(약 8.8만 건)를 공백으로 통일한 뒤, 반창고 없는 코드로 6h≠24h가 정확히 갈리는 것을 확인. 회귀 방지 테스트는 공백 포맷 기준으로 작성해 실행 시각과 무관하게 안정적이도록 함.
+- **파일**: collector.py(저장 포맷), scoring.py·maintenance.py(비교 복원), test_app.py(회귀 테스트)
+
+이 버그는 "코드 버그(문자열 비교 결함)"이면서, 해결 방식에서 **반창고(임시 변환)와 근본 해결(데이터 통일)의 차이**를 보여주는 사례다. 더 적은 코드로 더 깨끗하게 끝내는 쪽을 택했다.
+
+### 06-23 · 어종 상세 교차 필터링
+
+`[기능추가]` **어종 상세창에 교차 필터링(cross-filtering) 도입(D-38).** 미끼 순위·장소 분포·트로피 기록 세 블록이 서로를 필터링한다.
+- 수역 클릭 → 그 수역에서 나온 미끼·트로피만 / 미끼 클릭 → 그 미끼가 어느 수역에서 나왔는지 분포·트로피 / 같은 항목 재클릭 → 해제.
+- 동기: 수역별로 활성도를 따로 매기게 됐는데(D-35), 상세창은 여전히 전체 통합 데이터만 보여줘 "어느 수역의 어떤 미끼가 잘 먹히는지"를 좁혀볼 수 없었다. 교차 필터링으로 한 화면에서 수역·미끼·트로피를 자유롭게 가로질러 탐색.
+- **trophy_only 토글 유지**: 교차 필터(좁히기)와 축이 다른 기능 — 현재 보는 범위의 등급 분포·추세 파악용. 교차 필터와 독립적으로 AND 결합된다.
+- **구현 방식**: 서버는 시간창 내 원본 기록 배열을 JSON으로 넘기고(집계 안 함), 클라이언트 JS가 미끼/장소/트로피를 직접 집계·필터·재집계. 단 활성도 점수(score/state)는 임시 수식이라 서버가 수역별로 계산해 넘긴다 — ML 교체 시 서버만 고치면 되도록 점수 로직을 JS에 중복시키지 않음. trophy_only도 서버 URL 파라미터에서 클라이언트 토글로 이전.
+- 가·나·다(수역/미끼/트로피 필터)를 "필터 1개 + 나머지 재집계"하는 단일 구조로 한 번에 구현해, 분기마다 로직이 갈리는 걸 방지.
+- **파일**: scoring.py(원본 records·수역별 점수 반환), app.py(trophy_only 파라미터 제거, tojson 한글 설정), templates/species.html(JS 교차 필터링 전면 재작성)
+
+### 06-23 · 디렉토리 구조 재정리
+
+`[변경]` **저장소를 독자 기준으로 3분할(D-39).** 루트 아래 `rf4site/`(실제 서비스 핵심만), `tools/`(개발용), `screenshots/`(소개용), 그리고 루트에 포트폴리오·기획 문서(README·PRD·SCREENS).
+- `rf4site/` — 운영에 필요한 파일만: app·collector·scoring·labels·auth·maintenance·templates·trophy_weights.csv
+- `tools/` — 서비스엔 불필요하지만 개발·배포에 쓰는 것: 테스트 3종, TERMUX_SETUP(배포 가이드)
+- 테스트를 tools로 옮기면서 `sys.path`에 rf4site를 추가하고, `RF4_DB` 환경변수로 app과 같은 DB를 참조하도록 격리. app.py는 DB 경로를 환경변수로 받게 하되 미설정 시 기존 경로라 운영엔 영향 없음.
+- 효과: 저장소를 처음 보는 사람이 "무엇이 서비스이고, 무엇이 개발 도구이고, 무엇이 소개인지"를 폴더만 보고 바로 구분.
+
 ---
 
 ## 부록 — 운영 환경
@@ -315,6 +348,7 @@ python test_app.py && python test_auth.py && python test_labels.py
 | 코드버그 | first_seen KST 저장 vs UTC 필터 (오늘=3일) | collector UTC 저장으로 수정 |
 | 코드버그 | 미끼 일관성 분모가 LIMIT 15 합 (47% vs 62%) | 분모를 전체 미끼 기록 수로 수정 |
 | 코드버그 | --err CSS 변수 미정의 (실패가 성공처럼 보임) | base.html에 변수 추가 |
+| 코드버그 | first_seen T 구분자 vs SQLite 공백 구분자 → 시간창 필터 무력화 (6h=24h) | 저장 포맷 공백 통일 + 기존 데이터 1회 정리 |
 | 기능문제 | 점수 높은 불명이 활성보다 위 | 정렬 로직 안 고침 (원인은 초기 적재) |
 | 기능문제 | 초기 적재로 power 부풀려짐 | 코드 안 고침, 3일 후 자연 정상화 |
 

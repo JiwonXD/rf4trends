@@ -1,4 +1,7 @@
 # 화면 정의서 v1.0 시나리오 검증
+import sys, os as _os
+sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'rf4site'))
+_os.environ['RF4_DB'] = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'rf4.db')
 import os, sqlite3, datetime
 if os.path.exists("rf4.db"): os.remove("rf4.db")
 
@@ -64,12 +67,11 @@ r = c.get("/species/검은 잉어")
 t = r.text
 check("어종 상세 200", r.status_code == 200)
 check("트로피 기준선 표기", "28.0 kg" in t and "40.0 kg" in t)
-check("미끼 순위 블록", "미끼 순위" in t and "크랜베리 팝업 26" in t)
-check("장소/트로피 기록 블록", "장소 분포" in t and "최근 트로피 기록" in t)
-check("레어 뱃지", "레어" in t)
-
-r = c.get("/species/검은 잉어?trophy_only=1")
-check("트로피만 토글", r.status_code == 200 and "트로피이상만" in r.text)
+check("미끼/장소/트로피 블록 제목", "미끼 순위" in t and "장소 분포" in t and "최근 트로피 기록" in t)
+# 교차 필터링: 서버가 원본 records와 수역별 점수를 JSON으로 넘긴다(집계는 JS)
+check("RECORDS 데이터 전달", "const RECORDS = [" in t and '"tier"' in t and '"waterbody"' in t)
+check("WATER_SCORES 전달", "const WATER_SCORES = {" in t)
+check("트로피 토글 버튼", 'id="trophy-toggle"' in t)
 
 r = c.get("/species/없는어종", follow_redirects=False)
 check("없는 어종 → 대시보드 리다이렉트", r.status_code in (302,307))
@@ -89,6 +91,27 @@ _d = _sc.species_detail(_conn2, "검은 잉어", "today")
 _conn2.close()
 if _d["baits"]:
     check("카드 일관성 == 상세 1등미끼 비율", _c["consistency"] == _d["baits"][0]["share"])
+
+# 시간창 필터: first_seen 공백구분자 포맷(collector 저장 포맷)으로 정확히 거름
+# (6h/24h 탭이 다른 데이터를 보여주는지 — 탭 전환 무반응 버그 회귀방지)
+import datetime as _dt
+_conn3 = sqlite3.connect("rf4.db")
+_conn3.execute("DELETE FROM catches WHERE species='타임테스트'")
+_conn3.execute("INSERT OR IGNORE INTO trophies VALUES ('타임테스트',5000,9000)")
+_now = _dt.datetime.now(_dt.timezone.utc)
+_recent = (_now - _dt.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')   # 6h 안
+_old = (_now - _dt.timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')     # 6h 밖
+for _i in range(3):
+    _conn3.execute("INSERT INTO catches(species,weight_g,waterbody,bait,player,first_seen) VALUES('타임테스트',1500,'곰 호수','미끼A',?,?)", (f'tt_r{_i}', _recent))
+for _i in range(5):
+    _conn3.execute("INSERT INTO catches(species,weight_g,waterbody,bait,player,first_seen) VALUES('타임테스트',1500,'곰 호수','미끼A',?,?)", (f'tt_o{_i}', _old))
+_conn3.commit()
+_t6 = _sc.score_species(_conn3, "타임테스트", "6h")
+_t24 = _sc.score_species(_conn3, "타임테스트", "today")
+_conn3.close()
+check("시간창 6h 필터 정확(3건)", _t6["n_total"] == 3)
+check("시간창 24h 필터 정확(전체 8건)", _t24["n_total"] == 8)
+check("6h ≠ 24h (탭 전환 시 데이터 바뀜)", _t6["n_total"] != _t24["n_total"])
 
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

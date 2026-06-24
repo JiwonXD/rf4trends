@@ -1,4 +1,7 @@
 # 라벨링 + 아카이브 검증
+import sys, os as _os
+sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'rf4site'))
+_os.environ['RF4_DB'] = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'rf4.db')
 import os, sqlite3
 for f in ("rf4.db","rf4.db-wal","rf4.db-shm","archive.db"):
     if os.path.exists(f): os.remove(f)

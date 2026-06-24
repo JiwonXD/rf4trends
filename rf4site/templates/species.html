@@ -17,10 +17,7 @@
       <button id="addfav" class="btn" style="font-size:12px; padding:4px 10px;">☆ 선호에 추가</button>
     {% endif %}
   </div>
-  <a class="btn" href="?window={{ window }}&trophy_only={{ 0 if trophy_only else 1 }}"
-     style="{{ 'background:var(--surface-2); font-weight:600;' if trophy_only }}">
-    트로피만{{ ' ✓' if trophy_only }}
-  </a>
+  <button id="trophy-toggle" class="btn" style="font-size:13px;">트로피만</button>
 </div>
 
 {% if can_label %}
@@ -43,55 +40,159 @@
   </div>
 {% else %}
 
+<!-- 활성 필터 표시줄 -->
+<div id="filter-bar" style="display:none; align-items:center; gap:8px; margin-bottom:12px; font-size:13px;
+            padding:8px 12px; background:var(--surface); border:1px solid var(--accent); border-radius:8px;">
+  <span style="color:var(--muted);">필터:</span>
+  <span id="filter-label" style="color:var(--text); font-weight:600;"></span>
+  <button id="filter-clear" class="btn" style="font-size:12px; padding:3px 10px; margin-left:auto;">전체 보기 ✕</button>
+</div>
+
 <div class="card" style="border-left:none;">
   <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:10px;">
-    미끼 순위{{ ' — 트로피이상만' if trophy_only }}
+    미끼 순위<span id="bait-hint" style="color:var(--faint); font-weight:400;"></span>
   </p>
-  {% for b in d.baits %}
-  <div style="display:flex; align-items:center; gap:10px; padding:6px 0;
-              {% if not loop.last %}border-bottom:1px solid var(--line);{% endif %}">
-    <span style="width:20px; font-size:13px; color:var(--faint);">{{ loop.index }}</span>
-    <span style="flex:1; font-size:14px;">{{ b.bait }}</span>
-    <div style="width:130px; height:7px; background:var(--surface-2); border-radius:4px;">
-      <div style="width:{{ b.share }}%; height:100%; background:var(--accent); border-radius:4px;"></div>
-    </div>
-    <span style="width:80px; text-align:right; font-size:13px; color:var(--muted);">
-      {{ b.n }}건 · {{ b.share }}%
-    </span>
-  </div>
-  {% endfor %}
+  <div id="bait-list"></div>
 </div>
 
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
   <div class="card" style="border-left:none; margin-bottom:0;">
     <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;">장소 분포 <span style="color:var(--faint); font-weight:400;">· 수역별 활성도</span></p>
-    {% for p in d.places %}
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:14px;">
-      <span style="display:flex; align-items:center; gap:8px;">
-        {{ p.waterbody }}
-        <span class="badge b-{{ state_cls[p.state] }}" style="font-size:11px;">{{ p.state }}</span>
-      </span>
-      <span style="color:var(--muted);">활성도 {{ p.score }} · {{ p.n }}건</span>
-    </div>
-    {% endfor %}
+    <div id="place-list"></div>
   </div>
 
   <div class="card" style="border-left:none; margin-bottom:0;">
     <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:8px;">최근 트로피 기록</p>
-    {% if d.trophy_records %}
-      {% for r in d.trophy_records[:8] %}
-      <div style="display:flex; justify-content:space-between; padding:5px 0; font-size:13px;">
-        <span>{{ r.weight }}{% if r.rare %} <span class="badge b-rare" style="font-size:11px;">레어</span>{% endif %}</span>
-        <span style="color:var(--faint);">{{ r.date }} · {{ r.waterbody }}</span>
-      </div>
-      {% endfor %}
-    {% else %}
-      <p style="font-size:13px; color:var(--faint);">시간창 내 트로피 기록 없음</p>
-    {% endif %}
+    <div id="trophy-list"></div>
   </div>
 </div>
 
 {% endif %}
+
+<script>
+// 서버가 넘긴 원본 데이터 — 집계·필터는 전부 클라이언트에서.
+const RECORDS = {{ d.records | tojson }};
+const WATER_SCORES = {{ d.water_scores | tojson }};
+const STATE_CLS = {'강한 활성':'strong','활성':'active','불명':'unclear','비활성':'off'};
+
+// 필터 상태: 한 축만 활성(수역/미끼/트로피기록 중 하나) + 트로피토글(독립)
+let filter = null;        // {type:'waterbody'|'bait'|'record', value:...}
+let trophyOnly = false;
+
+function trophyG() { return {{ d.trophy_g | tojson }}; }
+
+// 현재 필터+트로피토글 적용된 기록 집합
+function filtered() {
+  let rs = RECORDS;
+  if (trophyOnly) rs = rs.filter(r => r.tier === 'trophy' || r.tier === 'rare');
+  if (filter) {
+    if (filter.type === 'waterbody') rs = rs.filter(r => r.waterbody === filter.value);
+    else if (filter.type === 'bait') rs = rs.filter(r => r.bait === filter.value);
+  }
+  return rs;
+}
+
+function renderBaits(rs) {
+  const el = document.getElementById('bait-list');
+  const withBait = rs.filter(r => r.bait);
+  const total = withBait.length || 1;
+  const counts = {};
+  for (const r of withBait) counts[r.bait] = (counts[r.bait] || 0) + 1;
+  const ranked = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 15);
+  document.getElementById('bait-hint').textContent =
+    (trophyOnly ? ' — 트로피이상만' : '') + (filter && filter.type==='waterbody' ? ' · '+filter.value : '');
+  if (!ranked.length) { el.innerHTML = '<p style="font-size:13px;color:var(--faint);">기록 없음</p>'; return; }
+  el.innerHTML = ranked.map(([bait, n], i) => {
+    const share = Math.round(n*100/total);
+    const active = filter && filter.type==='bait' && filter.value===bait;
+    return `<div class="bait-row" data-bait="${esc(bait)}" style="display:flex;align-items:center;gap:10px;padding:6px 4px;cursor:pointer;border-radius:6px;${active?'background:var(--surface-2);':''}${i<ranked.length-1?'border-bottom:1px solid var(--line);':''}">
+      <span style="width:20px;font-size:13px;color:var(--faint);">${i+1}</span>
+      <span style="flex:1;font-size:14px;">${esc(bait)}</span>
+      <div style="width:120px;height:7px;background:var(--surface-2);border-radius:4px;"><div style="width:${share}%;height:100%;background:var(--accent);border-radius:4px;"></div></div>
+      <span style="width:78px;text-align:right;font-size:13px;color:var(--muted);">${n}건 · ${share}%</span>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.bait-row').forEach(row =>
+    row.addEventListener('click', () => toggleFilter('bait', row.dataset.bait)));
+}
+
+function renderPlaces(rs) {
+  const el = document.getElementById('place-list');
+  const counts = {};
+  for (const r of rs) counts[r.waterbody] = (counts[r.waterbody] || 0) + 1;
+  const ranked = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  if (!ranked.length) { el.innerHTML = '<p style="font-size:13px;color:var(--faint);">기록 없음</p>'; return; }
+  el.innerHTML = ranked.map(([wb, n]) => {
+    const sc = WATER_SCORES[wb] || {score:0, state:'비활성'};
+    const active = filter && filter.type==='waterbody' && filter.value===wb;
+    return `<div class="place-row" data-wb="${esc(wb)}" style="display:flex;justify-content:space-between;align-items:center;padding:5px 4px;font-size:14px;cursor:pointer;border-radius:6px;${active?'background:var(--surface-2);':''}">
+      <span style="display:flex;align-items:center;gap:8px;">${esc(wb)}
+        <span class="badge b-${STATE_CLS[sc.state]}" style="font-size:11px;">${sc.state}</span></span>
+      <span style="color:var(--muted);">활성도 ${sc.score} · ${n}건</span>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.place-row').forEach(row =>
+    row.addEventListener('click', () => toggleFilter('waterbody', row.dataset.wb)));
+}
+
+function renderTrophies(rs) {
+  const el = document.getElementById('trophy-list');
+  const tg = trophyG();
+  // 트로피 이상만, 최신순
+  const trs = rs.filter(r => r.tier === 'trophy' || r.tier === 'rare')
+                .sort((a,b) => (a.date < b.date ? 1 : -1)).slice(0, 8);
+  if (!trs.length) { el.innerHTML = '<p style="font-size:13px;color:var(--faint);">시간창 내 트로피 기록 없음</p>'; return; }
+  el.innerHTML = trs.map(r => {
+    const active = filter && filter.type==='record' && filter.value===r;
+    return `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;">
+      <span>${esc(r.weight)}${r.tier==='rare'?' <span class="badge b-rare" style="font-size:11px;">레어</span>':''}</span>
+      <span style="color:var(--faint);">${r.date} · ${esc(r.waterbody)} · ${esc(r.bait||'-')}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleFilter(type, value) {
+  if (filter && filter.type===type && filter.value===value) filter = null;  // 재클릭 해제
+  else filter = {type, value};
+  render();
+}
+
+function render() {
+  const rs = filtered();
+  renderBaits(rs);
+  renderPlaces(rs);
+  renderTrophies(rs);
+  // 필터 표시줄
+  const bar = document.getElementById('filter-bar');
+  if (filter) {
+    bar.style.display = 'flex';
+    const tn = filter.type==='waterbody' ? '수역' : '미끼';
+    document.getElementById('filter-label').textContent = tn + ' · ' + filter.value;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// 트로피 토글
+const tt = document.getElementById('trophy-toggle');
+if (tt) tt.addEventListener('click', () => {
+  trophyOnly = !trophyOnly;
+  tt.textContent = '트로피만' + (trophyOnly ? ' ✓' : '');
+  tt.style.background = trophyOnly ? 'var(--surface-2)' : '';
+  tt.style.fontWeight = trophyOnly ? '600' : '';
+  render();
+});
+// 필터 해제 버튼
+const fc = document.getElementById('filter-clear');
+if (fc) fc.addEventListener('click', () => { filter = null; render(); });
+
+if (RECORDS.length) render();
+</script>
 
 {% if can_label %}
 <script>

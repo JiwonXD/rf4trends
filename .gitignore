@@ -1,8 +1,9 @@
-# 데이터베이스 (런타임 생성 — 수집 데이터·계정·라벨 포함, 커밋 안 함)
-rf4site/rf4.db
-rf4site/rf4.db-wal
-rf4site/rf4.db-shm
-rf4site/archive.db
+# 데이터베이스 (런타임/테스트 생성 — 수집 데이터·계정·라벨 포함, 커밋 안 함)
+# rf4site(운영), tools(테스트) 양쪽에서 생성되므로 경로 무관 패턴 사용
+rf4.db
+rf4.db-wal
+rf4.db-shm
+archive.db
 
 # 파이썬 캐시
 __pycache__/
