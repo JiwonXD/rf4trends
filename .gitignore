@@ -18,6 +18,10 @@ tunnel.log
 *.json
 .cloudflared/
 
+# 태블릿 부팅 스크립트 (RF4_SECRET 등 실제 비밀값을 직접 export하는 경우 대비, 절대 커밋 금지)
+start-rf4.sh
+.termux/
+
 # OS / 에디터
 .DS_Store
 *.swp
