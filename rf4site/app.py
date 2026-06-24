@@ -292,7 +292,8 @@ def logout():
 
 @app.post("/api/label/{name}")
 def add_label(request: Request, name: str,
-              label: str = Form(...), window: str = Form("today")):
+              label: str = Form(...), window: str = Form("today"),
+              waterbody: str = Form(...)):
     window = norm_window(window)
     conn = db()
     try:
@@ -306,10 +307,12 @@ def add_label(request: Request, name: str,
         source = "admin" if is_admin else "user"
         if not (is_admin or not is_admin):
             return JSONResponse({"ok": False, "error": "권한 없음"}, status_code=403)
-        # 라벨 찍는 시점의 활성도 스냅샷 + 무게 비율 + 리셋 경과시간을 박제
-        card = scoring.score_species(conn, name, window)
+        # 라벨 찍는 시점의 활성도 스냅샷 + 무게 비율 + 리셋 경과시간을 박제 (수역 단위)
+        card = scoring.score_species_at(conn, name, window, waterbody)
+        if card["n_total"] == 0:
+            return JSONResponse({"ok": False, "error": "해당 수역에 기록이 없습니다."}, status_code=400)
         card["window"] = window
-        card.update(scoring.ratio_stats(conn, name, window))
+        card.update(scoring.ratio_stats(conn, name, window, waterbody))
         card["hours_since_reset"] = scoring.hours_since_reset()
         ok, err = labels_mod.add_label(conn, user[0], name, label, card, source)
         if not ok:

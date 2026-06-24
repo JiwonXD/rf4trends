@@ -21,15 +21,16 @@
 </div>
 
 {% if can_label %}
-<div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;
+<div id="label-panel" style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;
             padding:10px 14px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">
   <span style="font-size:13px; color:var(--muted); margin-right:4px;">
-    이 어종 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '6h' }} 기준)</span>:
+    <span id="label-wb">이 어종</span> 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '6h' }} 기준)</span>:
   </span>
   {% for lb, cls in [('강한 활성','strong'), ('활성','active'), ('불명','unclear'), ('비활성','off')] %}
     <button class="label-btn btn" data-label="{{ lb }}"
             style="font-size:13px; padding:5px 12px;">{{ lb }}</button>
   {% endfor %}
+  <span id="label-hint" style="font-size:13px; color:var(--faint); margin-left:6px;"></span>
   <span id="label-msg" style="font-size:13px; color:var(--ok); margin-left:6px;"></span>
 </div>
 {% endif %}
@@ -70,6 +71,7 @@ const STATE_CLS = {'강한 활성':'strong','활성':'active','불명':'unclear'
 // 필터 상태: 한 축만 활성(수역/미끼/트로피기록 중 하나) + 트로피토글(독립)
 let filter = null;        // {type:'waterbody'|'bait'|'record', value:...}
 let trophyOnly = false;
+let labelWb = null;       // 라벨링 대상 수역(라벨 버튼 클릭 핸들러 블록과 공유)
 
 function trophyG() { return {{ d.trophy_g | tojson }}; }
 
@@ -152,11 +154,37 @@ function toggleFilter(type, value) {
   render();
 }
 
+function updateLabelSection() {
+  const panel = document.getElementById('label-panel');
+  if (!panel) return;                      // can_label 아니면 패널 없음
+  const wbs = Object.keys(WATER_SCORES);
+  const wbEl = document.getElementById('label-wb');
+  const hintEl = document.getElementById('label-hint');
+  const btns = panel.querySelectorAll('.label-btn');
+  if (wbs.length === 1) {
+    labelWb = wbs[0];
+  } else if (wbs.length > 1 && filter && filter.type === 'waterbody') {
+    labelWb = filter.value;
+  } else {
+    labelWb = null;
+  }
+  if (labelWb) {
+    wbEl.textContent = labelWb;
+    hintEl.textContent = '';
+    btns.forEach(b => { b.disabled = false; b.style.opacity = ''; b.style.cursor = ''; });
+  } else {
+    wbEl.textContent = '이 어종';
+    hintEl.textContent = wbs.length ? '장소 분포에서 수역을 선택하세요' : '기록 없음';
+    btns.forEach(b => { b.disabled = true; b.style.opacity = '0.4'; b.style.cursor = 'not-allowed'; });
+  }
+}
+
 function render() {
   const rs = filtered();
   renderBaits(rs);
   renderPlaces(rs);
   renderTrophies(rs);
+  updateLabelSection();
 }
 
 function esc(s) {
@@ -174,13 +202,15 @@ if (tt) tt.addEventListener('click', () => {
   render();
 });
 if (RECORDS.length) render();
+updateLabelSection();
 </script>
 
 {% if can_label %}
 <script>
 document.querySelectorAll('.label-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
-    const body = new URLSearchParams({ label: btn.dataset.label, window: '{{ window }}' });
+    if (btn.disabled || !labelWb) return;
+    const body = new URLSearchParams({ label: btn.dataset.label, window: '{{ window }}', waterbody: labelWb });
     const res = await fetch('/api/label/' + encodeURIComponent('{{ name }}'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

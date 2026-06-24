@@ -105,10 +105,11 @@ def _top_share(values):
     return top, counts[top] / len(vals)
 
 
-def ratio_stats(conn, species, window):
+def ratio_stats(conn, species, window, waterbody=None):
     """라벨 학습용 비율 피처. 시간창 내 전체 기록들의
     무게/트로피기준, 무게/레어기준 비율의 최대·최소·평균을 반환.
-    트로피 기준 미등록이거나 기록이 없으면 전부 None."""
+    트로피 기준 미등록이거나 기록이 없으면 전부 None.
+    waterbody가 주어지면 그 수역 기록만으로 계산한다."""
     th = conn.execute(
         "SELECT trophy_g, rare_trophy_g FROM trophies WHERE species = ?",
         (species,)).fetchone()
@@ -118,6 +119,8 @@ def ratio_stats(conn, species, window):
             "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg")}
     trophy_g, rare_g = th[0], th[1]
     rows = _tier_records(conn, species, window)
+    if waterbody is not None:
+        rows = [r for r in rows if r[2] == waterbody]
     weights = [r[3] for r in rows]
     if not weights:
         return {k: None for k in (
@@ -211,6 +214,27 @@ def score_species(conn, species, window="today"):
         "consistency": rep["consistency"],
         "top_bait": rep["top_bait"],
         "top_waterbody": top_wb,
+    }
+
+
+def score_species_at(conn, species, window="today", waterbody=None):
+    """어종 1개를 지정한 수역 1곳만 기준으로 평가. score_species와 같은 키 구성을
+    반환하되, top_waterbody는 인자로 받은 waterbody를 그대로 넣는다.
+    (라벨링을 수역 단위로 박제하기 위함 — 대시보드는 score_species를 그대로 쓴다.)"""
+    rows = _tier_records(conn, species, window)
+    rows = [r for r in rows if r[2] == waterbody]
+    rep = _score_from_rows(rows)
+    return {
+        "species": species,
+        "state": rep["state"],
+        "score": rep["score"],
+        "n_rare": rep["n_rare"],
+        "n_trophy": rep["n_trophy"],
+        "n_normal": rep["n_normal"],
+        "n_total": rep["n_total"],
+        "consistency": rep["consistency"],
+        "top_bait": rep["top_bait"],
+        "top_waterbody": waterbody,
     }
 
 

@@ -35,20 +35,21 @@ c = TestClient(app)
 c.post("/signup", data={"username":"admin","password":"secret123"})
 
 # 라벨 저장
-r = c.post("/api/label/검은 잉어", data={"label":"강한 활성","window":"today"})
+r = c.post("/api/label/검은 잉어", data={"label":"강한 활성","window":"today","waterbody":"곰 호수"})
 check("라벨 저장 성공", r.status_code==200)
 # 같은 어종 다시 라벨 (다른 값) → 새 행으로 쌓임
-r = c.post("/api/label/검은 잉어", data={"label":"활성","window":"today"})
+r = c.post("/api/label/검은 잉어", data={"label":"활성","window":"today","waterbody":"곰 호수"})
 check("같은 어종 재라벨 성공", r.status_code==200)
 # 잘못된 라벨 거부
-r = c.post("/api/label/검은 잉어", data={"label":"이상한값","window":"today"})
+r = c.post("/api/label/검은 잉어", data={"label":"이상한값","window":"today","waterbody":"곰 호수"})
 check("잘못된 라벨 거부", r.status_code==400)
 
 # DB 확인: 라벨 2건 쌓였는지 + 스냅샷 저장됐는지
 conn = sqlite3.connect("rf4.db")
-rows = conn.execute("SELECT label, n_total, consistency, top_bait FROM labels ORDER BY id").fetchall()
+rows = conn.execute("SELECT label, n_total, consistency, top_bait, top_waterbody FROM labels ORDER BY id").fetchall()
 check("라벨 2건 누적", len(rows)==2)
 check("스냅샷 박제됨(n_total, 미끼)", rows[0][1] is not None and rows[0][3]=='크랜베리')
+check("단일 수역 스냅샷(곰 호수, 6건)", rows[0][4]=='곰 호수' and rows[0][1]==6)
 # ratio 통계도 저장됐는지
 rrow = conn.execute("SELECT trophy_ratio_max, trophy_ratio_avg FROM labels LIMIT 1").fetchone()
 check("ratio 통계 박제됨", rrow[0] is not None and rrow[1] is not None)
@@ -91,7 +92,7 @@ usr.post("/signup", data={"username":"angler_x","password":"secret123"})
 usr.post("/api/favorites/검은 잉어")
 r = usr.get("/species/검은 잉어")
 check("일반유저 라벨 버튼 보임(제한 풀림)", "label-btn" in r.text)
-r = usr.post("/api/label/검은 잉어", data={"label":"활성","window":"today"})
+r = usr.post("/api/label/검은 잉어", data={"label":"활성","window":"today","waterbody":"곰 호수"})
 check("일반유저 라벨 저장 성공(제한 풀림)", r.status_code==200)
 # source 구분 박제 확인
 _c = sqlite3.connect("rf4.db")
@@ -99,6 +100,29 @@ _src = dict(_c.execute("SELECT source, COUNT(*) FROM labels GROUP BY source").fe
 _c.close()
 check("admin 라벨 source='admin'", _src.get("admin", 0) >= 1)
 check("일반유저 라벨 source='user'", _src.get("user", 0) >= 1)
+
+
+# 수역별 격리 검증: 같은 어종이 여러 수역에 있을 때 한 수역만 스냅샷에 잡혀야 함
+_c = sqlite3.connect("rf4.db")
+_c.execute("INSERT INTO trophies VALUES ('용잉어',1000,2000)")
+for i in range(6):
+    _c.execute("INSERT INTO catches (species,weight_g,waterbody,bait,player,caught_date,first_seen) VALUES "
+               "('용잉어',?,'샘플호A','지렁이',?, '2026-06-20', datetime('now','-20 minute'))", (1500+i, f'a{i}'))
+    _c.execute("INSERT INTO catches (species,weight_g,waterbody,bait,player,caught_date,first_seen) VALUES "
+               "('용잉어',?,'샘플호B','지렁이',?, '2026-06-20', datetime('now','-20 minute'))", (1500+i, f'b{i}'))
+_c.commit(); _c.close()
+
+r = c.post("/api/label/용잉어", data={"label":"활성","window":"today","waterbody":"샘플호A"})
+check("수역 지정 라벨 저장 성공", r.status_code==200)
+
+_c = sqlite3.connect("rf4.db")
+wb_row = _c.execute("SELECT n_total, top_waterbody FROM labels WHERE species='용잉어' ORDER BY id DESC LIMIT 1").fetchone()
+_c.close()
+check("수역별 격리(샘플호A만 6건, 12 아님)", wb_row[0]==6)
+check("top_waterbody 일치", wb_row[1]=='샘플호A')
+
+r = c.post("/api/label/용잉어", data={"label":"활성","window":"today","waterbody":"없는호수"})
+check("존재하지 않는 수역 400", r.status_code==400)
 
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")
