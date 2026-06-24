@@ -40,14 +40,6 @@
   </div>
 {% else %}
 
-<!-- 활성 필터 표시줄 -->
-<div id="filter-bar" style="display:none; align-items:center; gap:8px; margin-bottom:12px; font-size:13px;
-            padding:8px 12px; background:var(--surface); border:1px solid var(--accent); border-radius:8px;">
-  <span style="color:var(--muted);">필터:</span>
-  <span id="filter-label" style="color:var(--text); font-weight:600;"></span>
-  <button id="filter-clear" class="btn" style="font-size:12px; padding:3px 10px; margin-left:auto;">전체 보기 ✕</button>
-</div>
-
 <div class="card" style="border-left:none;">
   <p style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:10px;">
     미끼 순위<span id="bait-hint" style="color:var(--faint); font-weight:400;"></span>
@@ -88,6 +80,7 @@ function filtered() {
   if (filter) {
     if (filter.type === 'waterbody') rs = rs.filter(r => r.waterbody === filter.value);
     else if (filter.type === 'bait') rs = rs.filter(r => r.bait === filter.value);
+    else if (filter.type === 'record') rs = rs.filter(r => r === filter.value);
   }
   return rs;
 }
@@ -142,13 +135,15 @@ function renderTrophies(rs) {
   const trs = rs.filter(r => r.tier === 'trophy' || r.tier === 'rare')
                 .sort((a,b) => (a.date < b.date ? 1 : -1)).slice(0, 8);
   if (!trs.length) { el.innerHTML = '<p style="font-size:13px;color:var(--faint);">시간창 내 트로피 기록 없음</p>'; return; }
-  el.innerHTML = trs.map(r => {
+  el.innerHTML = trs.map((r, i) => {
     const active = filter && filter.type==='record' && filter.value===r;
-    return `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;">
+    return `<div class="trophy-row" data-idx="${i}" style="display:flex;justify-content:space-between;padding:5px 4px;font-size:13px;cursor:pointer;border-radius:6px;${active?'background:var(--surface-2);':''}">
       <span>${esc(r.weight)}${r.tier==='rare'?' <span class="badge b-rare" style="font-size:11px;">레어</span>':''}</span>
       <span style="color:var(--faint);">${r.date} · ${esc(r.waterbody)} · ${esc(r.bait||'-')}</span>
     </div>`;
   }).join('');
+  el.querySelectorAll('.trophy-row').forEach(row =>
+    row.addEventListener('click', () => toggleFilter('record', trs[Number(row.dataset.idx)])));
 }
 
 function toggleFilter(type, value) {
@@ -162,15 +157,6 @@ function render() {
   renderBaits(rs);
   renderPlaces(rs);
   renderTrophies(rs);
-  // 필터 표시줄
-  const bar = document.getElementById('filter-bar');
-  if (filter) {
-    bar.style.display = 'flex';
-    const tn = filter.type==='waterbody' ? '수역' : '미끼';
-    document.getElementById('filter-label').textContent = tn + ' · ' + filter.value;
-  } else {
-    bar.style.display = 'none';
-  }
 }
 
 function esc(s) {
@@ -187,10 +173,6 @@ if (tt) tt.addEventListener('click', () => {
   tt.style.fontWeight = trophyOnly ? '600' : '';
   render();
 });
-// 필터 해제 버튼
-const fc = document.getElementById('filter-clear');
-if (fc) fc.addEventListener('click', () => { filter = null; render(); });
-
 if (RECORDS.length) render();
 </script>
 
