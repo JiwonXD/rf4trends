@@ -87,6 +87,19 @@ function filtered() {
   return rs;
 }
 
+// 장소 분포 전용 집합 — 수역 필터(자기 축)는 적용하지 않는다.
+// 수역을 골라도 목록엔 전체 수역이 그대로 남고 선택만 강조돼, 다른 수역으로
+// 바로 전환할 수 있는 옵션버튼처럼 작동. 미끼·트로피 필터는 그대로 반영(교차).
+function filteredForPlaces() {
+  let rs = RECORDS;
+  if (trophyOnly) rs = rs.filter(r => r.tier === 'trophy' || r.tier === 'rare');
+  if (filter) {
+    if (filter.type === 'bait') rs = rs.filter(r => r.bait === filter.value);
+    else if (filter.type === 'record') rs = rs.filter(r => r === filter.value);
+  }
+  return rs;
+}
+
 function renderBaits(rs) {
   const el = document.getElementById('bait-list');
   const withBait = rs.filter(r => r.bait);
@@ -182,7 +195,7 @@ function updateLabelSection() {
 function render() {
   const rs = filtered();
   renderBaits(rs);
-  renderPlaces(rs);
+  renderPlaces(filteredForPlaces());   // 장소 목록은 수역 필터를 빼고 전체 수역 유지
   renderTrophies(rs);
   updateLabelSection();
 }

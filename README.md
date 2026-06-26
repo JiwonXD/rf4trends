@@ -340,6 +340,14 @@ python test_app.py && python test_auth.py && python test_labels.py
 - **구현**: `scoring.score_species_at(conn, species, window, waterbody)` 신규(기존 `score_species`는 대시보드용으로 그대로 유지), `ratio_stats`에 `waterbody` 인자 추가. `/api/label`에 `waterbody` 필수 파라미터, 해당 수역에 기록 없으면 400. 스키마 변경 없음 — 기존 `top_waterbody` 컬럼이 "라벨한 수역"을 그대로 담음.
 - **파일**: scoring.py(score_species_at·ratio_stats), app.py(/api/label), templates/species.html(라벨 패널 활성화 JS), tools/test_labels.py(수역별 격리 회귀 테스트)
 
+### 06-27 · 장소 분포 필터를 옵션버튼 방식으로
+
+`[변경]` **어종 상세 '장소 분포' 필터를 라디오(옵션버튼) 방식으로 변경(D-41).** 수역을 클릭하면 그 수역만 강조하되 다른 수역은 목록에 그대로 남김.
+- 기존엔 수역 선택 시 다른 수역이 목록에서 숨겨져, 전환하려면 매번 해제 후 다시 선택해야 했음. 이제 목록은 전체 수역을 유지하고 선택만 강조 — 다른 수역을 누르면 바로 그쪽으로 전환, 선택된 수역 재클릭 시 해제. 수역 목록이 짧아 한눈에 빠르게 전환 가능.
+- 장소 분포에만 적용. 미끼 순위는 종류가 많아 기존처럼 선택 시 다른 미끼를 숨기는 방식 유지, 트로피 기록도 교차필터 유지.
+- **구현**: `filteredForPlaces()` 신규 — `filtered()`와 같되 자기 축인 수역 필터만 빼고 트로피토글·미끼·트로피기록 필터는 동일 적용. `render()`에서 장소 블록만 이 집합을 받음(미끼·트로피 블록은 `filtered()` 그대로). 라디오 전환·재클릭 해제는 기존 `toggleFilter` 로직 재사용 — '숨김'처럼 보이던 건 장소 목록이 수역 필터된 집합을 받았기 때문.
+- **파일**: templates/species.html
+
 ---
 
 ## 부록 — 운영 환경
