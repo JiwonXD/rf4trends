@@ -10,6 +10,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# ML 실험용 가상환경 (개발 PC에서만, 운영 태블릿과 무관 — 커밋 금지)
+mlenv/
+
 # 로그
 *.log
 tunnel.log
@@ -17,6 +20,8 @@ tunnel.log
 # Cloudflare 터널 자격증명 (절대 커밋 금지)
 *.json
 .cloudflared/
+# 단, 활성도 모델 아티팩트(D-43)는 런타임에 필요해 예외적으로 커밋한다
+!rf4site/model_data.json
 
 # 태블릿 부팅 스크립트 (RF4_SECRET 등 실제 비밀값을 직접 export하는 경우 대비, 절대 커밋 금지)
 start-rf4.sh

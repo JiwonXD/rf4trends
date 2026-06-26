@@ -1,0 +1,5 @@
+# ML 평가 실험 전용 의존성 (개발 PC에서만 — 운영 태블릿/requirements.txt와 무관)
+# 설치: tools/ 에서  py -m venv mlenv  후
+#       mlenv/Scripts/python.exe -m pip install -r requirements-ml.txt
+pandas
+scikit-learn

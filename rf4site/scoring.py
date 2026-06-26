@@ -1,16 +1,17 @@
-# scoring.py — 활성도 계산 (임시 수식 버전)
+# scoring.py — 활성도 계산 (RandomForest 분류 모델, D-43)
 # 추천 로직은 이 모듈 안에서만 바뀐다. app.py는 이 모듈의 출력 형식만 의존.
-# 활성도 분류는 향후 라벨 기반 ML로 교체 예정(D-21). 지금은 동작용 임시 수식이며,
-# 아래 파라미터는 잠정값 — 실데이터 보며 조정하거나 ML로 대체.
+# 실제 추론은 model.py(순수 파이썬, 태블릿에 sklearn 불필요)가 담당 — 이 모듈은
+# 피처를 모아 model에 넘기고, 결과(확률)를 state/score로 변환하는 역할만 한다.
+# 모델은 tools/train_model.py로 PC에서 학습해 rf4site/model_data.json으로 내보낸다.
 #
 # 모집단: 주간기록에 등장한 전체 기록(무게 하한 없음). 작은 기록이 갱신 안 되고
 # 남아있다는 것 자체가 "큰 게 안 나온다 = 비활성"의 근거이므로 버리지 않는다(D-21).
 
 import datetime as _dt
 
-MIN_SAMPLE = 5            # 전체 기록 최소 표본 (미만이면 비활성)
-CONSISTENCY_MIN = 0.5     # 일관성 경계 (미만이면 불명)
-STRONG_TROPHY_MIN = 5     # 트로피이상이 이만큼이면 강한 활성
+import model as _model
+
+MIN_SAMPLE = 5            # 전체 기록 최소 표본 (미만이면 모델 신뢰 구간 밖 — 그냥 비활성)
 
 # 시간창: first_seen >= datetime('now', '-N hour')
 # first_seen = 우리 수집기가 그 기록을 DB에 처음 담은 시각 (수집 시점 기준 롤링).
@@ -21,8 +22,10 @@ WINDOWS = {"6h": 6, "today": 24}   # 단위: 시간(hour)
 
 STATE_STRONG = "강한 활성"
 STATE_ACTIVE = "활성"
-STATE_UNCLEAR = "불명"
+STATE_POSSIBLE = "가능성"     # 구 '불명' — 확실히 활성은 아니나 탐색해볼 가치가 있는 단계(D-42)
 STATE_INACTIVE = "비활성"
+# 모델 클래스 인덱스(순서형, D-22) ↔ 표시 문구. model.py는 인덱스만 다루고 이 매핑은 몰라야 한다.
+_STATE_BY_IDX = [STATE_INACTIVE, STATE_POSSIBLE, STATE_ACTIVE, STATE_STRONG]
 
 
 # 주간기록 리셋: 매주 월요일 04:00 KST (= 일요일 19:00 UTC). 러시아 서머타임 폐지로 고정.
@@ -105,28 +108,26 @@ def _top_share(values):
     return top, counts[top] / len(vals)
 
 
-def ratio_stats(conn, species, window, waterbody=None):
-    """라벨 학습용 비율 피처. 시간창 내 전체 기록들의
-    무게/트로피기준, 무게/레어기준 비율의 최대·최소·평균을 반환.
-    트로피 기준 미등록이거나 기록이 없으면 전부 None.
-    waterbody가 주어지면 그 수역 기록만으로 계산한다."""
+_RATIO_KEYS = ("trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
+               "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg")
+
+
+def _trophy_thresholds(conn, species):
+    """(trophy_g, rare_g) 반환. 미등록이면 (None, None)."""
     th = conn.execute(
         "SELECT trophy_g, rare_trophy_g FROM trophies WHERE species = ?",
         (species,)).fetchone()
     if not th or not th[0]:
-        return {k: None for k in (
-            "trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
-            "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg")}
-    trophy_g, rare_g = th[0], th[1]
-    rows = _tier_records(conn, species, window)
-    if waterbody is not None:
-        rows = [r for r in rows if r[2] == waterbody]
-    weights = [r[3] for r in rows]
-    if not weights:
-        return {k: None for k in (
-            "trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
-            "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg")}
+        return None, None
+    return th[0], th[1]
 
+
+def _ratio_from_rows(rows, trophy_g, rare_g):
+    """기록 묶음의 무게/트로피기준, 무게/레어기준 비율(최대·최소·평균).
+    트로피 기준 없거나 기록 없으면 전부 None."""
+    weights = [r[3] for r in rows]
+    if not trophy_g or not weights:
+        return {k: None for k in _RATIO_KEYS}
     t_ratios = [w / trophy_g for w in weights]
     out = {
         "trophy_ratio_max": round(max(t_ratios), 4),
@@ -146,38 +147,53 @@ def ratio_stats(conn, species, window, waterbody=None):
     return out
 
 
-def _score_from_rows(rows):
+def ratio_stats(conn, species, window, waterbody=None):
+    """라벨 학습용 비율 피처(공개 API — app.py가 라벨 저장 시 호출).
+    waterbody가 주어지면 그 수역 기록만으로 계산한다."""
+    trophy_g, rare_g = _trophy_thresholds(conn, species)
+    if trophy_g is None:
+        return {k: None for k in _RATIO_KEYS}
+    rows = _tier_records(conn, species, window)
+    if waterbody is not None:
+        rows = [r for r in rows if r[2] == waterbody]
+    return _ratio_from_rows(rows, trophy_g, rare_g)
+
+
+def _score_from_rows(rows, trophy_g, rare_g, species, window, waterbody):
     """기록 묶음(rows)으로 활성도 지표 1세트 계산.
-    rows: _tier_records가 반환하는 (tier, bait, waterbody, weight_g, caught_date) 리스트.
+    rows: _tier_records가 반환하는 (tier, bait, waterbody, weight_g, caught_date, first_seen) 리스트.
     한 수역의 기록만 넘기면 그 수역의 활성도가 된다.
-    (임시 수식 — 향후 라벨 기반 ML로 교체 예정, D-21)"""
+    분류는 RandomForest 모델(model.py, D-43)이 맡고, 이 함수는 피처를 모아 넘긴
+    뒤 결과(확률)를 state/score로 변환한다."""
     n_rare = sum(1 for r in rows if r[0] == "rare")
     n_trophy = sum(1 for r in rows if r[0] == "trophy")
     n_normal = sum(1 for r in rows if r[0] == "normal")
     n_total = len(rows)
-
     top_bait, consistency = _top_share([r[1] for r in rows])
+    consistency_pct = round(consistency * 100)
 
-    # 점수: 무게가 클수록(레어>트로피>일반) + 미끼가 통일될수록 높게.
-    power = n_rare * 3 + n_trophy * 2 + n_normal * 1
-    score = round(power * consistency, 1)
+    if n_total == 0:
+        return {"state": STATE_INACTIVE, "score": 0.0,
+                "n_rare": 0, "n_trophy": 0, "n_normal": 0, "n_total": 0,
+                "consistency": 0, "top_bait": None}
 
-    trophy_plus = n_rare + n_trophy
+    base = {"n_rare": n_rare, "n_trophy": n_trophy, "n_normal": n_normal,
+            "n_total": n_total, "consistency": consistency_pct, "top_bait": top_bait}
+
     if n_total < MIN_SAMPLE:
-        state = STATE_INACTIVE
-    elif consistency < CONSISTENCY_MIN:
-        state = STATE_UNCLEAR
-    elif trophy_plus >= STRONG_TROPHY_MIN:
-        state = STATE_STRONG
-    else:
-        state = STATE_ACTIVE
+        # 표본 미달은 모델 신뢰 구간 밖 — 합산 보정 없이 그냥 비활성 처리(원칙 #2 유지)
+        return {**base, "state": STATE_INACTIVE, "score": 0.0}
 
-    return {
-        "state": state, "score": score,
-        "n_rare": n_rare, "n_trophy": n_trophy, "n_normal": n_normal,
-        "n_total": n_total, "consistency": round(consistency * 100),
-        "top_bait": top_bait,
+    features = {
+        **{k: v for k, v in base.items() if k != "top_bait"},
+        **_ratio_from_rows(rows, trophy_g, rare_g),
+        "hours_since_reset": hours_since_reset(),
+        "species": species, "window": window, "top_waterbody": waterbody,
     }
+    probs = _model.predict_proba(features)
+    state_idx = max(range(len(probs)), key=lambda i: probs[i])
+    return {**base, "state": _STATE_BY_IDX[state_idx],
+            "score": _model.expected_value(probs)}
 
 
 def score_species(conn, species, window="today"):
@@ -185,13 +201,15 @@ def score_species(conn, species, window="today"):
     수역별로 따로 집계해, 가장 활성도 점수가 높은 수역을 대표값으로 쓴다.
     (게임이 수역별로 독립적으로 돌아가므로 — 같은 어종이라도 수역마다 먹는 미끼가
      달라, 전체를 합치면 미끼 일관성이 희석되어 활성도가 낮게 잡히는 문제를 해결.)"""
+    trophy_g, rare_g = _trophy_thresholds(conn, species)
     rows = _tier_records(conn, species, window)
 
     # 수역별로 기록을 나눠 각각 점수 계산
     by_water = {}
     for r in rows:
         by_water.setdefault(r[2], []).append(r)
-    per_water = {wb: _score_from_rows(rs) for wb, rs in by_water.items()}
+    per_water = {wb: _score_from_rows(rs, trophy_g, rare_g, species, window, wb)
+                 for wb, rs in by_water.items()}
 
     if per_water:
         # 대표 수역 = 점수가 가장 높은 수역. 동점이면 표본 많은 쪽.
@@ -200,7 +218,7 @@ def score_species(conn, species, window="today"):
         rep = per_water[top_wb]
     else:
         # 기록이 아예 없으면(트로피 미등록 등) 빈 카드
-        rep = _score_from_rows([])
+        rep = _score_from_rows([], trophy_g, rare_g, species, window, None)
         top_wb = None
 
     return {
@@ -221,9 +239,10 @@ def score_species_at(conn, species, window="today", waterbody=None):
     """어종 1개를 지정한 수역 1곳만 기준으로 평가. score_species와 같은 키 구성을
     반환하되, top_waterbody는 인자로 받은 waterbody를 그대로 넣는다.
     (라벨링을 수역 단위로 박제하기 위함 — 대시보드는 score_species를 그대로 쓴다.)"""
+    trophy_g, rare_g = _trophy_thresholds(conn, species)
     rows = _tier_records(conn, species, window)
     rows = [r for r in rows if r[2] == waterbody]
-    rep = _score_from_rows(rows)
+    rep = _score_from_rows(rows, trophy_g, rare_g, species, window, waterbody)
     return {
         "species": species,
         "state": rep["state"],
@@ -253,11 +272,7 @@ def species_detail(conn, species, window="today"):
     미끼·장소·트로피 집계는 초기값이며, 실제 표시·필터는 클라이언트가
     records로 직접 재집계한다(교차 필터링). 트로피만 보기도 클라이언트 토글."""
     wc = _window_clause(window)
-    thresholds = conn.execute(
-        "SELECT trophy_g, rare_trophy_g FROM trophies WHERE species = ?",
-        (species,)).fetchone()
-    trophy_g = thresholds[0] if thresholds else None
-    rare_g = thresholds[1] if thresholds else None
+    trophy_g, rare_g = _trophy_thresholds(conn, species)
 
     bait_rows = conn.execute(f"""
         SELECT c.bait, COUNT(*) AS n
@@ -287,7 +302,8 @@ def species_detail(conn, species, window="today"):
     rows_by_water = {}
     for r in all_rows:
         rows_by_water.setdefault(r[2], []).append(r)
-    water_score = {wb: _score_from_rows(rs) for wb, rs in rows_by_water.items()}
+    water_score = {wb: _score_from_rows(rs, trophy_g, rare_g, species, window, wb)
+                   for wb, rs in rows_by_water.items()}
     places = [{
         "waterbody": r[0], "n": r[1],
         "score": water_score.get(r[0], {}).get("score", 0),
@@ -316,8 +332,8 @@ def species_detail(conn, species, window="today"):
 
     # 교차 필터링용 원본 기록 + 수역별 활성도 점수.
     # 미끼/장소/트로피 집계는 클라이언트(JS)가 이 records로 직접 계산·필터링한다.
-    # 단 활성도 점수(score/state)는 임시 수식이라 서버가 수역별로 계산해 넘긴다
-    # (ML 교체 시 서버만 고치면 되도록 — JS에 점수 로직을 중복시키지 않음).
+    # 단 활성도 점수(score/state)는 모델 추론이 필요해 서버가 수역별로 계산해 넘긴다
+    # (모델이 또 바뀌어도 서버만 고치면 되도록 — JS에 점수 로직을 중복시키지 않음).
     records = [{
         "weight_g": r[3],
         "weight": _weight_str(r[3]),

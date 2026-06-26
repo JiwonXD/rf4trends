@@ -22,7 +22,7 @@
 - **모듈 경계** (rf4site/):
   - `app.py` — 라우트·서버·백그라운드 스레드. DB 경로는 `RF4_DB` 환경변수(미설정 시 `BASE_DIR/rf4.db`)
   - `collector.py` — 주간기록 파싱·누적 (30개 게시판, 403/429 백오프)
-  - `scoring.py` — 활성도 계산 (**교체 가능한 추천 모듈** — 나중에 ML로 통째 교체 예정)
+  - `scoring.py` — 활성도 계산. RandomForest 분류 모델(D-43) 호출 + 피처 조립. 모델 자체는 `model.py`(순수 파이썬 추론, 태블릿엔 sklearn 무의존) + `model_data.json`(아티팩트, PC의 `tools/train_model.py`로 생성)
   - `labels.py` — 라벨 수집 + 활성도 스냅샷 박제 (ML 학습 데이터)
   - `auth.py` — 회원 인증
   - `maintenance.py` — 7일 초과분을 archive.db의 bait_records로 분리
@@ -51,7 +51,7 @@ cd tools && python test_app.py && python test_auth.py && python test_labels.py
 
 3. **"코드버그 vs 기능문제" 구분.** 코드가 잘못된 것(→코드 수정)과, 코드는 맞지만 데이터·설계 특성상 생긴 현상(→코드 안 건드림)을 명확히 나눈다. PRD/CHANGELOG에 태그로 분류.
 
-4. **추천 로직(scoring.py)은 교체 가능하게.** 현재 활성도는 임시 수식. 나중에 LightGBM 트리 기반 순서형 분류로 교체 예정이라, 점수 로직을 한곳에 모으고 다른 곳(특히 JS)에 중복시키지 않는다.
+4. **추천 로직(scoring.py)은 교체 가능하게.** 활성도는 RandomForest 분류 모델(D-43)이 맡는다. 모델 자체가 다시 바뀌어도(예: 라벨이 더 쌓여 LightGBM 등으로) `model.py`만 교체하면 되도록, 점수 로직을 한곳에 모으고 다른 곳(특히 JS)에 중복시키지 않는다. **학습은 PC에서만, 추론은 태블릿에서 순수 파이썬으로** — Termux(ARM)엔 sklearn 설치가 불가능해(TUR에 패키지 없음, pip 소스빌드 비현실적) 모델을 JSON으로 export해 의존성 없이 추론한다.
 
 5. **스캐폴딩 패턴 선호.** 권한 토글 등은 값 변경보다 "코드 일부만 지우면 되돌아가는" 구조로 남긴다 (예: `if not (is_admin or not is_admin)`).
 
@@ -75,8 +75,9 @@ cd tools && python test_app.py && python test_auth.py && python test_labels.py
 
 ## 현재 상태 / 다음 할 일
 
-- **방금 끝남**: 교차 필터링(D-38), 디렉토리 재정리(D-39), 라벨 수집 수역별 분리(D-40, 라벨 스냅샷 정합성 이슈 해소됨)
-- **장기**: 라벨 충분히 쌓이면 scoring.py를 LightGBM으로 교체. "이전 선택 시간창 유지" 기능(쿠키/DB/URL).
+- **방금 끝남**: 라벨 수집 수역별 분리(D-40), 장소 분포 필터 옵션버튼화(D-41), 라벨 '불명'→'가능성'(D-42), 활성도 분류를 임시 수식→RandomForest 모델로 교체(D-43, 정확도 64%/인접 97%)
+- **다음 예정**: 운영 반영 후 라벨을 더 쌓으며 모델 품질 관찰. 라벨이 충분히 늘면 재학습(`tools/train_model.py`)으로 모델 갱신.
+- **장기**: "이전 선택 시간창 유지" 기능(쿠키/DB/URL).
 
 ## 에이전트 팀 구성
 

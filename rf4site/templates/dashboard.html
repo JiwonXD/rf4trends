@@ -8,7 +8,7 @@
     <span style="font-size:13px">collector.py를 먼저 실행해 rf4.db를 만들어주세요.</span>
   </div>
 {% else %}
-  {% set state_cls = {'강한 활성': 'strong', '활성': 'active', '불명': 'unclear', '비활성': 'off'} %}
+  {% set state_cls = {'강한 활성': 'strong', '활성': 'active', '가능성': 'unclear', '비활성': 'off'} %}
   {% for c in cards %}
     {% set cls = state_cls[c.state] %}
     {% if c.state != '비활성' %}
@@ -24,7 +24,7 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13px; color:var(--muted);">
         <div style="display:flex; gap:18px; flex-wrap:wrap;">
           <span>트로피 {{ c.n_rare + c.n_trophy }}건{% if c.n_rare %} (레어 {{ c.n_rare }}){% endif %} · 일반 {{ c.n_normal }}건</span>
-          <span>일관성 {{ c.consistency }}%{% if c.state == '불명' %} — 미끼 분산{% endif %}</span>
+          <span>일관성 {{ c.consistency }}%{% if c.state == '가능성' %} — 미끼 분산{% endif %}</span>
           {% if c.top_bait %}<span style="color:var(--text);">{{ c.top_bait }}</span>{% endif %}
         </div>
         {% if c.top_waterbody %}<span style="color:var(--text); white-space:nowrap; margin-left:12px;">{{ c.top_waterbody }}</span>{% endif %}

@@ -31,6 +31,20 @@ for i in range(2): rows.append(('붕어', 1900+i*50, '모기 호수', '반죽', 
 conn.executemany("INSERT INTO catches (species,weight_g,waterbody,bait,player,caught_date,first_seen) VALUES (?,?,?,?,?,?,datetime('now'))", rows)
 conn.commit(); conn.close()
 
+# 활성도 분류는 RandomForest 모델(D-43)이 맡는다 — 학습된 가중치는 임의 합성
+# 데이터에 대해 결정적이지 않으므로, 파이프라인(피처 조립→상태/점수 변환) 자체를
+# 검증하기 위해 model.predict_proba를 어종별 고정 확률로 스텁한다.
+# (모델 자체의 정확도는 tools/train_model.py의 교차검증으로 별도 확인.)
+import model as _model_mod
+_real_predict_proba = _model_mod.predict_proba   # 아래 실제 모델 적재 점검용으로 보관
+_FAKE_PROBS = {
+    '검은 잉어': [0, 0, 0, 1],     # 강한 활성
+    '타이멘': [0, 0, 1, 0],        # 활성
+    '무지개 송어': [0, 1, 0, 0],   # 가능성(구 불명)
+}
+_model_mod.predict_proba = lambda features: _FAKE_PROBS.get(
+    features.get('species'), [0.25, 0.25, 0.25, 0.25])
+
 from fastapi.testclient import TestClient
 from app import app
 c = TestClient(app)
@@ -56,12 +70,12 @@ t = r.text
 check("대시보드 200", r.status_code == 200)
 check("강한 활성 분류", "강한 활성" in t)
 check("활성 분류", ">활성<" in t.replace("강한 활성",""))
-check("불명 분류", "불명" in t)
+check("가능성 분류", "가능성" in t)
 check("비활성 분류 + 표본 부족", "표본 부족" in t)
 check("정렬: 검은 잉어가 타이멘보다 위", t.index("검은 잉어") < t.index("타이멘"))
 check("정렬: 비활성(붕어)이 최하단", t.index("붕어") > t.index("무지개 송어"))
 check("대표 미끼 표기", "크랜베리 팝업 26" in t)
-check("불명도 미끼 분산 표기", "분산" in t)
+check("가능성도 미끼 분산 표기", "분산" in t)
 
 r = c.get("/species/검은 잉어")
 t = r.text
@@ -112,6 +126,20 @@ _conn3.close()
 check("시간창 6h 필터 정확(3건)", _t6["n_total"] == 3)
 check("시간창 24h 필터 정확(전체 8건)", _t24["n_total"] == 8)
 check("6h ≠ 24h (탭 전환 시 데이터 바뀜)", _t6["n_total"] != _t24["n_total"])
+
+# 실제 모델 아티팩트(rf4site/model_data.json) 적재·추론 점검 — 위 테스트는 전부
+# 스텁이라 실제 모델 파일이 깨져 있어도 못 잡는다. 임의 피처로 한 번 직접 호출.
+_real_features = {
+    "n_rare": 1, "n_trophy": 3, "n_normal": 4, "n_total": 8, "consistency": 70,
+    "trophy_ratio_max": 1.4, "trophy_ratio_min": 0.6, "trophy_ratio_avg": 0.9,
+    "rare_ratio_max": None, "rare_ratio_min": None, "rare_ratio_avg": None,
+    "hours_since_reset": 50.0, "species": "검은 잉어", "window": "today",
+    "top_waterbody": "곰 호수",
+}
+_probs = _real_predict_proba(_real_features)
+check("실제 모델: 확률 4개 반환", len(_probs) == 4)
+check("실제 모델: 확률 합 1", abs(sum(_probs) - 1.0) < 1e-6)
+check("실제 모델: expected_value 0~100 범위", 0 <= _model_mod.expected_value(_probs) <= 100)
 
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

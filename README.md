@@ -348,6 +348,18 @@ python test_app.py && python test_auth.py && python test_labels.py
 - **구현**: `filteredForPlaces()` 신규 — `filtered()`와 같되 자기 축인 수역 필터만 빼고 트로피토글·미끼·트로피기록 필터는 동일 적용. `render()`에서 장소 블록만 이 집합을 받음(미끼·트로피 블록은 `filtered()` 그대로). 라디오 전환·재클릭 해제는 기존 `toggleFilter` 로직 재사용 — '숨김'처럼 보이던 건 장소 목록이 수역 필터된 집합을 받았기 때문.
 - **파일**: templates/species.html
 
+### 06-27 · 활성도 분류를 ML 모델로 교체
+
+`[변경]` **라벨 4단계 중 '불명'을 '가능성'으로 이름 변경(D-42).** "확실히 활성화된 정도는 아니나 탐색해볼 가치가 있는 가능성"이라는 의미가 더 명확함.
+- labels.py VALID_LABELS, scoring.py STATE_UNCLEAR→STATE_POSSIBLE, 템플릿 표시 문구·매핑 전부 수정. 운영 DB의 기존 '불명' 라벨은 수동 1회 마이그레이션으로 안내(`UPDATE labels SET label='가능성' WHERE label='불명'`).
+
+`[변경]` **활성도 분류를 임시 선형 수식에서 RandomForest 분류 모델로 교체(D-43).** 기존 `power = n_rare*3+n_trophy*2+n_normal*1; score = power*consistency` + 하드코딩 임계값 방식을 사람이 직접 찍은 라벨 381건으로 학습한 모델로 대체.
+- 평가: 다수클래스 베이스라인 33% 대비 정확도 64%, 인접(±1)정확도 97% — 신호 확인 후 반영.
+- **태블릿 제약**: Termux(ARM)는 TUR 저장소에 scikit-learn 패키지가 없어 `pkg install`로 설치 불가능, `pip` 소스빌드도 Cython·C++ 컴파일러가 필요해 비현실적. 그래서 학습은 PC(tools/train_model.py, 전용 가상환경)에서만 하고, 학습된 트리를 순수 파이썬 데이터(`rf4site/model_data.json`)로 export — 태블릿은 표준 라이브러리만 쓰는 `rf4site/model.py`로 추론한다. 운영 requirements.txt 변경 없음.
+- RandomForest를 고른 이유는 export 단순함. 트리 하나하나가 단순 배열(분기 노드의 feature·threshold·children, 리프의 클래스 확률)이라 순수 파이썬 순회만으로 추론 가능. HistGradientBoosting도 평가했으나(정확도 65%, 거의 동등) softmax 등 내부 구조가 복잡해 export가 번거로워 채택 안 함.
+- 점수는 D-22가 설계해둔 확률가중 기댓값(클래스별 확률 × 단계 점수의 합)을 0~100 스케일로 변환해 처음 구현됨. 표본 미달(MIN_SAMPLE=5 미만)은 모델을 호출하지 않고 바로 비활성 처리 — 합산 보정 없이 그냥 비활성으로 두는 원칙(D-35) 유지.
+- **파일**: rf4site/model.py(신규, 순수 파이썬 추론), rf4site/model_data.json(신규, 모델 아티팩트), rf4site/scoring.py(`_score_from_rows`를 모델 호출로 교체, `_trophy_thresholds`·`_ratio_from_rows` 헬퍼 분리), rf4site/labels.py, templates/{dashboard,species,base}.html, tools/train_model.py(신규, PC 학습용), tools/train_eval.py(신규, 평가 실험용), tools/requirements-ml.txt(신규), tools/test_app.py(모델 스텁으로 파이프라인 검증 + 실제 모델 아티팩트 적재 점검 추가), .gitignore(`*.json` 규칙에 model_data.json 예외 추가)
+
 ---
 
 ## 부록 — 운영 환경
