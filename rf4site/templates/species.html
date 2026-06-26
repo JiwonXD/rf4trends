@@ -2,7 +2,7 @@
 {% block title %}{{ name }} — RF4 트렌드{% endblock %}
 {% block content %}
 
-{% set state_cls = {'강한 활성': 'strong', '활성': 'active', '가능성': 'unclear', '비활성': 'off'} %}
+{% set state_cls = {'강한 활성': 'strong', '활성': 'active', '탐색': 'unclear', '비활성': 'off'} %}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
   <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
     <a href="/?window={{ window }}" style="color:var(--muted); font-size:18px;">&#8592;</a>
@@ -26,7 +26,7 @@
   <span style="font-size:13px; color:var(--muted); margin-right:4px;">
     <span id="label-wb">이 어종</span> 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '6h' }} 기준)</span>:
   </span>
-  {% for lb, cls in [('강한 활성','strong'), ('활성','active'), ('가능성','unclear'), ('비활성','off')] %}
+  {% for lb, cls in [('강한 활성','strong'), ('활성','active'), ('탐색','unclear'), ('비활성','off')] %}
     <button class="label-btn btn" data-label="{{ lb }}"
             style="font-size:13px; padding:5px 12px;">{{ lb }}</button>
   {% endfor %}
@@ -66,7 +66,7 @@
 // 서버가 넘긴 원본 데이터 — 집계·필터는 전부 클라이언트에서.
 const RECORDS = {{ d.records | tojson }};
 const WATER_SCORES = {{ d.water_scores | tojson }};
-const STATE_CLS = {'강한 활성':'strong','활성':'active','가능성':'unclear','비활성':'off'};
+const STATE_CLS = {'강한 활성':'strong','활성':'active','탐색':'unclear','비활성':'off'};
 
 // 필터 상태: 한 축만 활성(수역/미끼/트로피기록 중 하나) + 트로피토글(독립)
 let filter = null;        // {type:'waterbody'|'bait'|'record', value:...}

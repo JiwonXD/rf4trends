@@ -3,7 +3,7 @@
 # 이렇게 해두면 7일 뒤 원본 catches가 정리돼도 (입력 지표 → 라벨) 학습쌍이 남는다.
 # 같은 어종을 여러 번 라벨하면 매번 새 행으로 쌓는다 (시간에 따른 판정 변화도 데이터, D-18).
 
-VALID_LABELS = {"강한 활성", "활성", "가능성", "비활성"}
+VALID_LABELS = {"강한 활성", "활성", "탐색", "비활성"}
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS labels (

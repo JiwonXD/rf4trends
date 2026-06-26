@@ -22,7 +22,7 @@ WINDOWS = {"6h": 6, "today": 24}   # 단위: 시간(hour)
 
 STATE_STRONG = "강한 활성"
 STATE_ACTIVE = "활성"
-STATE_POSSIBLE = "가능성"     # 구 '불명' — 확실히 활성은 아니나 탐색해볼 가치가 있는 단계(D-42)
+STATE_POSSIBLE = "탐색"     # 구 '불명'→'가능성'(D-42)→'탐색'(D-44) — 확실히 활성은 아니나 가볼 만한 가치가 있는 단계
 STATE_INACTIVE = "비활성"
 # 모델 클래스 인덱스(순서형, D-22) ↔ 표시 문구. model.py는 인덱스만 다루고 이 매핑은 몰라야 한다.
 _STATE_BY_IDX = [STATE_INACTIVE, STATE_POSSIBLE, STATE_ACTIVE, STATE_STRONG]

@@ -4,7 +4,7 @@
 # 비현실적). 그래서 학습은 PC(tools/train_model.py)에서만 하고, 학습된 트리 구조를
 # model_data.json으로 내보내 여기서는 numpy/sklearn 없이 순수 파이썬으로만 추론한다.
 #
-# 클래스 인덱스(고정 순서, 순서형): 0=비활성 1=가능성 2=활성 3=강한 활성.
+# 클래스 인덱스(고정 순서, 순서형): 0=비활성 1=탐색 2=활성 3=강한 활성.
 # 인덱스↔표시 문구 매핑은 scoring.py가 소유(이 모듈은 인덱스·확률만 다룬다).
 
 import json
@@ -52,7 +52,7 @@ def predict_proba(features):
     """features: {n_rare, n_trophy, n_normal, n_total, consistency,
     trophy_ratio_max/min/avg, rare_ratio_max/min/avg, hours_since_reset,
     species, window, top_waterbody} 형태의 dict.
-    반환: [P(비활성), P(가능성), P(활성), P(강한활성)] (합 1)."""
+    반환: [P(비활성), P(탐색), P(활성), P(강한활성)] (합 1)."""
     d = _load()
     row = _encode(features)
     n_classes = 4

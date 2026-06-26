@@ -19,9 +19,9 @@ from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.metrics import accuracy_score
 import numpy as np
 
-# 순서형 클래스 인덱스: 0=비활성 1=가능성(구 불명) 2=활성 3=강한 활성.
+# 순서형 클래스 인덱스: 0=비활성 1=탐색(구 불명) 2=활성 3=강한 활성.
 # 모델 산출물엔 라벨 텍스트를 담지 않는다 — 인덱스↔표시문구 매핑은 scoring.py가 소유.
-LABEL_TO_IDX = {"비활성": 0, "불명": 1, "가능성": 1, "활성": 2, "강한 활성": 3}
+LABEL_TO_IDX = {"비활성": 0, "불명": 1, "탐색": 1, "활성": 2, "강한 활성": 3}
 
 NUMERIC = ["n_rare", "n_trophy", "n_normal", "n_total", "consistency",
            "trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",

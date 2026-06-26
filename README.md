@@ -360,6 +360,8 @@ python test_app.py && python test_auth.py && python test_labels.py
 - 점수는 D-22가 설계해둔 확률가중 기댓값(클래스별 확률 × 단계 점수의 합)을 0~100 스케일로 변환해 처음 구현됨. 표본 미달(MIN_SAMPLE=5 미만)은 모델을 호출하지 않고 바로 비활성 처리 — 합산 보정 없이 그냥 비활성으로 두는 원칙(D-35) 유지.
 - **파일**: rf4site/model.py(신규, 순수 파이썬 추론), rf4site/model_data.json(신규, 모델 아티팩트), rf4site/scoring.py(`_score_from_rows`를 모델 호출로 교체, `_trophy_thresholds`·`_ratio_from_rows` 헬퍼 분리), rf4site/labels.py, templates/{dashboard,species,base}.html, tools/train_model.py(신규, PC 학습용), tools/train_eval.py(신규, 평가 실험용), tools/requirements-ml.txt(신규), tools/test_app.py(모델 스텁으로 파이프라인 검증 + 실제 모델 아티팩트 적재 점검 추가), .gitignore(`*.json` 규칙에 model_data.json 예외 추가)
 
+`[변경]` **D-42의 '가능성'을 '탐색'으로 재변경(D-44).** "확실히 활성은 아니나 가볼 만한 가치가 있다"는 의미를 '탐색'이 더 잘 전달함. labels.py·scoring.py·templates·tools 전체에서 일관 변경.
+
 ---
 
 ## 부록 — 운영 환경

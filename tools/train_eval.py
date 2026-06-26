@@ -26,12 +26,12 @@ from sklearn.impute import SimpleImputer
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-# 순서형: 비활성 < 가능성 < 활성 < 강한 활성
-# '불명'은 D-42에서 '가능성'으로 이름이 바뀌었으나, 옛 라벨(이름 변경 전 박제분)도
+# 순서형: 비활성 < 탐색 < 활성 < 강한 활성
+# '불명'은 D-42에서 '탐색'으로 이름이 바뀌었으나, 옛 라벨(이름 변경 전 박제분)도
 # 학습에 포함해야 하므로 같은 인덱스로 매핑한다.
-ORDER = ["비활성", "가능성", "활성", "강한 활성"]
+ORDER = ["비활성", "탐색", "활성", "강한 활성"]
 ORD = {lab: i for i, lab in enumerate(ORDER)}
-ORD["불명"] = ORD["가능성"]
+ORD["불명"] = ORD["탐색"]
 
 NUMERIC = ["n_rare", "n_trophy", "n_normal", "n_total", "consistency",
            "trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
