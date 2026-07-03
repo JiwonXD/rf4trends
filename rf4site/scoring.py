@@ -40,7 +40,7 @@ def _weight_str(weight_g):
 
 
 def _to_kst_str(utc_str):
-    """UTC로 저장된 first_seen 문자열(예 '2026-06-16T07:25:05')을 KST 'MM-DD HH:MM'로 변환.
+    """UTC로 저장된 first_seen 문자열(예 '2026-06-16 07:25:05')을 KST 'MM-DD HH:MM'로 변환.
     파싱 실패 시 원본 앞 16자를 그대로 반환(방어적)."""
     if not utc_str:
         return ""
@@ -173,7 +173,7 @@ def _score_from_rows(rows, trophy_g, rare_g, species, window, waterbody):
     consistency_pct = round(consistency * 100)
 
     if n_total == 0:
-        return {"state": STATE_INACTIVE, "score": 0.0,
+        return {"state": STATE_INACTIVE, "score": 0.0, "low_sample": True,
                 "n_rare": 0, "n_trophy": 0, "n_normal": 0, "n_total": 0,
                 "consistency": 0, "top_bait": None}
 
@@ -182,7 +182,7 @@ def _score_from_rows(rows, trophy_g, rare_g, species, window, waterbody):
 
     if n_total < MIN_SAMPLE:
         # 표본 미달은 모델 신뢰 구간 밖 — 합산 보정 없이 그냥 비활성 처리(원칙 #2 유지)
-        return {**base, "state": STATE_INACTIVE, "score": 0.0}
+        return {**base, "state": STATE_INACTIVE, "score": 0.0, "low_sample": True}
 
     features = {
         **{k: v for k, v in base.items() if k != "top_bait"},
@@ -193,7 +193,7 @@ def _score_from_rows(rows, trophy_g, rare_g, species, window, waterbody):
     probs = _model.predict_proba(features)
     state_idx = max(range(len(probs)), key=lambda i: probs[i])
     return {**base, "state": _STATE_BY_IDX[state_idx],
-            "score": _model.expected_value(probs)}
+            "score": _model.expected_value(probs), "low_sample": False}
 
 
 def score_species(conn, species, window="today"):
@@ -225,6 +225,7 @@ def score_species(conn, species, window="today"):
         "species": species,
         "state": rep["state"],
         "score": rep["score"],
+        "low_sample": rep["low_sample"],
         "n_rare": rep["n_rare"],
         "n_trophy": rep["n_trophy"],
         "n_normal": rep["n_normal"],
@@ -247,6 +248,7 @@ def score_species_at(conn, species, window="today", waterbody=None):
         "species": species,
         "state": rep["state"],
         "score": rep["score"],
+        "low_sample": rep["low_sample"],
         "n_rare": rep["n_rare"],
         "n_trophy": rep["n_trophy"],
         "n_normal": rep["n_normal"],

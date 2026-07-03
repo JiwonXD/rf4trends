@@ -1,5 +1,6 @@
 # 회원 인증 + 사용자별 선호 어종 분리 검증
 import sys, os as _os
+sys.stdout.reconfigure(encoding="utf-8")  # 한국 Windows 콘솔(cp949)에서 em-dash 출력 크래시 방지
 sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'rf4site'))
 _os.environ['RF4_DB'] = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'rf4.db')
 import os, sqlite3, datetime

@@ -9,6 +9,8 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 # 세션 서명 키: 운영 시 환경변수로 덮어쓸 것. 바뀌면 기존 로그인 전부 풀림.
 SECRET_KEY = os.environ.get("RF4_SECRET", "rf4-local-dev-key-change-me")
+if "RF4_SECRET" not in os.environ:
+    print("[경고] RF4_SECRET 미설정 — 공개된 기본 키로 세션을 서명합니다. 운영에선 반드시 설정할 것.")
 SESSION_MAX_AGE = 60 * 60 * 24 * 30   # 30일
 COOKIE_NAME = "rf4_session"
 

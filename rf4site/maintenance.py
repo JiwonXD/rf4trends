@@ -61,6 +61,6 @@ def archive_and_prune(db_path, archive_path=None):
         conn.commit()
         # 공간 회수
         conn.execute("VACUUM")
-        return len(old), len(old_ids)
+        return sum(1 for r in old if r[2]), len(old_ids)
     finally:
         conn.close()

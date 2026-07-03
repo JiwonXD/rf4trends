@@ -362,6 +362,14 @@ python test_app.py && python test_auth.py && python test_labels.py
 
 `[변경]` **D-42의 '가능성'을 '탐색'으로 재변경(D-44).** "확실히 활성은 아니나 가볼 만한 가치가 있다"는 의미를 '탐색'이 더 잘 전달함. labels.py·scoring.py·templates·tools 전체에서 일관 변경.
 
+### 07-03 · 전체 감사 및 경미 정비
+
+`[코드버그]` **전체 감사(기획·설계·구현) 후 경미 버그 5건 수정 + 문서 동기화(D-45).** 감사 결과 기능 충돌·코드 충돌은 없음.
+- 대시보드 비활성 카드가 표본 충분해도 무조건 "표본 부족"으로 표기하던 것을 분기 — 표본 미달이면 "표본 부족", 표본은 충분한데 모델이 비활성으로 분류했으면 "활성 신호 없음". scoring 반환에 `low_sample` 필드를 추가해 MIN_SAMPLE 판정이 scoring 밖에 중복되지 않게 함.
+- maintenance 반환 첫 값(보관 건수)이 실제론 삭제 건수와 동일하던 것을 미끼 있는 기록 수로 수정, 테스트 3파일의 한국 Windows 콘솔(cp949) 출력 크래시 해소, `RF4_SECRET` 미설정 시 기동 경고 추가, 낡은 docstring 정리.
+- 문서 동기화: CLAUDE.md·SCREENS.md가 D-36 이후 변경(시간창 6h/24h, 라벨명 '탐색', ML 전환)을 반영하지 못하던 것을 갱신.
+- **파일**: rf4site/scoring.py, rf4site/maintenance.py, rf4site/auth.py, templates/dashboard.html, tools/test_{app,auth,labels}.py, CLAUDE.md, SCREENS.md, PRD.md
+
 ---
 
 ## 부록 — 운영 환경

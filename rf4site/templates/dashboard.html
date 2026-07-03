@@ -37,7 +37,7 @@
         <span style="font-size:15px;">{{ c.species }}</span>
         <span class="badge b-off">비활성</span>
       </div>
-      <span style="font-size:13px; color:var(--faint);">기록 {{ c.n_total }}건 — 표본 부족</span>
+      <span style="font-size:13px; color:var(--faint);">기록 {{ c.n_total }}건 — {% if c.low_sample %}표본 부족{% else %}활성 신호 없음{% endif %}</span>
     </a>
     {% endif %}
   {% endfor %}
