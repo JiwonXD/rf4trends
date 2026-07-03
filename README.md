@@ -379,6 +379,13 @@ python test_app.py && python test_auth.py && python test_labels.py
 - **맵 업데이트 알람**: 수집 시 마스터에 없는 어종이 발견되면 경고 출력 — 게임 패치로 새 어종이 생겼는데 조용히 안 보이는 상태를 방지.
 - **파일**: rf4site/app.py(시드·온보딩·존재검사·수집 경고), rf4site/scoring.py(JOIN 대상), tools/test_{app,auth,labels}.py(픽스처 + 회귀 테스트 2건, 총 63건)
 
+### 07-03 · 죽은 서버 집계 제거 + 주석 전수 최신화
+
+`[코드버그]` **어종 상세의 죽은 서버 집계 제거(D-47).** species_detail이 미끼 순위·장소 분포·트로피 기록을 SQL로 집계해 넘기고 있었으나, 템플릿은 빈 컨테이너에 JS가 원본 기록(RECORDS)으로 전부 재집계(D-38)해 **어디서도 소비되지 않는 죽은 코드**였음. 약 37줄 제거, 매 요청 낭비되던 쿼리 4개 소멸.
+- 유일한 소비자였던 테스트(D-29 분모 회귀 검증)는 records 기반 재계산(JS와 동일 방식)으로 이전 — 죽은 SQL 대신 실제 UI 경로를 검증하게 됨.
+- 이 죽은 코드를 감사·검수 3회가 놓친 원인은 **"집계는 초기값으로 쓰인다"는 낡은 주석을 검증 없이 믿은 것**. 재발 방지로 전 코드 주석·docstring·화면 안내문을 실동작과 대조해 낡은 서술 9곳을 최신화(24/72시간→6/24, 불명→탐색, "collector.py 먼저 실행" 등)하고, CLAUDE.md에 "주석은 코드와 함께 갱신, 검수 시 주석은 근거가 아니라 검증 대상" 규칙을 추가.
+- **파일**: rf4site/scoring.py, rf4site/labels.py, templates/{dashboard,onboarding}.html, tools/test_app.py, tools/train_eval.py, PRD.md(용어표), CLAUDE.md
+
 ---
 
 ## 부록 — 운영 환경

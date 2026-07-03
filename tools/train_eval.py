@@ -7,8 +7,9 @@
 # 실행 (tools/mlenv 가상환경에서):
 #   tools/mlenv/Scripts/python.exe tools/train_eval.py "C:\\Users\\jiwon\\Desktop\\rf4.db"
 #
-# 트리 모델은 sklearn 내장 HistGradientBoosting(히스토그램 기반 GBT) 사용 —
-# 운영 통합 시엔 LightGBM으로 교체 예정(D-31). 신호 확인엔 동등 계열.
+# 트리 모델은 sklearn 내장 HistGradientBoosting(히스토그램 기반 GBT) 사용.
+# (실제 운영 통합은 순수 파이썬 export가 단순한 RandomForest로 진행됨 — D-43.
+#  이 스크립트는 신호 확인용 실험 기록으로 유지.)
 
 import sqlite3
 import sys
@@ -91,10 +92,10 @@ def main():
     print(f"표본: {len(df)}건 (3d 제외), 어종 {df['species'].nunique()}종")
     print("클래스 분포:", {ORDER[i]: int((y == i).sum()) for i in range(4)})
 
-    # 현재 임시 수식(score)이 라벨을 얼마나 잘 따라가는지 — 넘어야 할 기준선
+    # 라벨 시점에 박제된 score(D-43 이전엔 임시 수식 값)가 라벨을 얼마나 따라갔는지 — 참고 기준선
     rho, _ = spearmanr(df["score"], y)
-    print(f"\n[참고] 현재 수식 score ↔ 라벨 Spearman 상관: {rho:.3f}")
-    print("  (1에 가까울수록 현재 수식이 이미 사람 판단을 잘 따라간다는 뜻)")
+    print(f"\n[참고] 박제된 score ↔ 라벨 Spearman 상관: {rho:.3f}")
+    print("  (1에 가까울수록 라벨 당시의 점수가 사람 판단을 잘 따라갔다는 뜻)")
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 
@@ -114,7 +115,7 @@ def main():
 
     # 혼동행렬 (트리 모델, CV 예측 기준)
     cm = confusion_matrix(y, pred, labels=[0, 1, 2, 3])
-    print("\n[혼동행렬] 행=실제, 열=예측  (순서: 비활성/불명/활성/강한활성)")
+    print("\n[혼동행렬] 행=실제, 열=예측  (순서: 비활성/탐색/활성/강한활성)")
     head = "          " + "".join(f"{o[:4]:>8}" for o in ORDER)
     print(head)
     for i, o in enumerate(ORDER):

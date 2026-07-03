@@ -17,7 +17,7 @@ MIN_SAMPLE = 5            # 전체 기록 최소 표본 (미만이면 모델 신
 # first_seen = 우리 수집기가 그 기록을 DB에 처음 담은 시각 (수집 시점 기준 롤링).
 # caught_date(잡힌 날짜)가 아니라 first_seen으로 세는 이유: 주간 탑5는 24시간 동안
 # 여러 번 갈리는데, 갈려나간 기록까지 수집기가 주워둔 "교체 빈도"가 곧 활성도다.
-# 자정 경계가 아닌 접속(수집) 시점 기준 롤링이라, 언제 봐도 꽉 찬 24/72시간 표본을 본다.
+# 자정 경계가 아닌 접속(수집) 시점 기준 롤링이라, 언제 봐도 꽉 찬 6/24시간 표본을 본다.
 WINDOWS = {"6h": 6, "today": 24}   # 단위: 시간(hour)
 
 STATE_STRONG = "강한 활성"
@@ -270,35 +270,11 @@ def dashboard(conn, favorites, window="today"):
 
 
 def species_detail(conn, species, window="today"):
-    """어종 상세: 미끼 순위 / 장소 분포 / 최근 트로피 기록 / 기준선.
-    미끼·장소·트로피 집계는 초기값이며, 실제 표시·필터는 클라이언트가
-    records로 직접 재집계한다(교차 필터링). 트로피만 보기도 클라이언트 토글."""
-    wc = _window_clause(window)
+    """어종 상세: 원본 기록 + 수역별 활성도 + 기준선.
+    미끼/장소/트로피 집계·필터·표시는 전부 클라이언트가 records로 수행한다(D-38).
+    활성도 점수(score/state)만 모델 추론이 필요해 서버가 수역별로 계산해 넘긴다."""
     trophy_g, rare_g = _trophy_thresholds(conn, species)
 
-    bait_rows = conn.execute(f"""
-        SELECT c.bait, COUNT(*) AS n
-        FROM catches c
-        WHERE c.species = ? AND c.bait IS NOT NULL
-          AND c.first_seen >= {wc}
-        GROUP BY c.bait ORDER BY n DESC LIMIT 15
-    """, (species,)).fetchall()
-    # 분모는 상위15개 합이 아니라 시간창 내 미끼 있는 전체 기록 수.
-    # (LIMIT으로 자른 합을 분모로 쓰면 1등 비율이 부풀려져 카드 일관성과 불일치)
-    bait_total = conn.execute(f"""
-        SELECT COUNT(*) FROM catches c
-        WHERE c.species = ? AND c.bait IS NOT NULL
-          AND c.first_seen >= {wc}
-    """, (species,)).fetchone()[0] or 1
-    baits = [{"bait": r[0], "n": r[1], "share": round(r[1] * 100 / bait_total)}
-             for r in bait_rows]
-
-    place_rows = conn.execute(f"""
-        SELECT c.waterbody, COUNT(*) AS n
-        FROM catches c
-        WHERE c.species = ? AND c.first_seen >= {wc}
-        GROUP BY c.waterbody ORDER BY n DESC LIMIT 10
-    """, (species,)).fetchall()
     # 수역별 활성도 점수·상태 — 대시보드 대표값과 같은 기준(전체 기록)으로 계산.
     all_rows = _tier_records(conn, species, window)
     rows_by_water = {}
@@ -306,29 +282,6 @@ def species_detail(conn, species, window="today"):
         rows_by_water.setdefault(r[2], []).append(r)
     water_score = {wb: _score_from_rows(rs, trophy_g, rare_g, species, window, wb)
                    for wb, rs in rows_by_water.items()}
-    places = [{
-        "waterbody": r[0], "n": r[1],
-        "score": water_score.get(r[0], {}).get("score", 0),
-        "state": water_score.get(r[0], {}).get("state", STATE_INACTIVE),
-    } for r in place_rows]
-
-    trophy_records = []
-    if trophy_g:
-        rows = conn.execute(f"""
-            SELECT c.weight_g, c.waterbody, c.bait, c.first_seen
-            FROM catches c
-            WHERE c.species = ? AND c.weight_g >= ?
-              AND c.first_seen >= {wc}
-            ORDER BY c.first_seen DESC, c.weight_g DESC LIMIT 15
-        """, (species, int(trophy_g))).fetchall()
-        # first_seen은 UTC 저장(수집 시각). 화면엔 KST로 변환해 보여준다.
-        # caught_date(사이트가 주는 MSK 기준 날짜) 대신 first_seen을 쓰는 이유:
-        # 활성도 시간창과 기준이 통일되고, MSK/KST 날짜 혼란이 사라진다.
-        trophy_records = [{
-            "weight": _weight_str(r[0]),
-            "rare": bool(rare_g and r[0] >= rare_g),
-            "waterbody": r[1], "bait": r[2], "date": _to_kst_str(r[3]),
-        } for r in rows]
 
     card = score_species(conn, species, window)
 
@@ -351,9 +304,6 @@ def species_detail(conn, species, window="today"):
         "card": card,
         "trophy_str": _weight_str(trophy_g) if trophy_g else None,
         "rare_str": _weight_str(rare_g) if rare_g else None,
-        "baits": baits,
-        "places": places,
-        "trophy_records": trophy_records,
         "records": records,
         "water_scores": water_scores,
         "trophy_g": trophy_g,

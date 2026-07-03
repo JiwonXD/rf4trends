@@ -46,8 +46,8 @@ def init_db(conn):
 
 
 def add_label(conn, user_id, species, label, card, source="user"):
-    """라벨 + 활성도 스냅샷 저장. card는 scoring.score_species() 반환 dict에
-    scoring.ratio_stats() 결과와 window가 병합된 것.
+    """라벨 + 활성도 스냅샷 저장. card는 scoring.score_species_at()(수역 단위, D-40)
+    반환 dict에 scoring.ratio_stats() 결과와 window·hours_since_reset가 병합된 것.
     source: 'admin' 또는 'user' (작성자 권한, 사후 정제용).
     반환: (True, None) 또는 (False, 오류메시지)."""
     if label not in VALID_LABELS:

@@ -5,7 +5,7 @@
 {% if not has_data %}
   <div class="empty">
     수집된 데이터가 없습니다.<br>
-    <span style="font-size:13px">collector.py를 먼저 실행해 rf4.db를 만들어주세요.</span>
+    <span style="font-size:13px">서버가 15분 주기로 자동 수집합니다 — 첫 수집이 끝나면 채워집니다.</span>
   </div>
 {% else %}
   {% set state_cls = {'강한 활성': 'strong', '활성': 'active', '탐색': 'unclear', '비활성': 'off'} %}

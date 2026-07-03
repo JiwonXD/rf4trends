@@ -1,4 +1,4 @@
-# 화면 정의서 v1.0 시나리오 검증
+# 화면 시나리오 검증 — 온보딩/대시보드/어종 상세 (시간창·교차필터·모델·어종 마스터 포함)
 import sys, os as _os
 sys.stdout.reconfigure(encoding="utf-8")  # 한국 Windows 콘솔(cp949)에서 em-dash 출력 크래시 방지
 sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'rf4site'))
@@ -25,7 +25,7 @@ for i in range(8):
 # 활성: 타이멘 — 트로피 2 + 일반 5, 같은 루어
 for i in range(2): rows.append(('타이멘', 55000+i*100, '퉁구스카', 'Squirrel 60', f't{i}', yest))
 for i in range(5): rows.append(('타이멘', 38000+i*100, '퉁구스카', 'Squirrel 60', f's{i}', today))
-# 불명: 무지개 송어 — 7건 전부 다른 미끼
+# 탐색(구 불명): 무지개 송어 — 7건 전부 다른 미끼
 for i in range(7): rows.append(('무지개 송어', 11000+i*100, '쿠오리', f'미끼{i}', f'r{i}', today))
 # 비활성: 붕어 — 기록 2건뿐(표본 부족)
 for i in range(2): rows.append(('붕어', 1900+i*50, '모기 호수', '반죽', f'b{i}', today))
@@ -108,13 +108,18 @@ r = c.get("/")
 check("선호 해제 반영", "붕어" not in r.text)
 
 # 미끼 일관성: 카드 consistency == 상세 1등 미끼 비율 (분모 일치, 미끼 15종 초과 시에도)
+# D-29 분모 회귀 검증 — JS renderBaits와 같은 계산
 import scoring as _sc
 _conn2 = sqlite3.connect("rf4.db")
 _c = _sc.score_species(_conn2, "검은 잉어", "today")
 _d = _sc.species_detail(_conn2, "검은 잉어", "today")
 _conn2.close()
-if _d["baits"]:
-    check("카드 일관성 == 상세 1등미끼 비율", _c["consistency"] == _d["baits"][0]["share"])
+_wb = [r for r in _d["records"] if r["bait"]]
+_counts = {}
+for _r in _wb: _counts[_r["bait"]] = _counts.get(_r["bait"], 0) + 1
+if _counts:
+    _top_share = round(max(_counts.values()) * 100 / len(_wb))
+    check("카드 일관성 == 상세 records 1등미끼 비율", _c["consistency"] == _top_share)
 
 # 시간창 필터: first_seen 공백구분자 포맷(collector 저장 포맷)으로 정확히 거름
 # (6h/24h 탭이 다른 데이터를 보여주는지 — 탭 전환 무반응 버그 회귀방지)
