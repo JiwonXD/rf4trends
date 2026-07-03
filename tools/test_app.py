@@ -11,8 +11,8 @@ conn.executescript("""
 CREATE TABLE catches (id INTEGER PRIMARY KEY, species TEXT, weight_g INT,
   waterbody TEXT, bait TEXT, player TEXT, caught_date TEXT,
   source TEXT DEFAULT 'weekly_record', first_seen TEXT);
-CREATE TABLE trophies (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT);
-INSERT INTO trophies VALUES ('검은 잉어',28000,40000),('타이멘',50000,80000),
+CREATE TABLE species_master (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT, added_at TEXT DEFAULT (datetime('now')));
+INSERT INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('검은 잉어',28000,40000),('타이멘',50000,80000),
   ('무지개 송어',10000,13000),('붕어',1800,2900);
 """)
 today = datetime.date.today().isoformat()
@@ -88,6 +88,15 @@ check("RECORDS 데이터 전달", "const RECORDS = [" in t and '"tier"' in t and
 check("WATER_SCORES 전달", "const WATER_SCORES = {" in t)
 check("트로피 토글 버튼", 'id="trophy-toggle"' in t)
 
+# 마스터 어종은 기록 없어도 온보딩에 표시 + 상세 200 (D-46)
+_conn_ghost = sqlite3.connect("rf4.db")
+_conn_ghost.execute("INSERT OR IGNORE INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('유령어',500,800)")
+_conn_ghost.commit(); _conn_ghost.close()
+r = c.get("/onboarding")
+check("마스터 어종은 기록 없어도 온보딩에 표시", "유령어" in r.text)
+r = c.get("/species/유령어", follow_redirects=False)
+check("기록 없는 마스터 어종 상세 200", r.status_code == 200)
+
 r = c.get("/species/없는어종", follow_redirects=False)
 check("없는 어종 → 대시보드 리다이렉트", r.status_code in (302,307))
 
@@ -112,7 +121,7 @@ if _d["baits"]:
 import datetime as _dt
 _conn3 = sqlite3.connect("rf4.db")
 _conn3.execute("DELETE FROM catches WHERE species='타임테스트'")
-_conn3.execute("INSERT OR IGNORE INTO trophies VALUES ('타임테스트',5000,9000)")
+_conn3.execute("INSERT OR IGNORE INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('타임테스트',5000,9000)")
 _now = _dt.datetime.now(_dt.timezone.utc)
 _recent = (_now - _dt.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')   # 6h 안
 _old = (_now - _dt.timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')     # 6h 밖

@@ -88,7 +88,7 @@ def _tier_records(conn, species, window):
            END AS tier,
            c.bait, c.waterbody, c.weight_g, c.caught_date, c.first_seen
     FROM catches c
-    JOIN trophies t ON t.species = c.species
+    JOIN species_master t ON t.species = c.species
     WHERE c.species = ?
       AND t.trophy_g IS NOT NULL
       AND c.first_seen >= {_window_clause(window)}
@@ -115,7 +115,7 @@ _RATIO_KEYS = ("trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
 def _trophy_thresholds(conn, species):
     """(trophy_g, rare_g) 반환. 미등록이면 (None, None)."""
     th = conn.execute(
-        "SELECT trophy_g, rare_trophy_g FROM trophies WHERE species = ?",
+        "SELECT trophy_g, rare_trophy_g FROM species_master WHERE species = ?",
         (species,)).fetchone()
     if not th or not th[0]:
         return None, None

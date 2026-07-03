@@ -370,6 +370,15 @@ python test_app.py && python test_auth.py && python test_labels.py
 - 문서 동기화: CLAUDE.md·SCREENS.md가 D-36 이후 변경(시간창 6h/24h, 라벨명 '탐색', ML 전환)을 반영하지 못하던 것을 갱신.
 - **파일**: rf4site/scoring.py, rf4site/maintenance.py, rf4site/auth.py, templates/dashboard.html, tools/test_{app,auth,labels}.py, CLAUDE.md, SCREENS.md, PRD.md
 
+### 07-03 · 어종 원천 마스터 구축
+
+`[변경]` **어종 마스터 테이블 `species_master`를 신설하고 trophies를 흡수(D-46).** "어종이 존재하는가"의 기준이 세 곳에서 달랐던 구조 문제를 해소.
+- 기존엔 온보딩 목록·상세 존재검사가 catches(7일 롤링) 기준이라, 최근 7일간 탑5에 못 든 어종은 등록이 불가능해지고 즐겨찾기한 어종도 기록이 마르면 카드 클릭 시 대시보드로 튕기는 막다른 UX가 있었음. scoring만 trophies 기준이라 세 곳이 서로 다른 모집단을 봄.
+- species_master(species PK + 트로피 기준 + added_at)가 어종 존재의 단일 원천이 됨. 트로피 기준을 컬럼으로 흡수해 별도 trophies 테이블과의 이중 유지보수도 제거. 온보딩엔 전 어종이 항상 뜨고, 기록 없는 어종 상세는 "최근 기록 없음"으로 표시.
+- **서식 수역 맵 `species_waterbodies` 신설**: (어종, 수역) 쌍의 누적 테이블. 아카이브가 수역을 버려(D-34) 과거분은 복구 불가하므로, 현 운영 DB 7일치에서 일회성 수동 집계로 시드(맵 업데이트 주기가 1~2년이라 7일 관측으로 대부분 커버, 빠진 조합은 수동 보정). 화면 반영은 향후 별도 작업.
+- **맵 업데이트 알람**: 수집 시 마스터에 없는 어종이 발견되면 경고 출력 — 게임 패치로 새 어종이 생겼는데 조용히 안 보이는 상태를 방지.
+- **파일**: rf4site/app.py(시드·온보딩·존재검사·수집 경고), rf4site/scoring.py(JOIN 대상), tools/test_{app,auth,labels}.py(픽스처 + 회귀 테스트 2건, 총 63건)
+
 ---
 
 ## 부록 — 운영 환경

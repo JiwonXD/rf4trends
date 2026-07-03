@@ -13,8 +13,8 @@ CREATE TABLE catches (id INTEGER PRIMARY KEY, species TEXT, weight_g INT,
   source TEXT DEFAULT 'weekly_record', first_seen TEXT);
 CREATE TABLE appearances (catch_id INT, category TEXT, region TEXT, rank INT, seen_at TEXT,
   UNIQUE(catch_id, category, region));
-CREATE TABLE trophies (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT);
-INSERT INTO trophies VALUES ('검은 잉어',28000,40000);
+CREATE TABLE species_master (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT, added_at TEXT DEFAULT (datetime('now')));
+INSERT INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('검은 잉어',28000,40000);
 """)
 # 최근 수집 6건 + 10일 전 수집 5건(아카이브 대상)
 for i in range(6):
@@ -105,7 +105,7 @@ check("일반유저 라벨 source='user'", _src.get("user", 0) >= 1)
 
 # 수역별 격리 검증: 같은 어종이 여러 수역에 있을 때 한 수역만 스냅샷에 잡혀야 함
 _c = sqlite3.connect("rf4.db")
-_c.execute("INSERT INTO trophies VALUES ('용잉어',1000,2000)")
+_c.execute("INSERT INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('용잉어',1000,2000)")
 for i in range(6):
     _c.execute("INSERT INTO catches (species,weight_g,waterbody,bait,player,caught_date,first_seen) VALUES "
                "('용잉어',?,'샘플호A','지렁이',?, '2026-06-20', datetime('now','-20 minute'))", (1500+i, f'a{i}'))

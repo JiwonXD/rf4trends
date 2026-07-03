@@ -10,8 +10,8 @@ conn.executescript("""
 CREATE TABLE catches (id INTEGER PRIMARY KEY, species TEXT, weight_g INT,
   waterbody TEXT, bait TEXT, player TEXT, caught_date TEXT,
   source TEXT DEFAULT 'weekly_record', first_seen TEXT);
-CREATE TABLE trophies (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT);
-INSERT INTO trophies VALUES ('검은 잉어',28000,40000),('타이멘',50000,80000);
+CREATE TABLE species_master (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT, added_at TEXT DEFAULT (datetime('now')));
+INSERT INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('검은 잉어',28000,40000),('타이멘',50000,80000);
 """)
 today = datetime.date.today().isoformat()
 for i in range(8):

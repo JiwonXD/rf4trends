@@ -27,11 +27,15 @@ import labels as labels_mod
 import maintenance
 
 
-def _load_trophies(conn):
-    """트로피 기준표가 비어있으면 CSV에서 로딩 (최초 1회 자동)."""
-    conn.execute("""CREATE TABLE IF NOT EXISTS trophies (
-        species TEXT PRIMARY KEY, trophy_g INTEGER, rare_trophy_g INTEGER)""")
-    has = conn.execute("SELECT 1 FROM trophies LIMIT 1").fetchone()
+def _load_species_master(conn):
+    """어종 원천 마스터. 비어있으면 트로피 기준 CSV에서 시드 (최초 1회 자동)."""
+    conn.execute("""CREATE TABLE IF NOT EXISTS species_master (
+        species TEXT PRIMARY KEY, trophy_g INTEGER, rare_trophy_g INTEGER,
+        added_at TEXT NOT NULL DEFAULT (datetime('now')))""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS species_waterbodies (
+        species TEXT NOT NULL, waterbody TEXT NOT NULL,
+        UNIQUE (species, waterbody))""")
+    has = conn.execute("SELECT 1 FROM species_master LIMIT 1").fetchone()
     if has or not TROPHY_CSV.exists():
         return
     with open(TROPHY_CSV, encoding="utf-8-sig") as f:
@@ -39,7 +43,9 @@ def _load_trophies(conn):
                  int(r["trophy_g"]) if r["trophy_g"] else None,
                  int(r["rare_trophy_g"]) if r["rare_trophy_g"] else None)
                 for r in csv.DictReader(f)]
-    conn.executemany("INSERT OR REPLACE INTO trophies VALUES (?, ?, ?)", rows)
+    conn.executemany(
+        "INSERT OR REPLACE INTO species_master (species, trophy_g, rare_trophy_g) VALUES (?, ?, ?)",
+        rows)
     conn.commit()
     print(f"[초기화] 트로피 기준 {len(rows)}종 로딩")
 
@@ -55,6 +61,10 @@ def _collect_loop(stop_event):
             conn.executescript(collector.SCHEMA)
             print(f"\n===== 수집 시작 {datetime.now():%m-%d %H:%M:%S} =====")
             collector.collect(conn)
+            unknown = [r[0] for r in conn.execute(
+                "SELECT DISTINCT species FROM catches WHERE species NOT IN (SELECT species FROM species_master)")]
+            if unknown:
+                print(f"[경고] 마스터 미등록 어종 수집됨(맵 업데이트?): {', '.join(unknown)} — species_master에 수동 INSERT 필요")
         except Exception as e:
             print(f"[수집 실패] {e}")
         finally:
@@ -80,7 +90,7 @@ def _collect_loop(stop_event):
 async def lifespan(app):
     conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.executescript(collector.SCHEMA)
-    _load_trophies(conn)
+    _load_species_master(conn)
     conn.close()
 
     stop_event = threading.Event()
@@ -163,7 +173,7 @@ def onboarding(request: Request, window: str = "today"):
         uid, username = user
         favorites = set(get_favorites(conn, uid))
         species = [r[0] for r in conn.execute(
-            "SELECT DISTINCT species FROM catches ORDER BY species")]
+            "SELECT species FROM species_master ORDER BY species")]
         return templates.TemplateResponse(request, "onboarding.html", {
             "species": species,
             "favorites": favorites,
@@ -185,7 +195,7 @@ def species_page(request: Request, name: str, window: str = "today"):
             return RedirectResponse("/login")
         uid, username = user
         exists = conn.execute(
-            "SELECT 1 FROM catches WHERE species = ? LIMIT 1", (name,)).fetchone()
+            "SELECT 1 FROM species_master WHERE species = ?", (name,)).fetchone()
         if not exists:
             return RedirectResponse(f"/?window={window}")
         detail = scoring.species_detail(conn, name, window)
