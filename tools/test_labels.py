@@ -15,6 +15,7 @@ CREATE TABLE appearances (catch_id INT, category TEXT, region TEXT, rank INT, se
   UNIQUE(catch_id, category, region));
 CREATE TABLE species_master (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT, added_at TEXT DEFAULT (datetime('now')));
 INSERT INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('검은 잉어',28000,40000);
+CREATE TABLE species_waterbodies (species TEXT NOT NULL, waterbody TEXT NOT NULL, UNIQUE (species, waterbody));
 """)
 # 최근 수집 6건 + 10일 전 수집 5건(아카이브 대상)
 for i in range(6):

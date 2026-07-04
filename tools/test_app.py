@@ -14,6 +14,8 @@ CREATE TABLE catches (id INTEGER PRIMARY KEY, species TEXT, weight_g INT,
 CREATE TABLE species_master (species TEXT PRIMARY KEY, trophy_g INT, rare_trophy_g INT, added_at TEXT DEFAULT (datetime('now')));
 INSERT INTO species_master (species,trophy_g,rare_trophy_g) VALUES ('검은 잉어',28000,40000),('타이멘',50000,80000),
   ('무지개 송어',10000,13000),('붕어',1800,2900);
+CREATE TABLE species_waterbodies (species TEXT NOT NULL, waterbody TEXT NOT NULL, UNIQUE (species, waterbody));
+INSERT INTO species_waterbodies VALUES ('검은 잉어','곰 호수'),('검은 잉어','기록없는 호수');
 """)
 today = datetime.date.today().isoformat()
 yest = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
@@ -86,6 +88,8 @@ check("미끼/장소/트로피 블록 제목", "미끼 순위" in t and "장소 
 # 교차 필터링: 서버가 원본 records와 수역별 점수를 JSON으로 넘긴다(집계는 JS)
 check("RECORDS 데이터 전달", "const RECORDS = [" in t and '"tier"' in t and '"waterbody"' in t)
 check("WATER_SCORES 전달", "const WATER_SCORES = {" in t)
+# 서식 수역 맵 전달 — 기록 0건 수역('기록없는 호수')도 장소 분포에 표시돼야 함
+check("HABITAT_WBS 전달(0건 수역 포함)", "const HABITAT_WBS = [" in t and "기록없는 호수" in t)
 check("트로피 토글 버튼", 'id="trophy-toggle"' in t)
 
 # 마스터 어종은 기록 없어도 온보딩에 표시 + 상세 200 (D-46)

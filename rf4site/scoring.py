@@ -300,12 +300,19 @@ def species_detail(conn, species, window="today"):
     water_scores = {wb: {"score": s["score"], "state": s["state"]}
                     for wb, s in water_score.items()}
 
+    # 서식 수역 맵(species_waterbodies, D-46 수동 시드) — 장소 분포에 기록 0건 수역도
+    # 표시하기 위해 넘긴다. 점수는 기록 있는 수역만 계산(0건은 클라이언트가 비활성 처리).
+    habitat_waterbodies = [r[0] for r in conn.execute(
+        "SELECT waterbody FROM species_waterbodies WHERE species = ? ORDER BY waterbody",
+        (species,))]
+
     return {
         "card": card,
         "trophy_str": _weight_str(trophy_g) if trophy_g else None,
         "rare_str": _weight_str(rare_g) if rare_g else None,
         "records": records,
         "water_scores": water_scores,
+        "habitat_waterbodies": habitat_waterbodies,
         "trophy_g": trophy_g,
         "rare_g": rare_g,
     }

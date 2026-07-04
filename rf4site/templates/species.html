@@ -66,6 +66,7 @@
 // 서버가 넘긴 원본 데이터 — 집계·필터는 전부 클라이언트에서.
 const RECORDS = {{ d.records | tojson }};
 const WATER_SCORES = {{ d.water_scores | tojson }};
+const HABITAT_WBS = {{ d.habitat_waterbodies | tojson }};  // 서식 수역 맵 — 기록 0건이어도 장소 분포에 표시
 const STATE_CLS = {'강한 활성':'strong','활성':'active','탐색':'unclear','비활성':'off'};
 
 // 필터 상태: 한 축만 활성(수역/미끼/트로피기록 중 하나) + 트로피토글(독립)
@@ -127,6 +128,7 @@ function renderBaits(rs) {
 function renderPlaces(rs) {
   const el = document.getElementById('place-list');
   const counts = {};
+  for (const wb of HABITAT_WBS) counts[wb] = 0;   // 서식 수역은 기록 없어도 0건으로 표시
   for (const r of rs) counts[r.waterbody] = (counts[r.waterbody] || 0) + 1;
   const ranked = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 10);
   if (!ranked.length) { el.innerHTML = '<p style="font-size:13px;color:var(--faint);">기록 없음</p>'; return; }
@@ -174,10 +176,11 @@ function updateLabelSection() {
   const wbEl = document.getElementById('label-wb');
   const hintEl = document.getElementById('label-hint');
   const btns = panel.querySelectorAll('.label-btn');
-  if (wbs.length === 1) {
+  if (filter && filter.type === 'waterbody') {
+    // 0건 서식 수역(WATER_SCORES에 없음)은 라벨 불가 — 서버도 400으로 막는다
+    labelWb = WATER_SCORES[filter.value] ? filter.value : null;
+  } else if (wbs.length === 1) {
     labelWb = wbs[0];
-  } else if (wbs.length > 1 && filter && filter.type === 'waterbody') {
-    labelWb = filter.value;
   } else {
     labelWb = null;
   }
@@ -187,7 +190,7 @@ function updateLabelSection() {
     btns.forEach(b => { b.disabled = false; b.style.opacity = ''; b.style.cursor = ''; });
   } else {
     wbEl.textContent = '이 어종';
-    hintEl.textContent = wbs.length ? '장소 분포에서 수역을 선택하세요' : '기록 없음';
+    hintEl.textContent = wbs.length ? '장소 분포에서 기록 있는 수역을 선택하세요' : '기록 없음';
     btns.forEach(b => { b.disabled = true; b.style.opacity = '0.4'; b.style.cursor = 'not-allowed'; });
   }
 }
