@@ -20,7 +20,7 @@ model: opus
 ## 검사 항목 (전부 수행)
 
 1. **기능 동작**: 변경이 의도한 대로 작동하는가. 실데이터/테스트 데이터로 확인. 엣지 케이스(빈 데이터, 단일 수역, 표본 부족 등) 점검.
-2. **테스트**: `cd tools && python test_app.py && python test_auth.py && python test_labels.py` — 세 스위트 전부 통과하는가. 변경으로 무효해진 테스트는 없는가.
+2. **테스트**: `cd tools && python test_app.py && python test_auth.py && python test_labels.py && python test_scoring.py` — 네 스위트 전부 통과하는가. 변경으로 무효해진 테스트는 없는가.
 3. **정적 분석**: `cd rf4site && python -m pyflakes *.py` — 미사용 import/변수 0인가. 컴파일되는가.
 4. **잔재**: 이번 변경으로 죽은 코드가 생겼는가(미사용 함수·변수·파라미터, 옛 분기). 옛 값/이름의 잔재(grep으로 확인).
 5. **일관성·통일성**: 변수명이 기존 컨벤션과 맞는가. 구조가 주변 코드와 일관되는가. 시간 처리가 UTC 원칙을 따르는가(first_seen 공백 포맷). 점수 로직이 scoring.py 한곳에 있는가(JS 등에 중복 안 됨).
