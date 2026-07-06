@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS labels (
     n_normal      INTEGER,
     n_total       INTEGER,
     consistency   INTEGER,
+    family_consistency INTEGER,
     top_bait      TEXT,
     top_waterbody TEXT,
     score         REAL,
@@ -42,6 +43,8 @@ def init_db(conn):
     cols = [r[1] for r in conn.execute("PRAGMA table_info(labels)").fetchall()]
     if "source" not in cols:
         conn.execute("ALTER TABLE labels ADD COLUMN source TEXT")
+    if "family_consistency" not in cols:
+        conn.execute("ALTER TABLE labels ADD COLUMN family_consistency INTEGER")
     conn.commit()
 
 
@@ -54,15 +57,16 @@ def add_label(conn, user_id, species, label, card, source="user"):
         return False, "알 수 없는 라벨입니다."
     conn.execute("""
         INSERT INTO labels (user_id, species, label, window,
-            n_rare, n_trophy, n_normal, n_total, consistency,
+            n_rare, n_trophy, n_normal, n_total, consistency, family_consistency,
             top_bait, top_waterbody, score,
             trophy_ratio_max, trophy_ratio_min, trophy_ratio_avg,
             rare_ratio_max, rare_ratio_min, rare_ratio_avg,
             hours_since_reset, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (user_id, species, label, card.get("window", ""),
           card["n_rare"], card["n_trophy"], card["n_normal"], card["n_total"],
-          card["consistency"], card["top_bait"], card["top_waterbody"],
+          card["consistency"], card["family_consistency"],
+          card["top_bait"], card["top_waterbody"],
           card["score"],
           card.get("trophy_ratio_max"), card.get("trophy_ratio_min"),
           card.get("trophy_ratio_avg"), card.get("rare_ratio_max"),
@@ -77,7 +81,7 @@ def export_csv(conn, path):
     앱에서 자동 호출하지 않는 수동 유틸 — 모델 학습 시 직접 호출해 데이터셋을 뽑는다."""
     import csv
     cols = ["species", "label", "window", "n_rare", "n_trophy", "n_normal",
-            "n_total", "consistency", "top_bait", "top_waterbody", "score",
+            "n_total", "consistency", "family_consistency", "top_bait", "top_waterbody", "score",
             "trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
             "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg",
             "hours_since_reset", "source", "labeled_at"]

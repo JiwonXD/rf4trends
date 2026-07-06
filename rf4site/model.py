@@ -49,7 +49,7 @@ def _tree_predict(tree, row):
 
 
 def predict_proba(features):
-    """features: {n_rare, n_trophy, n_normal, n_total, consistency,
+    """features: {n_rare, n_trophy, n_normal, n_total, consistency, family_consistency,
     trophy_ratio_max/min/avg, rare_ratio_max/min/avg, hours_since_reset,
     species, window, top_waterbody} 형태의 dict.
     반환: [P(비활성), P(탐색), P(활성), P(강한활성)] (합 1)."""

@@ -40,7 +40,7 @@ rf4trends/
 
 테스트는 `tools/`에서 실행 (sys.path로 rf4site 참조, RF4_DB 환경변수로 DB 격리):
 ```bash
-cd tools && python test_app.py && python test_auth.py && python test_labels.py
+cd tools && python test_app.py && python test_auth.py && python test_labels.py && python test_scoring.py
 ```
 
 ## 핵심 설계 원칙 (반드시 지킬 것)
@@ -57,9 +57,9 @@ cd tools && python test_app.py && python test_auth.py && python test_labels.py
 
 ## 작업 방식 (이 프로젝트의 일하는 법)
 
-- **결정은 PRD.md에 D-번호로 기록.** 무엇을·왜 + 근거. 현재 D-47까지 있음. 새 결정은 다음 번호로.
+- **결정은 PRD.md에 D-번호로 기록.** 무엇을·왜 + 근거. 현재 D-49까지 있음. 새 결정은 다음 번호로.
 - **판단의 서사는 EXPERIENCES.md에 기록.** PRD가 "개별 결정"이라면 EXPERIENCES.md는 "결정들이 어떻게 연결됐나"의 이야기 — 기능을 만들었더니 실제 문제가 드러났고, 과거 기능과 상충해 어떤 근거로 풀었고, 그게 다음으로 어떻게 이어졌는지. 포트폴리오에서 사고력을 보여주는 핵심 자료. 의미 있는 판단/상충이 있을 때만(사소한 건 PRD로 충분).
-- **코드 변경 후 반드시 세 스위트 통과 확인.** (tools에서)
+- **코드 변경 후 반드시 네 스위트 통과 확인.** (tools에서: test_app·test_auth·test_labels·test_scoring)
 - **surgical 변경.** 요청한 것만 건드린다. 인접 코드·주석·포맷을 "개선"하지 않는다. 내 변경으로 생긴 잔재(미사용 import 등)만 정리한다. 기존 죽은 코드는 발견하면 보고만, 멋대로 지우지 않는다.
 - **단순함 우선.** 요청 안 한 기능·추상화·유연성·방어코드를 넣지 않는다. senior 엔지니어가 "과하다"고 할 코드면 다시 쓴다.
 - **검증 가능한 성공 기준으로 작업.** "검증 추가"가 아니라 "이 입력에 이 결과가 나오는 테스트를 통과시킨다".
@@ -77,8 +77,8 @@ cd tools && python test_app.py && python test_auth.py && python test_labels.py
 
 ## 현재 상태 / 다음 할 일
 
-- **방금 끝남**: 서식 수역 맵 화면 반영(D-48) — 어종 상세 장소 분포에 기록 0건 수역도 "0건 · 비활성"으로 표시, 0건 수역 선택 시 라벨 버튼 비활성. 그 전: 어종 상세 죽은 서버 집계 제거 + 전 코드 주석 전수 최신화(D-47), 어종 원천 마스터 구축(D-46) — species_master가 trophies를 흡수, 온보딩·상세·scoring 기준 통일, species_waterbodies(서식 수역 맵) 테이블 신설(수동 시드), 전체 감사 후 경미 정비(D-45).
-- **다음 예정**: 운영 반영(species_master 마이그레이션 + 수역 맵 시드는 태블릿에서 수동). 라벨을 더 쌓으며 모델 품질 관찰, 충분히 늘면 재학습(`tools/train_model.py`). D-45가 기록만 남긴 항목들(죽은 컬럼·테이블, state/score 이원화, db() 매 요청 초기화, 로그인 속도제한 등)도 각각 필요 시 새 D-번호로.
+- **방금 끝남**: 미끼 패밀리 정규화 피처(D-49) — scoring.bait_family()로 크기 표기를 정규화한 family_consistency를 기존 consistency 옆에 새 학습 피처로 추가(교체 아님 — 구 라벨 스냅샷은 재계산 불가). labels 컬럼은 기동 시 자동 ALTER, 모델 반영은 다음 재학습 때(train_model NUMERIC 등록 완료). tools/test_scoring.py 신규(네 번째 스위트). 그 전: 서식 수역 맵 화면 반영(D-48), 죽은 서버 집계 제거 + 주석 전수 최신화(D-47), 어종 원천 마스터 구축(D-46).
+- **다음 예정**: 운영 반영(species_master 마이그레이션 + 수역 맵 시드는 태블릿에서 수동, family_consistency는 자동). 라벨을 더 쌓으며 모델 품질 관찰, 충분히 늘면 재학습(`tools/train_model.py`) — 그때 family_consistency가 처음 모델에 반영됨. D-45가 기록만 남긴 항목들(죽은 컬럼·테이블, state/score 이원화, db() 매 요청 초기화, 로그인 속도제한 등)도 각각 필요 시 새 D-번호로.
 - **장기**: "이전 선택 시간창 유지" 기능(쿠키/DB/URL).
 
 ## 에이전트 팀 구성

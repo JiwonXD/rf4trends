@@ -104,7 +104,7 @@ python app.py                       # http://0.0.0.0:8000
 테스트:
 ```bash
 cd tools
-python test_app.py && python test_auth.py && python test_labels.py
+python test_app.py && python test_auth.py && python test_labels.py && python test_scoring.py
 ```
 
 배포(Termux + Cloudflare Named Tunnel)는 [tools/TERMUX_SETUP.md](tools/TERMUX_SETUP.md) 참고.
@@ -394,6 +394,14 @@ python test_app.py && python test_auth.py && python test_labels.py
 - 라벨 연동 보완(검수 발견): 0건 수역 선택 시 라벨 버튼 비활성 — 기록 없는 수역이 라벨 대상이 되거나(서버 400), 클릭한 수역과 라벨 대상이 어긋나는 경로 차단.
 - 어종 전체가 시간창 내 0건이면 기존 "최근 기록 없음" 화면 유지(서식 수역 목록도 안 보임 — 기존 구조 유지 결정).
 - **파일**: rf4site/scoring.py, templates/species.html, tools/test_{app,labels}.py
+
+### 07-06 · 미끼 패밀리 정규화 — family_consistency 학습 피처
+
+`[변경]` **미끼 이름의 크기 표기를 정규화한 "패밀리 키" 점유율을 새 학습 피처 family_consistency로 추가(D-49).** 기존 consistency(원문 문자열 비교)는 그대로 두고 옆에 추가.
+- 게임 도메인: 보일리류는 끝 숫자가 크기라 "연어 팝업 14/20"은 같은 미끼(조과 경향만 다름)인데 딴 문자열로 세어져 점유율이 희석됐음. 루어는 반대로 끝 시리즈(-003, 색상 패턴)가 정체성이고 중간 토큰(80F)만 크기 — 파서가 이 구분을 처리하고, 2미끼 조합의 순서 차이("A; B"/"B; A"), 사이트 원문의 대소문자 불일치까지 흡수.
+- 규칙은 운영 DB 미끼 전수(2,909종)로 검증해 확정(성분 1,810종→패밀리 1,100종), 실측 27케이스를 tools/test_scoring.py(신규 네 번째 스위트)로 박제. 실측 영향: 24시간 창 282그룹 중 20%에서 점유율 상승, 보일리 잉어류 최대 29%→86%.
+- 교체가 아닌 추가인 이유: 구 라벨 494건의 스냅샷은 재계산 불가(아카이브가 first_seen·수역을 안 남김, D-34) — 한 컬럼에 옛/새 규칙 값이 섞이는 조용한 어긋남 대신 새 컬럼으로 분리(구 라벨 NULL→median impute). labels 컬럼은 기동 시 자동 마이그레이션, 모델 반영은 다음 재학습 때.
+- **파일**: rf4site/scoring.py(파서+배선), rf4site/labels.py, rf4site/model.py(docstring), tools/train_model.py, tools/test_scoring.py(신규), tools/test_labels.py
 
 ---
 

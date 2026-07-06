@@ -10,6 +10,7 @@
 import json
 import sqlite3
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from sklearn.ensemble import RandomForestClassifier
@@ -23,7 +24,7 @@ import numpy as np
 # 모델 산출물엔 라벨 텍스트를 담지 않는다 — 인덱스↔표시문구 매핑은 scoring.py가 소유.
 LABEL_TO_IDX = {"비활성": 0, "불명": 1, "탐색": 1, "활성": 2, "강한 활성": 3}
 
-NUMERIC = ["n_rare", "n_trophy", "n_normal", "n_total", "consistency",
+NUMERIC = ["n_rare", "n_trophy", "n_normal", "n_total", "consistency", "family_consistency",
            "trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
            "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg",
            "hours_since_reset"]
@@ -31,9 +32,13 @@ CATEGORICAL = ["species", "window", "top_waterbody"]
 FEATURE_ORDER = NUMERIC + CATEGORICAL
 SEED = 42
 
-N_ESTIMATORS = 200
-MAX_DEPTH = 6
+# 494건 기준 120조합 그리드서치 + 5-시드 재검증 결과 (단일 시드 1등은 선택 과적합이라 배제,
+# 다중시드 평균 1위 채택). 기존 depth6/leaf5/gini/sqrt 대비 +3%p대는 depth 완화가 기여.
+N_ESTIMATORS = 200   # 400/800도 차이 없음 확인
+MAX_DEPTH = 12
 MIN_SAMPLES_LEAF = 5
+MAX_FEATURES = 0.3
+CRITERION = "entropy"
 
 OUT_PATH = Path(__file__).parent.parent / "rf4site" / "model_data.json"
 
@@ -83,7 +88,8 @@ def main():
     # 학습 전 5-fold 교차검증으로 export 직전 성능을 한 번 더 확인(회귀 방지)
     rf_cv = RandomForestClassifier(
         n_estimators=N_ESTIMATORS, max_depth=MAX_DEPTH,
-        min_samples_leaf=MIN_SAMPLES_LEAF, random_state=SEED, n_jobs=-1)
+        min_samples_leaf=MIN_SAMPLES_LEAF, max_features=MAX_FEATURES,
+        criterion=CRITERION, random_state=SEED, n_jobs=-1)
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
     pred = cross_val_predict(rf_cv, X, y, cv=cv)
     acc = accuracy_score(y, pred)
@@ -93,7 +99,8 @@ def main():
     # 전체 데이터로 최종 모델 학습 (export용)
     rf = RandomForestClassifier(
         n_estimators=N_ESTIMATORS, max_depth=MAX_DEPTH,
-        min_samples_leaf=MIN_SAMPLES_LEAF, random_state=SEED, n_jobs=-1)
+        min_samples_leaf=MIN_SAMPLES_LEAF, max_features=MAX_FEATURES,
+        criterion=CRITERION, random_state=SEED, n_jobs=-1)
     rf.fit(X, y)
 
     categories = {
@@ -111,6 +118,7 @@ def main():
         "n_estimators": N_ESTIMATORS,
         "trees": [export_tree(est) for est in rf.estimators_],
         "trained_on": len(df),
+        "trained_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),  # UTC, D-45 검토 항목
         "cv_accuracy": round(acc, 3),
         "cv_adjacent_accuracy": round(adj, 3),
     }

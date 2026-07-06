@@ -8,6 +8,7 @@
 # 남아있다는 것 자체가 "큰 게 안 나온다 = 비활성"의 근거이므로 버리지 않는다(D-21).
 
 import datetime as _dt
+import re
 
 import model as _model
 
@@ -108,6 +109,58 @@ def _top_share(values):
     return top, counts[top] / len(vals)
 
 
+# 미끼 패밀리 정규화 (D-49): 크기 표기만 제거해 "같은 미끼, 크기만 다름"을 한 키로 합친다.
+# 보일리류는 끝 숫자가 크기(연어 팝업 14/20), 루어는 크기토큰-시리즈(Balsa Crank 80F-003 →
+# 80F만 크기, -003 시리즈는 색상 패턴이라 정체성 유지). 2미끼 조합("A; B")은 성분 패밀리를
+# 정렬해 순서 차이(A; B vs B; A)를 흡수한다. 파싱 안 되는 이름은 원문 소문자 그대로 —
+# 실패해도 기존(원문 비교)과 동일할 뿐 더 나빠지지 않는다.
+_EX_STORFISK = re.compile(r"^(?P<base>Stor Fisk)\s+[A-Z]{1,2}\d+-\d+\s+(?P<series>#\d+)$")
+_EX_PILKER = re.compile(r"^(?P<base>Pilker №\d+)-\d+(?:\s+(?P<series>[A-Z]{2}))?$")
+_EX_CLR = re.compile(r"^(?P<base>.+?)\s+\d+(?:\.\d+)?\s+(?P<series>CLR-[A-Z])$")
+_EX_MS = re.compile(r"^(?P<base>.+?)\s+[msl]-(?P<series>\d+)$")
+_R_SPACED = re.compile(r"^(?P<base>.+?)\s*-?\s*\d+(?:[.]\d+)?(?:-\d+)?\s+-\s+(?P<series>\d+)$")
+_R_ALPHA_SIZE = re.compile(r"^(?P<base>.+?)\s+[A-Za-z]{1,2}\d+(?:[.]\d+)?-(?P<series>[A-Za-z]{0,2}\d+)$")
+_R_NUM_SIZE = re.compile(r"^(?P<base>.+?)\s*\d+(?:[.]\d+)?[A-Za-z]{0,2}-(?P<series>[A-Za-z]{0,2}\d+)$")
+_R_PADDED = re.compile(r"^(?P<base>.*\S)\s+(?P<series>0\d{1,2})$")
+_R_SIZE_TAIL = re.compile(r"^(?P<base>.+?)\s+#?\d+(?:[./]\d+)?\s*(?:g|oz|kg|mm)?$", re.I)
+_R_TRAIL_SIZE = re.compile(r"^(?P<base>.*\S)\s+[1-9]\d{0,3}(?:[.]\d+)?$")
+
+
+def _clean_base(base):
+    return base.rstrip(" -").rstrip()
+
+
+def _component_family(name):
+    name = " ".join(name.replace("\xa0", " ").split())
+    for rx in (_EX_STORFISK, _EX_PILKER, _EX_CLR, _EX_MS,
+               _R_SPACED, _R_ALPHA_SIZE, _R_NUM_SIZE):
+        m = rx.match(name)
+        if m:
+            base = _clean_base(m.group("base"))
+            series = m.groupdict().get("series")
+            return f"{base} -{series}" if series else base
+    m = _R_PADDED.match(name)
+    if m:
+        m2 = _R_SIZE_TAIL.match(m.group("base"))
+        if m2:
+            return f"{_clean_base(m2.group('base'))} -{m.group('series')}"
+        return name
+    m = _R_TRAIL_SIZE.match(name)
+    if m:
+        return _clean_base(m.group("base"))
+    return name
+
+
+def bait_family(bait):
+    """미끼 이름에서 크기 표기를 제거한 패밀리 키(소문자). 2미끼 조합은 성분을 정렬해
+    순서 차이를 흡수한다. family_consistency 피처 계산에만 쓰이며, 기존 consistency
+    (원문 미끼 최빈값)는 절대 이 함수를 거치지 않는다(구 라벨 호환)."""
+    if not bait:
+        return bait
+    parts = [p.strip() for p in bait.split(";") if p.strip()]
+    return "; ".join(sorted(_component_family(p).lower() for p in parts))
+
+
 _RATIO_KEYS = ("trophy_ratio_max", "trophy_ratio_min", "trophy_ratio_avg",
                "rare_ratio_max", "rare_ratio_min", "rare_ratio_avg")
 
@@ -171,14 +224,17 @@ def _score_from_rows(rows, trophy_g, rare_g, species, window, waterbody):
     n_total = len(rows)
     top_bait, consistency = _top_share([r[1] for r in rows])
     consistency_pct = round(consistency * 100)
+    _, family_share = _top_share([bait_family(r[1]) for r in rows])
+    family_consistency = round(family_share * 100)
 
     if n_total == 0:
         return {"state": STATE_INACTIVE, "score": 0.0, "low_sample": True,
                 "n_rare": 0, "n_trophy": 0, "n_normal": 0, "n_total": 0,
-                "consistency": 0, "top_bait": None}
+                "consistency": 0, "family_consistency": 0, "top_bait": None}
 
     base = {"n_rare": n_rare, "n_trophy": n_trophy, "n_normal": n_normal,
-            "n_total": n_total, "consistency": consistency_pct, "top_bait": top_bait}
+            "n_total": n_total, "consistency": consistency_pct,
+            "family_consistency": family_consistency, "top_bait": top_bait}
 
     if n_total < MIN_SAMPLE:
         # 표본 미달은 모델 신뢰 구간 밖 — 합산 보정 없이 그냥 비활성 처리(원칙 #2 유지)
@@ -231,6 +287,7 @@ def score_species(conn, species, window="today"):
         "n_normal": rep["n_normal"],
         "n_total": rep["n_total"],
         "consistency": rep["consistency"],
+        "family_consistency": rep["family_consistency"],
         "top_bait": rep["top_bait"],
         "top_waterbody": top_wb,
     }
@@ -254,6 +311,7 @@ def score_species_at(conn, species, window="today", waterbody=None):
         "n_normal": rep["n_normal"],
         "n_total": rep["n_total"],
         "consistency": rep["consistency"],
+        "family_consistency": rep["family_consistency"],
         "top_bait": rep["top_bait"],
         "top_waterbody": waterbody,
     }

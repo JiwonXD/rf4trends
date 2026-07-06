@@ -48,10 +48,12 @@ check("잘못된 라벨 거부", r.status_code==400)
 
 # DB 확인: 라벨 2건 쌓였는지 + 스냅샷 저장됐는지
 conn = sqlite3.connect("rf4.db")
-rows = conn.execute("SELECT label, n_total, consistency, top_bait, top_waterbody FROM labels ORDER BY id").fetchall()
+rows = conn.execute("SELECT label, n_total, consistency, top_bait, top_waterbody, family_consistency FROM labels ORDER BY id").fetchall()
 check("라벨 2건 누적", len(rows)==2)
 check("스냅샷 박제됨(n_total, 미끼)", rows[0][1] is not None and rows[0][3]=='크랜베리')
 check("단일 수역 스냅샷(곰 호수, 6건)", rows[0][4]=='곰 호수' and rows[0][1]==6)
+# family_consistency: 6건 전부 '크랜베리'(패밀리 파싱 안 되는 원문 그대로) → 미끼 일관성과 동일하게 100
+check("family_consistency 박제됨(100)", rows[0][5]==100)
 # ratio 통계도 저장됐는지
 rrow = conn.execute("SELECT trophy_ratio_max, trophy_ratio_avg FROM labels LIMIT 1").fetchone()
 check("ratio 통계 박제됨", rrow[0] is not None and rrow[1] is not None)
