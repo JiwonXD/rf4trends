@@ -3,6 +3,7 @@
 
 import os
 import re
+import sqlite3
 
 import bcrypt
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
@@ -23,7 +24,8 @@ def is_admin(username):
 
 _serializer = URLSafeTimedSerializer(SECRET_KEY, salt="rf4-session")
 
-USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,20}$")
+USERNAME_RE = re.compile(r"^[A-Za-z0-9_.@-]{3,20}$")
+NICKNAME_RE = re.compile(r"^[A-Za-z0-9가-힣_.@-]{3,20}$")
 
 
 def _hash_pw(password):
@@ -45,6 +47,8 @@ CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY,
     username      TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    nickname      TEXT,
+    leaderboard_visible INTEGER NOT NULL DEFAULT 1,
     created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS favorites (
@@ -57,13 +61,29 @@ CREATE TABLE IF NOT EXISTS favorites (
 
 def init_db(conn):
     conn.executescript(SCHEMA)
+    # 기존 테이블에 nickname/leaderboard_visible 컬럼이 없으면 추가 (CREATE TABLE IF NOT EXISTS는 컬럼을 안 더함)
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(users)").fetchall()]
+    if "nickname" not in cols:
+        # 개인정보 보호: username으로 백필하지 않는다 — 기존 유저는 nickname NULL(리더보드 미노출),
+        # 직접 등록해야 노출된다. SQLite UNIQUE INDEX는 NULL 여러 개를 위반으로 안 봄.
+        conn.execute("ALTER TABLE users ADD COLUMN nickname TEXT")
+    if "leaderboard_visible" not in cols:
+        conn.execute("ALTER TABLE users ADD COLUMN leaderboard_visible INTEGER NOT NULL DEFAULT 1")
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_nickname ON users(nickname)")
     conn.commit()
 
 
 def validate_username(username):
     """반환: 오류 메시지 또는 None(통과)."""
     if not USERNAME_RE.match(username):
-        return "아이디는 영문/숫자/밑줄 3~20자여야 합니다."
+        return "아이디는 영문/숫자와 _ - @ . 3~20자여야 합니다."
+    return None
+
+
+def validate_nickname(nickname):
+    """반환: 오류 메시지 또는 None(통과)."""
+    if not NICKNAME_RE.match(nickname):
+        return "닉네임은 한글/영문/숫자와 _ - @ . 3~20자여야 합니다."
     return None
 
 
@@ -83,6 +103,7 @@ def create_user(conn, username, password):
     if exists:
         return None, "이미 사용 중인 아이디입니다."
     pw_hash = _hash_pw(password)
+    # nickname은 NULL로 시작 — 등록 전엔 리더보드 미노출(개인정보 보호, username 자동 노출 방지)
     cur = conn.execute(
         "INSERT INTO users (username, password_hash) VALUES (?, ?)",
         (username, pw_hash))
@@ -125,3 +146,50 @@ def current_user(conn, request):
         return None
     row = conn.execute("SELECT id, username FROM users WHERE id = ?", (uid,)).fetchone()
     return (row[0], row[1]) if row else None
+
+
+def change_nickname(conn, user_id, nickname):
+    """반환: (True, None) 또는 (False, 오류메시지)."""
+    err = validate_nickname(nickname)
+    if err:
+        return False, err
+    dup = conn.execute(
+        "SELECT 1 FROM users WHERE nickname = ? AND id <> ?", (nickname, user_id)).fetchone()
+    if dup:
+        return False, "이미 사용 중인 닉네임입니다."
+    try:
+        conn.execute("UPDATE users SET nickname = ? WHERE id = ?", (nickname, user_id))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # 검사(dup SELECT)와 저장(UPDATE) 사이의 경쟁 상태 대비 — 유니크 인덱스가 최종 방어선
+        return False, "이미 사용 중인 닉네임입니다."
+    return True, None
+
+
+def change_password(conn, user_id, current_pw, new_pw):
+    """반환: (True, None) 또는 (False, 오류메시지)."""
+    row = conn.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
+    if not row or not _verify_pw(current_pw, row[0]):
+        return False, "현재 비밀번호가 올바르지 않습니다."
+    err = validate_password(new_pw)
+    if err:
+        return False, err
+    conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (_hash_pw(new_pw), user_id))
+    conn.commit()
+    return True, None
+
+
+def set_leaderboard_visible(conn, user_id, visible):
+    conn.execute("UPDATE users SET leaderboard_visible = ? WHERE id = ?",
+                 (1 if visible else 0, user_id))
+    conn.commit()
+
+
+def get_profile(conn, user_id):
+    """마이페이지 렌더용: {"username", "nickname", "leaderboard_visible"} 또는 None."""
+    row = conn.execute(
+        "SELECT username, nickname, leaderboard_visible FROM users WHERE id = ?",
+        (user_id,)).fetchone()
+    if not row:
+        return None
+    return {"username": row[0], "nickname": row[1], "leaderboard_visible": bool(row[2])}

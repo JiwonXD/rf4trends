@@ -160,5 +160,37 @@ check("실제 모델: 확률 4개 반환", len(_probs) == 4)
 check("실제 모델: 확률 합 1", abs(sum(_probs) - 1.0) < 1e-6)
 check("실제 모델: expected_value 0~100 범위", 0 <= _model_mod.expected_value(_probs) <= 100)
 
+# 마이페이지 + 리더보드 aside 통합 검증 (end-to-end)
+r = c.get("/me")
+check("GET /me 200 + 닉네임 폼 렌더", r.status_code == 200 and "닉네임" in r.text and "tester" in r.text)
+
+r = c.post("/me/nickname", data={"nickname": "tester_nick"}, follow_redirects=False)
+check("POST /me/nickname 리다이렉트", r.status_code == 303 and "/me" in r.headers["location"])
+import auth as _auth_mod
+_conn4 = sqlite3.connect("rf4.db")
+_uid_tester = _conn4.execute("SELECT id FROM users WHERE username='tester'").fetchone()[0]
+_profile = _auth_mod.get_profile(_conn4, _uid_tester)
+check("닉네임 실제 변경 확인(get_profile)", _profile["nickname"] == "tester_nick")
+_conn4.close()
+r = c.get("/me")
+check("GET /me에 변경된 닉네임 반영", "tester_nick" in r.text)
+
+r = c.post("/me/visibility", data={"visible": "0"}, follow_redirects=False)
+check("POST /me/visibility(끄기) 리다이렉트", r.status_code == 303)
+_conn5 = sqlite3.connect("rf4.db")
+check("visibility 끄기 반영", _auth_mod.get_profile(_conn5, _uid_tester)["leaderboard_visible"] is False)
+_conn5.close()
+r = c.post("/me/visibility", data={"visible": "1"}, follow_redirects=False)
+_conn5 = sqlite3.connect("rf4.db")
+check("visibility 켜기 반영", _auth_mod.get_profile(_conn5, _uid_tester)["leaderboard_visible"] is True)
+_conn5.close()
+
+# 닉네임 등록한 유저가 라벨 제보 후 대시보드 aside 리더보드가 오류 없이 렌더되는지
+r = c.post("/api/label/검은 잉어", data={"label": "강한 활성", "window": "today", "waterbody": "곰 호수"})
+check("리더보드용 라벨 제보 성공", r.status_code == 200)
+r = c.get("/")
+check("대시보드(aside 포함) 정상 렌더", r.status_code == 200)
+check("aside 리더보드에 닉네임 표시(block aside 캡처 동작 확인)", "tester_nick" in r.text and "이번 주 리더보드" in r.text)
+
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

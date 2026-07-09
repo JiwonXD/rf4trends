@@ -67,5 +67,66 @@ check("angler1은 선호 없음 → 온보딩", r.status_code in (302,303,307) a
 r = cf.get("/logout", follow_redirects=False)
 check("로그아웃 시 쿠키 삭제", r.status_code==303)
 
+# 아이디/닉네임 검증
+import auth
+check("validate_username 통과(특수문자 허용)", auth.validate_username("a_b-c.d@e") is None)
+check("validate_username 거부(짧음)", auth.validate_username("ab") is not None)
+check("validate_username 거부(공백)", auth.validate_username("ab c") is not None)
+check("validate_username 거부(느낌표)", auth.validate_username("abc!") is not None)
+check("validate_username 거부(한글)", auth.validate_username("한글아이디") is not None)
+check("validate_nickname 통과(한글)", auth.validate_nickname("한글닉") is None)
+check("validate_nickname 통과(한글2)", auth.validate_nickname("낚시왕") is None)
+check("validate_nickname 거부(짧음)", auth.validate_nickname("ab") is not None)
+check("validate_nickname 거부(공백)", auth.validate_nickname("닉 네임") is not None)
+check("validate_nickname 거부(느낌표)", auth.validate_nickname("n!ck") is not None)
+
+# 닉네임은 NULL로 시작(개인정보 보호, username 백필 안 함), 리더보드 노출 기본 True
+conn = sqlite3.connect("rf4.db")
+auth.init_db(conn)
+uid, err = auth.create_user(conn, "nickuser1", "secret123")
+check("create_user 성공", err is None)
+profile = auth.get_profile(conn, uid)
+check("get_profile nickname은 None(백필 안 됨)", profile["nickname"] is None)
+check("get_profile leaderboard_visible 기본 True", profile["leaderboard_visible"] is True)
+
+# 닉네임 등록/변경
+uid2, _ = auth.create_user(conn, "nickuser2", "secret123")
+ok, err = auth.change_nickname(conn, uid, "먼저닉")
+check("uid 닉네임 최초 등록 성공", ok and err is None)
+ok, err = auth.change_nickname(conn, uid2, "먼저닉")
+check("닉네임 충돌 시 실패", not ok and err is not None)
+ok, err = auth.change_nickname(conn, uid2, "새닉네임")
+check("정상 닉네임 변경 성공", ok and err is None)
+ok, err = auth.change_nickname(conn, uid2, "나!쁜닉")
+check("잘못된 문자 닉네임 거부", not ok)
+
+# 비밀번호 변경
+ok, err = auth.change_password(conn, uid2, "wrongpw", "newpass123")
+check("틀린 현재 비밀번호 거부", not ok)
+ok, err = auth.change_password(conn, uid2, "secret123", "123")
+check("짧은 새 비밀번호 거부", not ok)
+ok, err = auth.change_password(conn, uid2, "secret123", "newpass123")
+check("비밀번호 변경 성공", ok and err is None)
+check("변경된 비밀번호로 로그인 가능", auth.verify_user(conn, "nickuser2", "newpass123") == uid2)
+conn.close()
+
+# 마이그레이션: nickname 없는 구 users 테이블에 init_db 적용
+if os.path.exists("rf4_migrate.db"): os.remove("rf4_migrate.db")
+mconn = sqlite3.connect("rf4_migrate.db")
+mconn.executescript("""
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+INSERT INTO users (username, password_hash) VALUES ('olduser', 'hash');
+""")
+mconn.commit()
+auth.init_db(mconn)
+row = mconn.execute("SELECT nickname, leaderboard_visible FROM users WHERE username='olduser'").fetchone()
+check("마이그레이션: nickname NULL 유지(백필 안 함)", row[0] is None)
+check("마이그레이션: leaderboard_visible 기본값 1", row[1] == 1)
+mconn.close()
+os.remove("rf4_migrate.db")
+
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

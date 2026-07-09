@@ -52,10 +52,8 @@ def _to_kst_str(utc_str):
         return utc_str[:16].replace("T", " ")
 
 
-def hours_since_reset(now_utc=None):
-    """직전 주간 리셋(월 04:00 KST)으로부터 경과 시간(시간 단위, 0~168).
-    태블릿 시간대 설정과 무관하게 UTC 기준으로 계산한다.
-    라벨 학습 피처: 주 초반(0 근처)과 주말(168 근처)의 활성 추세 차이를 담는다."""
+def week_start_utc(now_utc=None):
+    """직전 주간 리셋(월 04:00 KST = 일 19:00 UTC) 시각을 UTC datetime으로 반환."""
     if now_utc is None:
         now_utc = _dt.datetime.now(_dt.timezone.utc)
     now_kst = now_utc.astimezone(_KST)
@@ -63,7 +61,18 @@ def hours_since_reset(now_utc=None):
         hour=4, minute=0, second=0, microsecond=0)
     if now_kst < monday:
         monday -= _dt.timedelta(days=7)
-    return round((now_kst - monday).total_seconds() / 3600, 1)
+    return monday.astimezone(_dt.timezone.utc)
+
+
+def hours_since_reset(now_utc=None):
+    """직전 주간 리셋(월 04:00 KST)으로부터 경과 시간(시간 단위, 0~168).
+    태블릿 시간대 설정과 무관하게 UTC 기준으로 계산한다.
+    라벨 학습 피처: 주 초반(0 근처)과 주말(168 근처)의 활성 추세 차이를 담는다."""
+    if now_utc is None:
+        now_utc = _dt.datetime.now(_dt.timezone.utc)
+    now_kst = now_utc.astimezone(_KST)
+    monday_kst = week_start_utc(now_utc).astimezone(_KST)
+    return round((now_kst - monday_kst).total_seconds() / 3600, 1)
 
 
 # [SQL 안전 규율] 이 모듈은 일부 SQL을 f-string으로 조립한다.

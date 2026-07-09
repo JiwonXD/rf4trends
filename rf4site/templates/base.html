@@ -30,9 +30,21 @@ body {
   background: var(--bg); color: var(--text);
   font-family: Pretendard, -apple-system, sans-serif;
   font-size: 15px; line-height: 1.55;
-  max-width: 860px; margin: 0 auto; padding: 0 20px 80px;
 }
 a { color: inherit; text-decoration: none; }
+.layout {
+  max-width: 860px; margin: 0 auto; padding: 0 20px 80px;
+  display: grid; grid-template-columns: 1fr;
+}
+.layout.has-aside {
+  max-width: 1180px; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 24px;
+}
+.layout > header { grid-column: 1 / -1; }
+main { min-width: 0; }
+@media (max-width: 960px) {
+  .layout.has-aside { grid-template-columns: 1fr; max-width: 860px; }
+  .side-panel { margin-top: 20px; }
+}
 header {
   display: flex; justify-content: space-between; align-items: center;
   padding: 22px 0 18px; border-bottom: 1px solid var(--line);
@@ -69,10 +81,41 @@ header {
   text-align: center; color: var(--muted); padding: 60px 0;
   border: 1px dashed var(--line); border-radius: 10px;
 }
+.side-panel { }
+.lb-panel {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 16px;
+}
+.lb-head { margin-bottom: 10px; }
+.lb-head h2 { font-size: 15px; font-weight: 700; }
+.lb-sub { font-size: 12px; color: var(--faint); margin-top: 2px; }
+.lb-list { list-style: none; }
+.lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px;
+}
+.lb-row:last-child { border-bottom: none; }
+.lb-rank { width: 20px; text-align: center; color: var(--faint); font-weight: 600; }
+.lb-name { flex: 1; }
+.lb-count { color: var(--muted); }
+.lb-medal-1 .lb-rank { color: var(--active); }
+.lb-medal-2 .lb-rank { color: var(--muted); }
+.lb-medal-3 .lb-rank { color: var(--warn); }
+.lb-me { background: var(--surface-2); border-radius: 6px; padding-left: 6px; padding-right: 6px; }
+.lb-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+.lb-me-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.site-footer {
+  max-width: 860px; margin: 0 auto; padding: 22px 20px 36px;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--faint); line-height: 1.8; text-align: center;
+}
+.site-footer a { color: var(--muted); }
 </style>
 {% block head %}{% endblock %}
 </head>
 <body>
+{% set aside_html %}{% block aside %}{% endblock %}{% endset %}
+<div class="layout{% if aside_html|trim %} has-aside{% endif %}">
 <header>
   <a class="brand" href="/?window={{ window }}">RF4 트렌드
     <small>
@@ -88,10 +131,22 @@ header {
     </nav>
     <a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>
     {% if username is defined and username %}
+      <a class="btn" href="/me">마이페이지</a>
       <a class="btn" href="/logout" title="{{ username }} 로그아웃">로그아웃</a>
     {% endif %}
   </div>
 </header>
+<main>
 {% block content %}{% endblock %}
+</main>
+{% if aside_html|trim %}
+<aside class="side-panel">{{ aside_html|safe }}</aside>
+{% endif %}
+</div>
+<footer class="site-footer">
+  ⚠️ 본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.<br>
+  © 모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.<br>
+  문의: <a href="mailto:rf4trends@gmail.com">rf4trends@gmail.com</a>
+</footer>
 </body>
 </html>

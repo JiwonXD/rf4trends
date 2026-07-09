@@ -50,3 +50,21 @@
 {% endif %}
 
 {% endblock %}
+
+{% block aside %}
+<div class="lb-panel">
+  <div class="lb-head"><h2>이번 주 리더보드</h2><p class="lb-sub">매주 월 04:00 초기화</p></div>
+  {% if leaderboard %}
+  <ol class="lb-list">
+  {% for row in leaderboard %}
+    <li class="lb-row{% if row.rank<=3 %} lb-medal-{{row.rank}}{% endif %}{% if row.is_me %} lb-me{% endif %}">
+      <span class="lb-rank">{{row.rank}}</span><span class="lb-name">{{row.name}}</span><span class="lb-count">{{row.count}}회</span>
+    </li>
+  {% endfor %}
+  </ol>
+  {% else %}
+  <div class="lb-empty">아직 제보가 없어요</div>
+  {% endif %}
+  {% if my_rank %}<div class="lb-me-row">나 · {{my_rank.count}}회{% if my_rank.rank %} ({{my_rank.rank}}위){% endif %}</div>{% endif %}
+</div>
+{% endblock %}

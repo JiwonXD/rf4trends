@@ -9,6 +9,7 @@ import threading
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 import uvicorn
 from fastapi import FastAPI, Request, Form
@@ -152,12 +153,26 @@ def dashboard(request: Request, window: str = "today"):
             return RedirectResponse(f"/onboarding?window={window}")
         has_data = conn.execute("SELECT 1 FROM catches LIMIT 1").fetchone()
         cards = scoring.dashboard(conn, favorites, window) if has_data else []
+
+        since = scoring.week_start_utc().strftime("%Y-%m-%d %H:%M:%S")
+        ranking = labels_mod.weekly_ranking(conn, since, auth.ADMIN_USERNAME)
+        leaderboard = [
+            {"rank": i + 1, "name": r["nickname"], "count": r["count"], "is_me": r["user_id"] == uid}
+            for i, r in enumerate(ranking[:10])
+        ]
+        my_count = labels_mod.my_activity(conn, uid, since)
+        my_rank_num = next((i + 1 for i, r in enumerate(ranking) if r["user_id"] == uid), None)
+        my_in_top = any(row["is_me"] for row in leaderboard)
+        my_rank = {"count": my_count, "rank": my_rank_num} if (my_count > 0 and not my_in_top) else None
+
         return templates.TemplateResponse(request, "dashboard.html", {
             "cards": cards,
             "window": window,
             "has_data": bool(has_data),
             "last_collected": last_collected(conn),
             "username": username,
+            "leaderboard": leaderboard,
+            "my_rank": my_rank,
         })
     finally:
         conn.close()
@@ -298,6 +313,72 @@ def logout():
     resp = RedirectResponse("/login", status_code=303)
     resp.delete_cookie(auth.COOKIE_NAME)
     return resp
+
+
+@app.get("/me")
+def me_page(request: Request, ok: str = "", err: str = ""):
+    conn = db()
+    try:
+        user = require_login(conn, request)
+        if not user:
+            return RedirectResponse("/login")
+        uid, username = user
+        profile = auth.get_profile(conn, uid)
+        return templates.TemplateResponse(request, "me.html", {
+            "username": profile["username"],
+            "nickname": profile["nickname"],
+            "leaderboard_visible": profile["leaderboard_visible"],
+            "ok": ok,
+            "err": err,
+            "window": "today",
+            "last_collected": last_collected(conn),
+        })
+    finally:
+        conn.close()
+
+
+@app.post("/me/nickname")
+def me_nickname(request: Request, nickname: str = Form(...)):
+    conn = db()
+    try:
+        user = require_login(conn, request)
+        if not user:
+            return RedirectResponse("/login")
+        ok, err = auth.change_nickname(conn, user[0], nickname.strip())
+        if not ok:
+            return RedirectResponse(f"/me?err={quote(err)}", status_code=303)
+        return RedirectResponse("/me?ok=" + quote("닉네임을 변경했습니다."), status_code=303)
+    finally:
+        conn.close()
+
+
+@app.post("/me/password")
+def me_password(request: Request,
+                current_password: str = Form(...), new_password: str = Form(...)):
+    conn = db()
+    try:
+        user = require_login(conn, request)
+        if not user:
+            return RedirectResponse("/login")
+        ok, err = auth.change_password(conn, user[0], current_password, new_password)
+        if not ok:
+            return RedirectResponse(f"/me?err={quote(err)}", status_code=303)
+        return RedirectResponse("/me?ok=" + quote("비밀번호를 변경했습니다."), status_code=303)
+    finally:
+        conn.close()
+
+
+@app.post("/me/visibility")
+def me_visibility(request: Request, visible: str = Form("0")):
+    conn = db()
+    try:
+        user = require_login(conn, request)
+        if not user:
+            return RedirectResponse("/login")
+        auth.set_leaderboard_visible(conn, user[0], visible in ("1", "on", "true"))
+        return RedirectResponse("/me?ok=" + quote("리더보드 노출 설정을 변경했습니다."), status_code=303)
+    finally:
+        conn.close()
 
 
 @app.post("/api/label/{name}")

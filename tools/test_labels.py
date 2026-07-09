@@ -128,5 +128,88 @@ check("top_waterbody 일치", wb_row[1]=='샘플호A')
 r = c.post("/api/label/용잉어", data={"label":"활성","window":"today","waterbody":"없는호수"})
 check("존재하지 않는 수역 400", r.status_code==400)
 
+# 리더보드 / 순위 검증
+import auth
+import labels as labels_mod
+
+lconn = sqlite3.connect("rf4.db")
+auth.init_db(lconn)
+
+uid_a, _ = auth.create_user(lconn, "lb_alice", "secret123")
+uid_b, _ = auth.create_user(lconn, "lb_bob", "secret123")
+uid_hidden, _ = auth.create_user(lconn, "lb_hidden", "secret123")
+uid_nonick, _ = auth.create_user(lconn, "lb_nonick", "secret123")
+auth.change_nickname(lconn, uid_a, "lb_alice")
+auth.change_nickname(lconn, uid_b, "lb_bob")
+auth.change_nickname(lconn, uid_hidden, "lb_hidden")
+# uid_nonick은 닉네임 미등록 상태로 둔다 (visible=1이어도 리더보드 제외돼야 함)
+auth.set_leaderboard_visible(lconn, uid_hidden, False)
+uid_admin = lconn.execute("SELECT id FROM users WHERE username='admin'").fetchone()[0]
+
+since = "2026-01-01 00:00:00"
+old = "2025-01-01 00:00:00"
+
+
+def _label(uid, labeled_at, n=1):
+    for _ in range(n):
+        lconn.execute("""INSERT INTO labels (user_id, species, label, window, labeled_at)
+                          VALUES (?, '검은 잉어', '활성', 'today', ?)""", (uid, labeled_at))
+    lconn.commit()
+
+
+_label(uid_a, since, 3)
+_label(uid_b, since, 5)
+_label(uid_hidden, since, 10)
+_label(uid_nonick, since, 7)
+_label(uid_admin, since, 10)
+_label(uid_a, old, 100)  # since 이전 → 카운트 제외돼야 함
+
+ranking = labels_mod.weekly_ranking(lconn, since, "admin")
+names = [r["nickname"] for r in ranking]
+counts = {r["nickname"]: r["count"] for r in ranking}
+check("weekly_ranking: since 이전 라벨 제외(alice 3건만)", counts.get("lb_alice") == 3)
+check("weekly_ranking: admin 제외", "admin" not in names)
+check("weekly_ranking: 비공개 유저 제외", "lb_hidden" not in names)
+check("weekly_ranking: 닉네임 미등록 유저 제외", "lb_nonick" not in names)
+check("weekly_ranking: count DESC 정렬", ranking[0]["nickname"] == "lb_bob")
+
+mr_a = labels_mod.my_rank(lconn, uid_a, since, "admin")
+check("my_rank: bob(5)보다 적은 alice(3)는 2위", mr_a["rank"] == 2)
+mr_hidden = labels_mod.my_rank(lconn, uid_hidden, since, "admin")
+check("my_rank: 비공개 유저는 rank None", mr_hidden["rank"] is None and mr_hidden["count"] == 10)
+mr_nonick = labels_mod.my_rank(lconn, uid_nonick, since, "admin")
+check("my_rank: 닉네임 미등록은 count만 보이고 rank None",
+      mr_nonick["rank"] is None and mr_nonick["count"] == 7)
+
+# 닉네임 등록하면 리더보드에 나타나야 함
+auth.change_nickname(lconn, uid_nonick, "lb_nonick")
+ranking2 = labels_mod.weekly_ranking(lconn, since, "admin")
+check("weekly_ranking: 닉네임 등록 후 노출", "lb_nonick" in [r["nickname"] for r in ranking2])
+mr_nonick2 = labels_mod.my_rank(lconn, uid_nonick, since, "admin")
+check("my_rank: 닉네임 등록 후 rank 부여", mr_nonick2["rank"] is not None)
+
+uid_none, _ = auth.create_user(lconn, "lb_none", "secret123")
+check("my_rank: 제보 0건은 None", labels_mod.my_rank(lconn, uid_none, since, "admin") is None)
+
+# 동점 타이브레이크: 제보수 같으면 마지막 제보 시각이 이른 쪽이 위
+uid_tie1, _ = auth.create_user(lconn, "lb_tie1", "secret123")
+uid_tie2, _ = auth.create_user(lconn, "lb_tie2", "secret123")
+auth.change_nickname(lconn, uid_tie1, "lb_tie1")
+auth.change_nickname(lconn, uid_tie2, "lb_tie2")
+_label(uid_tie1, "2026-01-02 00:00:00", 3)
+_label(uid_tie1, "2026-01-02 10:00:00", 1)  # count=4, last_at=10:00 (더 늦음)
+_label(uid_tie2, "2026-01-02 00:00:00", 3)
+_label(uid_tie2, "2026-01-02 05:00:00", 1)  # count=4, last_at=05:00 (더 이름 → 위)
+
+ranking3 = labels_mod.weekly_ranking(lconn, since, "admin")
+tie_idx = {r["nickname"]: i for i, r in enumerate(ranking3)}
+check("타이브레이크: 동일 count(4)에서 마지막 제보가 이른 tie2가 tie1보다 위",
+      tie_idx["lb_tie2"] < tie_idx["lb_tie1"])
+mr_tie1 = labels_mod.my_rank(lconn, uid_tie1, since, "admin")
+mr_tie2 = labels_mod.my_rank(lconn, uid_tie2, since, "admin")
+check("my_rank도 타이브레이크와 일치(tie2가 더 높은 순위)", mr_tie2["rank"] < mr_tie1["rank"])
+
+lconn.close()
+
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

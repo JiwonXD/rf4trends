@@ -76,6 +76,45 @@ def add_label(conn, user_id, species, label, card, source="user"):
     return True, None
 
 
+def weekly_ranking(conn, since_utc, admin_username):
+    """이번 주(since_utc 이후) 제보 랭킹 — 순위 계산의 단일 소스. 닉네임을 등록했고
+    (개인정보 보호 — 미등록 유저는 아이디가 노출될 수 있어 제외) leaderboard_visible=1이며
+    admin이 아닌 유저만 대상.
+    정렬: 제보수 DESC → 그 주 마지막 제보 시각(MAX(labeled_at)) ASC(같은 수면 먼저 도달한 쪽이 위)
+    → nickname ASC(최종 결정성).
+    반환: [{"user_id","nickname","count","last_at"}, ...] (순서 = 순위, 인덱스+1이 곧 rank)."""
+    rows = conn.execute("""
+        SELECT l.user_id, u.nickname, COUNT(*) AS cnt, MAX(l.labeled_at) AS last_at
+        FROM labels l
+        JOIN users u ON u.id = l.user_id
+        WHERE l.labeled_at >= ? AND u.leaderboard_visible = 1 AND u.username <> ?
+          AND u.nickname IS NOT NULL AND u.nickname <> ''
+        GROUP BY l.user_id
+        ORDER BY cnt DESC, last_at ASC, u.nickname ASC
+    """, (since_utc, admin_username)).fetchall()
+    return [{"user_id": r[0], "nickname": r[1], "count": r[2], "last_at": r[3]} for r in rows]
+
+
+def my_activity(conn, user_id, since_utc):
+    """해당 유저의 since_utc 이후 제보 횟수 (리더보드 자격과 무관하게 항상 계산)."""
+    row = conn.execute(
+        "SELECT COUNT(*) FROM labels WHERE user_id = ? AND labeled_at >= ?",
+        (user_id, since_utc)).fetchone()
+    return row[0] if row else 0
+
+
+def my_rank(conn, user_id, since_utc, admin_username):
+    """본인의 이번 주 순위. weekly_ranking과 100% 일치하도록 그 리스트에서 인덱스를 찾는다
+    (순위 계산 로직 중복 금지). 리스트에 없으면(자격 미달: 닉네임 미등록/비공개/admin) rank=None.
+    반환: {"count": n, "rank": int|None} 또는 count가 0이면 None."""
+    count = my_activity(conn, user_id, since_utc)
+    if count == 0:
+        return None
+    ranking = weekly_ranking(conn, since_utc, admin_username)
+    idx = next((i for i, r in enumerate(ranking) if r["user_id"] == user_id), None)
+    return {"count": count, "rank": idx + 1 if idx is not None else None}
+
+
 def export_csv(conn, path):
     """수집된 라벨 전체를 CSV로 내보낸다 (학습 데이터 추출용).
     앱에서 자동 호출하지 않는 수동 유틸 — 모델 학습 시 직접 호출해 데이터셋을 뽑는다."""

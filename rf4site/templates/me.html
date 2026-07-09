@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}마이페이지{% endblock %}
+{% block head %}
+<style>
+.card label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 5px; }
+.card label:first-child { margin-top: 0; }
+.card input {
+  width: 100%; padding: 9px 12px; font-size: 14px;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+  color: var(--text); outline: none;
+}
+.card input:focus { border-color: var(--accent); }
+.card input[readonly] { color: var(--faint); }
+.card button {
+  margin-top: 12px; padding: 9px 16px; font-size: 13px; font-weight: 600;
+  background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer;
+}
+.card button:hover { opacity: .92; }
+.card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.card .desc { font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+.flash { font-size: 13px; padding: 9px 12px; border-radius: 8px; margin-bottom: 14px; }
+.flash.ok { background: rgba(54,201,142,.12); color: var(--ok); }
+.flash.err { background: rgba(224,99,90,.12); color: var(--err); }
+/* 리더보드 노출 토글 — 현재 상태를 색으로 표시 (공개=초록, 비공개=회색 딤) */
+.card button.vis-on  { background: var(--ok); color: var(--bg); }
+.card button.vis-off { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+</style>
+{% endblock %}
+{% block content %}
+
+<h1 style="font-size:18px; font-weight:700; margin-bottom:16px;">마이페이지</h1>
+
+{% if ok %}<div class="flash ok">{{ ok }}</div>{% endif %}
+{% if err %}<div class="flash err">{{ err }}</div>{% endif %}
+
+<div class="card">
+  <h2>아이디</h2>
+  <p class="desc">가입 시 정한 아이디는 변경할 수 없습니다.</p>
+  <input value="{{ username }}" readonly>
+</div>
+
+<div class="card">
+  <h2>닉네임</h2>
+  <p class="desc">
+    {% if nickname %}리더보드 등 다른 사용자에게 보이는 이름입니다.
+    {% else %}닉네임을 등록하면 리더보드에 표시됩니다. (미등록 시 리더보드 비공개){% endif %}
+  </p>
+  <form method="post" action="/me/nickname">
+    <input name="nickname" value="{{ nickname or '' }}" required>
+    <button type="submit">닉네임 {{ '변경' if nickname else '등록' }}</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>비밀번호 변경</h2>
+  <form method="post" action="/me/password">
+    <label>현재 비밀번호</label>
+    <input name="current_password" type="password" required>
+    <label>새 비밀번호</label>
+    <input name="new_password" type="password" required>
+    <button type="submit">비밀번호 변경</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>리더보드 노출</h2>
+  <p class="desc">끄면 다른 사용자에게 내 순위·닉네임이 보이지 않습니다.</p>
+  <form method="post" action="/me/visibility">
+    <input type="hidden" name="visible" value="{{ '0' if leaderboard_visible else '1' }}">
+    <button type="submit" class="{{ 'vis-on' if leaderboard_visible else 'vis-off' }}">
+      {{ '공개 중 · 누르면 숨김' if leaderboard_visible else '비공개 · 누르면 공개' }}
+    </button>
+  </form>
+</div>
+
+{% endblock %}
