@@ -95,6 +95,22 @@ def weekly_ranking(conn, since_utc, admin_username):
     return [{"user_id": r[0], "nickname": r[1], "count": r[2], "last_at": r[3]} for r in rows]
 
 
+def top_reported_species(conn, since_utc, admin_username, limit=5):
+    """이번 주(since_utc 이후) 어종별 제보 횟수 상위 N. admin 라벨 제외(골든셋 대량 제보로
+    순위가 왜곡되는 것 방지) — 유저별 리더보드가 아니라 어종 집계이므로 비공개 유저는
+    제외하지 않는다. 반환: [{"species","count"}, ...] count DESC, 동점은 species ASC."""
+    rows = conn.execute("""
+        SELECT l.species, COUNT(*) cnt
+        FROM labels l
+        JOIN users u ON u.id = l.user_id
+        WHERE l.labeled_at >= ? AND u.username <> ?
+        GROUP BY l.species
+        ORDER BY cnt DESC, l.species ASC
+        LIMIT ?
+    """, (since_utc, admin_username, limit)).fetchall()
+    return [{"species": r[0], "count": r[1]} for r in rows]
+
+
 def my_activity(conn, user_id, since_utc):
     """해당 유저의 since_utc 이후 제보 횟수 (리더보드 자격과 무관하게 항상 계산)."""
     row = conn.execute(

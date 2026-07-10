@@ -192,5 +192,9 @@ r = c.get("/")
 check("대시보드(aside 포함) 정상 렌더", r.status_code == 200)
 check("aside 리더보드에 닉네임 표시(block aside 캡처 동작 확인)", "tester_nick" in r.text and "이번 주 리더보드" in r.text)
 
+# 즐겨찾기 TOP / 이번 주 최다 제보 패널 렌더 확인 (현재 favorites: 검은 잉어, 타이멘, 무지개 송어)
+check("즐겨찾기 TOP 어종 패널 렌더", "즐겨찾기 TOP 어종" in r.text and "검은 잉어" in r.text.split("즐겨찾기 TOP 어종")[1])
+check("이번 주 최다 제보 어종 패널 렌더", "이번 주 최다 제보 어종" in r.text)
+
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

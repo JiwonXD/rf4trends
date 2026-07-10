@@ -209,6 +209,25 @@ mr_tie1 = labels_mod.my_rank(lconn, uid_tie1, since, "admin")
 mr_tie2 = labels_mod.my_rank(lconn, uid_tie2, since, "admin")
 check("my_rank도 타이브레이크와 일치(tie2가 더 높은 순위)", mr_tie2["rank"] < mr_tie1["rank"])
 
+# top_reported_species: 어종별 이번 주 제보 집계, admin 제외, 리셋 이전 제외
+def _label_species(uid, species, labeled_at, n=1):
+    for _ in range(n):
+        lconn.execute("""INSERT INTO labels (user_id, species, label, window, labeled_at)
+                          VALUES (?, ?, '활성', 'today', ?)""", (uid, species, labeled_at))
+    lconn.commit()
+
+_label_species(uid_a, "어종A", since, 3)
+_label_species(uid_b, "어종B", since, 1)
+_label_species(uid_admin, "어종C", since, 5)
+_label_species(uid_a, "어종A", old, 1)  # 리셋 이전 → 집계 제외돼야 함
+
+top_species = labels_mod.top_reported_species(lconn, since, "admin", 50)
+species_names = [r["species"] for r in top_species]
+check("top_reported_species: admin 제외(어종C 없음)", "어종C" not in species_names)
+ab_only = [r for r in top_species if r["species"] in ("어종A", "어종B")]
+check("top_reported_species: 어종A(3)·어종B(1) count DESC 정렬 + 리셋 이전 제외",
+      ab_only == [{"species": "어종A", "count": 3}, {"species": "어종B", "count": 1}])
+
 lconn.close()
 
 print("="*40)

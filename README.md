@@ -414,6 +414,15 @@ python test_app.py && python test_auth.py && python test_labels.py && python tes
 - 부수 변경: id 규칙 확장에 맞춰 회원가입 화면 안내 문구 갱신, footer에 팬메이드·비상업·저작권 고지와 문의 메일 추가.
 - **파일**: rf4site/{app,auth,labels,scoring}.py, rf4site/templates/{base,dashboard,login}.html, rf4site/templates/me.html(신규), tools/test_{app,auth,labels}.py
 
+### 07-09 · 리더보드 옆에 어종 집계 패널 2종
+
+`[기능추가]` **대시보드 우측 aside에 '즐겨찾기 TOP 어종'과 '이번 주 최다 제보 어종' 패널을 추가(D-51).** 리더보드 하나만 있어 우측이 휑하던 것을 채움.
+
+- **즐겨찾기 TOP 어종**: 유저들이 가장 많이 등록한 어종 상위 5("N명"). **이번 주 최다 제보 어종**: 이번 주 스냅샷 제보가 가장 많은 어종 상위 5("N회"). 어종명 클릭 시 어종 상세로 이동.
+- 최다 제보 어종에서 **admin은 제외** — 운영자가 학습용 골든셋 라벨을 대량으로 찍어 어종 주목도를 왜곡하는 것을 막기 위함(리더보드 admin 제외와 같은 이유). 비공개 유저는 유저가 아니라 어종을 세는 집계라 제외하지 않음.
+- 함께 검토했던 "지금 뜨는 어종(전체 활성도 상위)"은 매 요청마다 전 어종 모델 추론이 필요해 캐싱 설계가 별도로 필요 — 이번 범위에서는 제외.
+- **파일**: rf4site/{app,labels}.py, rf4site/templates/{base,dashboard}.html, tools/test_{app,labels}.py
+
 ---
 
 ## 부록 — 운영 환경

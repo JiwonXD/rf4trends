@@ -165,6 +165,10 @@ def dashboard(request: Request, window: str = "today"):
         my_in_top = any(row["is_me"] for row in leaderboard)
         my_rank = {"count": my_count, "rank": my_rank_num} if (my_count > 0 and not my_in_top) else None
 
+        fav_top = [{"species": r[0], "count": r[1]} for r in conn.execute(
+            "SELECT species, COUNT(*) FROM favorites GROUP BY species ORDER BY COUNT(*) DESC, species ASC LIMIT 5")]
+        reported_top = labels_mod.top_reported_species(conn, since, auth.ADMIN_USERNAME, 5)
+
         return templates.TemplateResponse(request, "dashboard.html", {
             "cards": cards,
             "window": window,
@@ -173,6 +177,8 @@ def dashboard(request: Request, window: str = "today"):
             "username": username,
             "leaderboard": leaderboard,
             "my_rank": my_rank,
+            "fav_top": fav_top,
+            "reported_top": reported_top,
         })
     finally:
         conn.close()
