@@ -134,7 +134,9 @@ a.lb-row:hover .lb-name { color: var(--accent); }
     <a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>
     {% if username is defined and username %}
       <a class="btn" href="/me">마이페이지</a>
-      <a class="btn" href="/logout" title="{{ username }} 로그아웃">로그아웃</a>
+      <form method="post" action="/logout" style="display:inline">
+        <button type="submit" class="btn" title="{{ username }} 로그아웃">로그아웃</button>
+      </form>
     {% endif %}
   </div>
 </header>

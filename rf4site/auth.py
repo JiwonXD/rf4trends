@@ -14,6 +14,8 @@ if "RF4_SECRET" not in os.environ:
     print("[경고] RF4_SECRET 미설정 — 공개된 기본 키로 세션을 서명합니다. 운영에선 반드시 설정할 것.")
 SESSION_MAX_AGE = 60 * 60 * 24 * 30   # 30일
 COOKIE_NAME = "rf4_session"
+# 로컬 http 브라우저 확인이 필요하면 임시로 False — 운영(HTTPS 터널)은 항상 True (스캐폴딩, D-52)
+COOKIE_SECURE = True
 
 # admin 계정명: 이 계정만 라벨 수집 기능을 쓸 수 있다 (학습 데이터 정답 보호).
 ADMIN_USERNAME = os.environ.get("RF4_ADMIN", "admin")
@@ -49,6 +51,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     nickname      TEXT,
     leaderboard_visible INTEGER NOT NULL DEFAULT 1,
+    session_version INTEGER NOT NULL DEFAULT 0,
     created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS favorites (
@@ -69,6 +72,9 @@ def init_db(conn):
         conn.execute("ALTER TABLE users ADD COLUMN nickname TEXT")
     if "leaderboard_visible" not in cols:
         conn.execute("ALTER TABLE users ADD COLUMN leaderboard_visible INTEGER NOT NULL DEFAULT 1")
+    if "session_version" not in cols:
+        # 비밀번호 변경 시 이 값을 올려 기존 발급 세션 토큰을 전부 무효화한다(D-52). 기존 유저는 0부터.
+        conn.execute("ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0")
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_nickname ON users(nickname)")
     conn.commit()
 
@@ -93,21 +99,30 @@ def validate_password(password):
     return None
 
 
-def create_user(conn, username, password):
-    """반환: (user_id, None) 또는 (None, 오류메시지)."""
-    err = validate_username(username) or validate_password(password)
+def create_user(conn, username, password, nickname):
+    """반환: (user_id, None) 또는 (None, 오류메시지).
+    닉네임은 가입 시 필수(D-52) — 기존에 닉네임 없이 가입한 유저(가입 당시 이 필드 미도입)는
+    예외로 남아 nickname NULL 상태를 유지한다(개인정보 보호, 백필 안 함)."""
+    err = validate_username(username) or validate_password(password) or validate_nickname(nickname)
     if err:
         return None, err
     exists = conn.execute(
         "SELECT 1 FROM users WHERE username = ?", (username,)).fetchone()
     if exists:
         return None, "이미 사용 중인 아이디입니다."
+    dup_nick = conn.execute(
+        "SELECT 1 FROM users WHERE nickname = ?", (nickname,)).fetchone()
+    if dup_nick:
+        return None, "이미 사용 중인 닉네임입니다."
     pw_hash = _hash_pw(password)
-    # nickname은 NULL로 시작 — 등록 전엔 리더보드 미노출(개인정보 보호, username 자동 노출 방지)
-    cur = conn.execute(
-        "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-        (username, pw_hash))
-    conn.commit()
+    try:
+        cur = conn.execute(
+            "INSERT INTO users (username, password_hash, nickname) VALUES (?, ?, ?)",
+            (username, pw_hash, nickname))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # 검사(사전 SELECT)와 저장(INSERT) 사이의 경쟁 상태 대비 — 유니크 인덱스가 최종 방어선
+        return None, "이미 사용 중인 아이디 또는 닉네임입니다."
     return cur.lastrowid, None
 
 
@@ -123,29 +138,48 @@ def verify_user(conn, username, password):
     return row[0]
 
 
-def make_session_token(user_id):
-    return _serializer.dumps({"uid": user_id})
+def make_session_token(user_id, version):
+    return _serializer.dumps({"uid": user_id, "v": version})
+
+
+def session_token_for(conn, user_id):
+    """현재 session_version을 조회해 토큰을 발급한다.
+    로그인·가입·비밀번호 변경 후 재발급 시 이걸 쓴다(항상 DB의 최신 버전으로 서명)."""
+    row = conn.execute(
+        "SELECT session_version FROM users WHERE id = ?", (user_id,)).fetchone()
+    version = row[0] if row else 0
+    return make_session_token(user_id, version)
 
 
 def read_session_token(token):
-    """쿠키 토큰 → user_id 또는 None."""
+    """쿠키 토큰 → (user_id, session_version) 또는 None.
+    'v' 필드가 없는 구 포맷 토큰(세션 버저닝 도입 전 발급, D-52)은 자동 무효 처리한다."""
     if not token:
         return None
     try:
         data = _serializer.loads(token, max_age=SESSION_MAX_AGE)
-        return data.get("uid")
     except (BadSignature, SignatureExpired):
         return None
+    uid = data.get("uid")
+    if uid is None or "v" not in data:
+        return None
+    return uid, data["v"]
 
 
 def current_user(conn, request):
-    """요청의 세션 쿠키에서 (user_id, username) 또는 None."""
+    """요청의 세션 쿠키에서 (user_id, username) 또는 None.
+    쿠키의 세션 버전이 DB의 session_version과 다르면(비밀번호 변경 등으로 무효화된
+    다른 기기 세션) None을 반환한다(D-52)."""
     token = request.cookies.get(COOKIE_NAME)
-    uid = read_session_token(token)
-    if uid is None:
+    parsed = read_session_token(token)
+    if parsed is None:
         return None
-    row = conn.execute("SELECT id, username FROM users WHERE id = ?", (uid,)).fetchone()
-    return (row[0], row[1]) if row else None
+    uid, version = parsed
+    row = conn.execute(
+        "SELECT id, username, session_version FROM users WHERE id = ?", (uid,)).fetchone()
+    if not row or row[2] != version:
+        return None
+    return (row[0], row[1])
 
 
 def change_nickname(conn, user_id, nickname):
@@ -167,14 +201,17 @@ def change_nickname(conn, user_id, nickname):
 
 
 def change_password(conn, user_id, current_pw, new_pw):
-    """반환: (True, None) 또는 (False, 오류메시지)."""
+    """반환: (True, None) 또는 (False, 오류메시지).
+    성공 시 session_version을 올려 다른 기기의 기존 세션을 모두 무효화한다(D-52)."""
     row = conn.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
     if not row or not _verify_pw(current_pw, row[0]):
         return False, "현재 비밀번호가 올바르지 않습니다."
     err = validate_password(new_pw)
     if err:
         return False, err
-    conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (_hash_pw(new_pw), user_id))
+    conn.execute(
+        "UPDATE users SET password_hash = ?, session_version = session_version + 1 WHERE id = ?",
+        (_hash_pw(new_pw), user_id))
     conn.commit()
     return True, None
 

@@ -66,6 +66,12 @@ button:hover { opacity:.92; }
            autofocus required>
     {% if mode == 'signup' %}<p class="hint">영문/숫자와 _ - @ . 3~20자</p>{% endif %}
 
+    {% if mode == 'signup' %}
+    <label>닉네임</label>
+    <input name="nickname" value="{{ nickname or '' }}" required>
+    <p class="hint">한글/영문/숫자와 _ - @ . 3~20자 — 리더보드에 표시됩니다</p>
+    {% endif %}
+
     <label>비밀번호</label>
     <input name="password" type="password"
            autocomplete="{{ 'new-password' if mode == 'signup' else 'current-password' }}"

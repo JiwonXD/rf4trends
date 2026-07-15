@@ -56,6 +56,9 @@ cd ~/rf4site
 
 ```bash
 pip install -r requirements.txt
+# 세션 서명 키 — 미설정 시 서버가 기동을 거부함. 바꾸면 전원 로그아웃되므로 한 번 정해 유지.
+# export는 현재 셸에서만 유효하므로 .bashrc에 넣어 재부팅 후에도 남게 한다:
+echo "export RF4_SECRET='<긴 무작위 문자열>'" >> ~/.bashrc && source ~/.bashrc
 python app.py
 ```
 
@@ -93,7 +96,7 @@ ifconfig wlan0 | grep inet
 ## 자주 쓰는 것
 
 - **서버 끄기**: Termux에서 `Ctrl + C`
-- **다시 켜기**: `cd ~/rf4site && python app.py`
+- **다시 켜기**: `cd ~/rf4site && python app.py` (RF4_SECRET 미설정 시 기동 거부 — 4단계에서 .bashrc에 넣었다면 자동 적용)
 - **코드 수정본 반영**: USB로 바뀐 파일만 Download에 복사 → `cp ~/storage/shared/Download/<파일> ~/rf4site/`
 - **수집 잘 되는지 확인**: 실행 중인 Termux 화면에 15분마다 수집 로그가 찍힘
 

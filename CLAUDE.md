@@ -57,7 +57,7 @@ cd tools && python test_app.py && python test_auth.py && python test_labels.py &
 
 ## 작업 방식 (이 프로젝트의 일하는 법)
 
-- **결정은 PRD.md에 D-번호로 기록.** 무엇을·왜 + 근거. 현재 D-49까지 있음. 새 결정은 다음 번호로.
+- **결정은 PRD.md에 D-번호로 기록.** 무엇을·왜 + 근거. 현재 D-52까지 있음. 새 결정은 다음 번호로.
 - **판단의 서사는 EXPERIENCES.md에 기록.** PRD가 "개별 결정"이라면 EXPERIENCES.md는 "결정들이 어떻게 연결됐나"의 이야기 — 기능을 만들었더니 실제 문제가 드러났고, 과거 기능과 상충해 어떤 근거로 풀었고, 그게 다음으로 어떻게 이어졌는지. 포트폴리오에서 사고력을 보여주는 핵심 자료. 의미 있는 판단/상충이 있을 때만(사소한 건 PRD로 충분).
 - **코드 변경 후 반드시 네 스위트 통과 확인.** (tools에서: test_app·test_auth·test_labels·test_scoring)
 - **surgical 변경.** 요청한 것만 건드린다. 인접 코드·주석·포맷을 "개선"하지 않는다. 내 변경으로 생긴 잔재(미사용 import 등)만 정리한다. 기존 죽은 코드는 발견하면 보고만, 멋대로 지우지 않는다.
@@ -70,15 +70,16 @@ cd tools && python test_app.py && python test_auth.py && python test_labels.py &
 ## 함정 메모 (실수하기 쉬운 것)
 
 - **first_seen 포맷**: 반드시 공백 구분자. isoformat(T) 쓰면 시간 필터 깨짐.
-- **실데이터 DB로 테스트 시 admin 계정 충돌**: 업로드된 운영 DB엔 이미 'admin'이 있어 signup 400/login 401이 난다. 새 유저명(예: tester99)으로 가입할 것. 유저명이 너무 짧으면(t1 등) validation에 걸린다.
+- **실데이터 DB로 테스트 시 admin 계정 충돌**: 업로드된 운영 DB엔 이미 'admin'이 있어 signup 400/login 401이 난다. 새 유저명(예: tester99)으로 가입할 것. 유저명이 너무 짧으면(t1 등) validation에 걸린다. 가입엔 닉네임도 필수(D-52) — 기존 닉네임과 겹치면 400.
+- **secure 쿠키(D-52)**: 세션·플래시 쿠키가 secure라 http로는 로그인이 유지 안 된다. 테스트는 TestClient에 base_url="https://testserver" 필수, 로컬 브라우저 확인이 필요하면 auth.COOKIE_SECURE를 임시로 False(운영은 항상 True).
 - **tojson 한글**: app.py에서 `templates.env.policies["json.dumps_kwargs"] = {"ensure_ascii": False, ...}` 설정으로 한글이 HTML에 그대로 보이게 함.
 - **운영 DB는 함부로 건드리지 않는다**: 계산 방식·표시만 바꾸는 변경은 DB 스키마를 안 건드린다. 마이그레이션이 필요하면 일회성은 코드에 박지 말고 수동 명령으로 안내(단일 운영 환경이므로).
 - **어종의 원천은 species_master**(D-46, trophies는 폐기됨): 트로피 CSV는 species_master가 비었을 때만 시드 로딩(app.py `_load_species_master`) — 게임 패치로 새 어종이 생기면 CSV 수정만으론 반영 안 되고 운영 DB에 수동 INSERT 필요. 마스터 미등록 어종은 화면 어디에도 안 나타나며, 수집 루프가 미등록 어종 발견 시 경고를 출력한다(맵 업데이트 알람). species_waterbodies(서식 수역 맵)는 수동 시드·수동 보정 — 자동 누적 안 함.
 
 ## 현재 상태 / 다음 할 일
 
-- **방금 끝남**: 리더보드 옆 어종 집계 패널 2종(D-51) — 대시보드 aside에 '즐겨찾기 TOP 어종'(favorites 집계)·'이번 주 최다 제보 어종'(labels 집계, admin 제외) 추가. 어종명 클릭 시 상세로. 그 전: 마이페이지·닉네임·리더보드(D-50) — /me에서 닉네임·비밀번호 변경, 리더보드 노출 온오프. 닉네임은 개인정보 보호로 백필하지 않고 기존·신규 유저 모두 빈 값 시작(등록해야 리더보드 표시). 리더보드는 별도 페이지가 아니라 대시보드 우측 여백을 aside로 활용, 이번 주 라벨 제보 횟수 상위 10명(동점 시 마지막 제보가 이른 사람이 위). users에 nickname·leaderboard_visible 컬럼 자동 ALTER 마이그레이션. id 규칙에 `_ - @ .` 추가. 그 전: 미끼 패밀리 정규화 피처(D-49), 서식 수역 맵 화면 반영(D-48), 죽은 서버 집계 제거 + 주석 전수 최신화(D-47), 어종 원천 마스터 구축(D-46).
-- **다음 예정**: 운영 반영(species_master·수역 맵 시드는 태블릿에서 수동, nickname/leaderboard_visible·family_consistency는 자동 ALTER). 라벨을 더 쌓으며 모델 품질 관찰, 충분히 늘면 재학습(`tools/train_model.py`) — family_consistency가 그때 처음 모델에 반영됨. 리더보드는 활동량(횟수) 기준의 1단계 — 라벨이 더 쌓이면 스냅샷 "가치" 기반 점수제 전환 검토(D-50이 예고). D-45가 기록만 남긴 항목들(죽은 컬럼·테이블, state/score 이원화, db() 매 요청 초기화, 로그인 속도제한 등)도 각각 필요 시 새 D-번호로.
+- **방금 끝남**: 보안·계정 정비 1차(D-52) — 프로젝트 전체 검수(07-14) 후속. 라벨 15분 내 재제보는 새 행 대신 갱신(연타로 리더보드 부풀리기 차단, 판단 정정 허용), 세션 버저닝(users.session_version 자동 ALTER, 비번 변경 시 타 기기 세션 무효 — 구 포맷 토큰 무효라 배포 시 전원 1회 재로그인), 가입 시 닉네임 필수(기존 무닉네임 유저는 NULL 유지), RF4_SECRET 미설정 시 기동 거부, 로그아웃 POST화·/me 플래시 쿠키·세션 쿠키 secure. 그 전: 리더보드 옆 어종 집계 패널 2종(D-51), 마이페이지·닉네임·리더보드(D-50), 미끼 패밀리 정규화 피처(D-49), 서식 수역 맵 화면 반영(D-48).
+- **다음 예정**: 운영 반영(species_master·수역 맵 시드는 태블릿에서 수동, nickname/leaderboard_visible·family_consistency·session_version은 자동 ALTER. **D-52부터 RF4_SECRET 필수 — .bashrc 등록, 미설정 시 기동 거부. 배포 직후 전 유저 1회 재로그인 발생**). 라벨을 더 쌓으며 모델 품질 관찰, 충분히 늘면 재학습(`tools/train_model.py`) — family_consistency가 그때 처음 모델에 반영됨. 리더보드는 활동량(횟수) 기준의 1단계 — 라벨이 더 쌓이면 스냅샷 "가치" 기반 점수제 전환 검토(D-50이 예고). D-45가 기록만 남긴 항목들(죽은 컬럼·테이블, state/score 이원화, db() 매 요청 초기화, 로그인 속도제한 등)도 각각 필요 시 새 D-번호로. 전체 검수(07-14)의 보류 항목: 수집 헬스 체크(사이클 생존과 데이터 갱신을 구분 — SCREENS.md 0장 "24시간 경과 시 경고색" 스펙이 미구현, base.html `.meta.stale` CSS만 잔존), DB 백업 루틴(sqlite3 .backup — labels가 유일한 복구 불가 자산), requirements 버전 고정, 회원가입 속도제한(악용 관찰 시).
 - **장기**: "이전 선택 시간창 유지" 기능(쿠키/DB/URL).
 
 ## 에이전트 팀 구성

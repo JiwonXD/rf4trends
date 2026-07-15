@@ -9,7 +9,7 @@ import threading
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 import uvicorn
 from fastapi import FastAPI, Request, Form
@@ -20,6 +20,9 @@ BASE_DIR = Path(__file__).parent
 DB_PATH = Path(os.environ.get("RF4_DB", BASE_DIR / "rf4.db"))
 TROPHY_CSV = BASE_DIR / "trophy_weights.csv"
 COLLECT_INTERVAL_MIN = 15
+# /me의 1회성 안내 메시지 쿠키(D-52) — 쿼리 파라미터 반사(임의 문구 주입) 대신 짧게 사는 쿠키로 전달.
+FLASH_COOKIE = "rf4_flash"
+FLASH_MAX_AGE = 60
 
 import collector
 import scoring
@@ -288,8 +291,9 @@ def login_submit(request: Request,
             }, status_code=401)
         resp = RedirectResponse("/", status_code=303)
         resp.set_cookie(
-            auth.COOKIE_NAME, auth.make_session_token(uid),
-            max_age=auth.SESSION_MAX_AGE, httponly=True, samesite="lax")
+            auth.COOKIE_NAME, auth.session_token_for(conn, uid),
+            max_age=auth.SESSION_MAX_AGE, httponly=True, samesite="lax",
+            secure=auth.COOKIE_SECURE)
         return resp
     finally:
         conn.close()
@@ -297,32 +301,41 @@ def login_submit(request: Request,
 
 @app.post("/signup")
 def signup_submit(request: Request,
-                  username: str = Form(...), password: str = Form(...)):
+                  username: str = Form(...), password: str = Form(...),
+                  nickname: str = Form(...)):
     conn = db()
     try:
-        uid, err = auth.create_user(conn, username.strip(), password)
+        uid, err = auth.create_user(conn, username.strip(), password, nickname.strip())
         if err:
             return templates.TemplateResponse(request, "login.html", {
-                "error": err, "mode": "signup", "username": username,
+                "error": err, "mode": "signup", "username": username, "nickname": nickname,
             }, status_code=400)
         resp = RedirectResponse("/onboarding", status_code=303)
         resp.set_cookie(
-            auth.COOKIE_NAME, auth.make_session_token(uid),
-            max_age=auth.SESSION_MAX_AGE, httponly=True, samesite="lax")
+            auth.COOKIE_NAME, auth.session_token_for(conn, uid),
+            max_age=auth.SESSION_MAX_AGE, httponly=True, samesite="lax",
+            secure=auth.COOKIE_SECURE)
         return resp
     finally:
         conn.close()
 
 
-@app.get("/logout")
+@app.post("/logout")
 def logout():
     resp = RedirectResponse("/login", status_code=303)
     resp.delete_cookie(auth.COOKIE_NAME)
     return resp
 
 
+def _set_flash(resp, kind, message):
+    """/me 리다이렉트 후 보여줄 1회성 안내 메시지를 쿠키에 담는다(D-52).
+    kind: 'ok' 또는 'err'."""
+    resp.set_cookie(FLASH_COOKIE, f"{kind}:{quote(message)}",
+                     max_age=FLASH_MAX_AGE, httponly=True, secure=auth.COOKIE_SECURE)
+
+
 @app.get("/me")
-def me_page(request: Request, ok: str = "", err: str = ""):
+def me_page(request: Request):
     conn = db()
     try:
         user = require_login(conn, request)
@@ -330,7 +343,16 @@ def me_page(request: Request, ok: str = "", err: str = ""):
             return RedirectResponse("/login")
         uid, username = user
         profile = auth.get_profile(conn, uid)
-        return templates.TemplateResponse(request, "me.html", {
+        ok, err = "", ""
+        flash = request.cookies.get(FLASH_COOKIE)
+        if flash and ":" in flash:
+            kind, msg = flash.split(":", 1)
+            msg = unquote(msg)
+            if kind == "ok":
+                ok = msg
+            elif kind == "err":
+                err = msg
+        resp = templates.TemplateResponse(request, "me.html", {
             "username": profile["username"],
             "nickname": profile["nickname"],
             "leaderboard_visible": profile["leaderboard_visible"],
@@ -339,6 +361,9 @@ def me_page(request: Request, ok: str = "", err: str = ""):
             "window": "today",
             "last_collected": last_collected(conn),
         })
+        if flash:
+            resp.delete_cookie(FLASH_COOKIE)
+        return resp
     finally:
         conn.close()
 
@@ -351,9 +376,9 @@ def me_nickname(request: Request, nickname: str = Form(...)):
         if not user:
             return RedirectResponse("/login")
         ok, err = auth.change_nickname(conn, user[0], nickname.strip())
-        if not ok:
-            return RedirectResponse(f"/me?err={quote(err)}", status_code=303)
-        return RedirectResponse("/me?ok=" + quote("닉네임을 변경했습니다."), status_code=303)
+        resp = RedirectResponse("/me", status_code=303)
+        _set_flash(resp, "ok" if ok else "err", "닉네임을 변경했습니다." if ok else err)
+        return resp
     finally:
         conn.close()
 
@@ -367,9 +392,18 @@ def me_password(request: Request,
         if not user:
             return RedirectResponse("/login")
         ok, err = auth.change_password(conn, user[0], current_password, new_password)
+        resp = RedirectResponse("/me", status_code=303)
         if not ok:
-            return RedirectResponse(f"/me?err={quote(err)}", status_code=303)
-        return RedirectResponse("/me?ok=" + quote("비밀번호를 변경했습니다."), status_code=303)
+            _set_flash(resp, "err", err)
+            return resp
+        _set_flash(resp, "ok", "비밀번호를 변경했습니다.")
+        # 비번 변경으로 session_version이 올라 기존 쿠키는 무효화된다 — 현재 기기는 새
+        # 버전으로 재발급해 로그인을 유지한다(다른 기기의 세션만 풀린다, D-52).
+        resp.set_cookie(
+            auth.COOKIE_NAME, auth.session_token_for(conn, user[0]),
+            max_age=auth.SESSION_MAX_AGE, httponly=True, samesite="lax",
+            secure=auth.COOKIE_SECURE)
+        return resp
     finally:
         conn.close()
 
@@ -382,7 +416,9 @@ def me_visibility(request: Request, visible: str = Form("0")):
         if not user:
             return RedirectResponse("/login")
         auth.set_leaderboard_visible(conn, user[0], visible in ("1", "on", "true"))
-        return RedirectResponse("/me?ok=" + quote("리더보드 노출 설정을 변경했습니다."), status_code=303)
+        resp = RedirectResponse("/me", status_code=303)
+        _set_flash(resp, "ok", "리더보드 노출 설정을 변경했습니다.")
+        return resp
     finally:
         conn.close()
 
@@ -420,6 +456,13 @@ def add_label(request: Request, name: str,
 
 
 if __name__ == "__main__":
+    # RF4_SECRET 없이는 기동 거부. 공개된 기본 키로 세션을 서명하면 누구나 쿠키를
+    # 위조할 수 있고(특히 admin 세션 → golden set 라벨 오염), 경고만으론 놓치기 쉬움.
+    # 테스트(tools/test_*)는 모듈 import만 하므로 이 게이트에 걸리지 않는다.
+    if "RF4_SECRET" not in os.environ:
+        raise SystemExit(
+            "[중단] RF4_SECRET 미설정 — 공개된 기본 키로는 서버를 시작하지 않습니다.\n"
+            "       실행 예: RF4_SECRET='<긴 무작위 문자열>' python app.py")
     # host="0.0.0.0" : 같은 와이파이의 다른 기기에서 접속 가능하게
     print("=" * 50)
     print("  RF4 트렌드 시작")

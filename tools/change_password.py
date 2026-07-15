@@ -31,7 +31,11 @@ if password != confirm:
     sys.exit(1)
 
 pw_hash = auth._hash_pw(password)
-conn.execute("UPDATE users SET password_hash = ? WHERE username = ?", (pw_hash, username))
+# session_version도 올려 기존 세션을 전부 무효화한다 — 복구 유틸이므로 전 세션 무효화가
+# 오히려 바람직하다(비밀번호를 강제로 바꿔야 할 상황은 대개 계정 탈취 의심 등, D-52).
+conn.execute(
+    "UPDATE users SET password_hash = ?, session_version = session_version + 1 WHERE username = ?",
+    (pw_hash, username))
 conn.commit()
 conn.close()
 print(f"'{username}' 비밀번호가 변경되었습니다.")

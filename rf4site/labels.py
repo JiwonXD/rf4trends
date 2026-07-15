@@ -1,9 +1,16 @@
 # labels.py — 라벨 수집 (향후 추천 모델 학습/검증 데이터)
 # 라벨을 찍는 순간의 활성도 지표 스냅샷을 함께 저장한다.
 # 이렇게 해두면 7일 뒤 원본 catches가 정리돼도 (입력 지표 → 라벨) 학습쌍이 남는다.
-# 같은 어종을 여러 번 라벨하면 매번 새 행으로 쌓는다 (시간에 따른 판정 변화도 데이터, D-18).
+# 같은 (유저, 어종, 수역, 시간창) 조합을 REREPORT_UPDATE_MIN분 이내에 다시 라벨하면
+# 새 행 대신 기존 행을 갱신한다(연타 방지, D-52). 그 밖엔 매번 새 행으로 쌓여
+# 시간에 따른 판정 변화도 데이터가 된다 (D-18).
 
 VALID_LABELS = {"강한 활성", "활성", "탐색", "비활성"}
+
+# 수집 주기(app.py COLLECT_INTERVAL_MIN)와 동일 — 같은 주기 내 재제보는 새로운 관측이
+# 아니라 직전 판단의 정정으로 보고 기존 스냅샷을 갱신한다. 연타로 리더보드 제보 횟수를
+# 부풀리는 것은 막되, 마음이 바뀐 정정은 그대로 허용하기 위함(D-52).
+REREPORT_UPDATE_MIN = 15
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS labels (
@@ -52,26 +59,45 @@ def add_label(conn, user_id, species, label, card, source="user"):
     """라벨 + 활성도 스냅샷 저장. card는 scoring.score_species_at()(수역 단위, D-40)
     반환 dict에 scoring.ratio_stats() 결과와 window·hours_since_reset가 병합된 것.
     source: 'admin' 또는 'user' (작성자 권한, 사후 정제용).
+    같은 (user_id, species, top_waterbody, window)로 REREPORT_UPDATE_MIN분 이내에
+    이미 라벨한 행이 있으면 새로 쌓지 않고 그 행을 갱신한다(D-52).
     반환: (True, None) 또는 (False, 오류메시지)."""
     if label not in VALID_LABELS:
         return False, "알 수 없는 라벨입니다."
-    conn.execute("""
-        INSERT INTO labels (user_id, species, label, window,
-            n_rare, n_trophy, n_normal, n_total, consistency, family_consistency,
-            top_bait, top_waterbody, score,
-            trophy_ratio_max, trophy_ratio_min, trophy_ratio_avg,
-            rare_ratio_max, rare_ratio_min, rare_ratio_avg,
-            hours_since_reset, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (user_id, species, label, card.get("window", ""),
-          card["n_rare"], card["n_trophy"], card["n_normal"], card["n_total"],
-          card["consistency"], card["family_consistency"],
-          card["top_bait"], card["top_waterbody"],
-          card["score"],
-          card.get("trophy_ratio_max"), card.get("trophy_ratio_min"),
-          card.get("trophy_ratio_avg"), card.get("rare_ratio_max"),
-          card.get("rare_ratio_min"), card.get("rare_ratio_avg"),
-          card.get("hours_since_reset"), source))
+    window = card.get("window", "")
+    top_waterbody = card["top_waterbody"]
+    snapshot = (card["n_rare"], card["n_trophy"], card["n_normal"], card["n_total"],
+                card["consistency"], card["family_consistency"],
+                card["top_bait"], top_waterbody, card["score"],
+                card.get("trophy_ratio_max"), card.get("trophy_ratio_min"),
+                card.get("trophy_ratio_avg"), card.get("rare_ratio_max"),
+                card.get("rare_ratio_min"), card.get("rare_ratio_avg"),
+                card.get("hours_since_reset"), source)
+    existing = conn.execute("""
+        SELECT id FROM labels
+        WHERE user_id = ? AND species = ? AND top_waterbody = ? AND window = ?
+          AND labeled_at >= datetime('now', ?)
+        ORDER BY labeled_at DESC LIMIT 1
+    """, (user_id, species, top_waterbody, window, f"-{REREPORT_UPDATE_MIN} minutes")).fetchone()
+    if existing:
+        conn.execute("""
+            UPDATE labels SET label = ?, n_rare = ?, n_trophy = ?, n_normal = ?, n_total = ?,
+                consistency = ?, family_consistency = ?, top_bait = ?, top_waterbody = ?,
+                score = ?, trophy_ratio_max = ?, trophy_ratio_min = ?, trophy_ratio_avg = ?,
+                rare_ratio_max = ?, rare_ratio_min = ?, rare_ratio_avg = ?,
+                hours_since_reset = ?, source = ?, labeled_at = datetime('now')
+            WHERE id = ?
+        """, (label,) + snapshot + (existing[0],))
+    else:
+        conn.execute("""
+            INSERT INTO labels (user_id, species, label, window,
+                n_rare, n_trophy, n_normal, n_total, consistency, family_consistency,
+                top_bait, top_waterbody, score,
+                trophy_ratio_max, trophy_ratio_min, trophy_ratio_avg,
+                rare_ratio_max, rare_ratio_min, rare_ratio_avg,
+                hours_since_reset, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, species, label, window) + snapshot)
     conn.commit()
     return True, None
 

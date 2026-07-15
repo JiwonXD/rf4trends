@@ -33,23 +33,24 @@ def check(label, cond):
     print(('PASS' if cond else 'FAIL'), label)
     if not cond: fails.append(label)
 
-c = TestClient(app)
-c.post("/signup", data={"username":"admin","password":"secret123"})
+c = TestClient(app, base_url="https://testserver")  # secure 쿠키(D-52)는 https에서만 전송됨
+c.post("/signup", data={"username":"admin","password":"secret123","nickname":"admin_nick"})
 
 # 라벨 저장
 r = c.post("/api/label/검은 잉어", data={"label":"강한 활성","window":"today","waterbody":"곰 호수"})
 check("라벨 저장 성공", r.status_code==200)
-# 같은 어종 다시 라벨 (다른 값) → 새 행으로 쌓임
+# 같은 어종을 15분 내에 다시 라벨 (다른 값) → 새 행이 아니라 기존 행 갱신 (연타 방지, D-52)
 r = c.post("/api/label/검은 잉어", data={"label":"활성","window":"today","waterbody":"곰 호수"})
 check("같은 어종 재라벨 성공", r.status_code==200)
 # 잘못된 라벨 거부
 r = c.post("/api/label/검은 잉어", data={"label":"이상한값","window":"today","waterbody":"곰 호수"})
 check("잘못된 라벨 거부", r.status_code==400)
 
-# DB 확인: 라벨 2건 쌓였는지 + 스냅샷 저장됐는지
+# DB 확인: 15분 내 재제보는 갱신되어 행 1개만 남고, 스냅샷은 최신 값으로 저장됐는지
 conn = sqlite3.connect("rf4.db")
 rows = conn.execute("SELECT label, n_total, consistency, top_bait, top_waterbody, family_consistency FROM labels ORDER BY id").fetchall()
-check("라벨 2건 누적", len(rows)==2)
+check("15분 내 재제보는 행 1개(갱신)", len(rows)==1)
+check("라벨이 최신 값으로 갱신", rows[0][0]=='활성')
 check("스냅샷 박제됨(n_total, 미끼)", rows[0][1] is not None and rows[0][3]=='크랜베리')
 check("단일 수역 스냅샷(곰 호수, 6건)", rows[0][4]=='곰 호수' and rows[0][1]==6)
 # family_consistency: 6건 전부 '크랜베리'(패밀리 파싱 안 되는 원문 그대로) → 미끼 일관성과 동일하게 100
@@ -88,11 +89,75 @@ check("어종·미끼·무게 보관됨", sample is not None and sample[0]=="검
 conn = sqlite3.connect("rf4.db")
 lcount = conn.execute("SELECT COUNT(*) FROM labels").fetchone()[0]
 conn.close()
-check("정리 후에도 라벨 보존", lcount==2)
+check("정리 후에도 라벨 보존", lcount==1)
+
+# 15분 내 재제보 = 갱신 (연타 방지, D-52) — labels.add_label 직접 호출로 회귀 검증
+import auth
+import labels as labels_mod
+
+def _mk_card(waterbody, window="today", n_total=3, top_bait="테스트미끼"):
+    return {
+        "window": window, "n_rare": 0, "n_trophy": n_total, "n_normal": 0, "n_total": n_total,
+        "consistency": 100, "family_consistency": 100, "top_bait": top_bait,
+        "top_waterbody": waterbody, "score": 70.0,
+        "trophy_ratio_max": 1.0, "trophy_ratio_min": 1.0, "trophy_ratio_avg": 1.0,
+        "rare_ratio_max": None, "rare_ratio_min": None, "rare_ratio_avg": None,
+        "hours_since_reset": 5.0,
+    }
+
+rconn = sqlite3.connect("rf4.db")
+auth.init_db(rconn)
+uid_r, _ = auth.create_user(rconn, "regress_user", "secret123", "regress_nick")
+# 리더보드 비공개 처리 — 이 라벨들의 labeled_at은 실제 현재시각이라, 뒤이은 리더보드
+# 검증 구간(과거 since 기준)에 실제-시간 라벨로 끼어들지 않도록 격리한다.
+auth.set_leaderboard_visible(rconn, uid_r, False)
+
+# 1) 같은 키(유저·어종·수역·시간창)로 연속 2회 제보 → 행 수 1, label은 두 번째 값, 스냅샷 갱신
+labels_mod.add_label(rconn, uid_r, "회귀어종", "탐색", _mk_card("회귀호수", n_total=3), "user")
+labels_mod.add_label(rconn, uid_r, "회귀어종", "활성", _mk_card("회귀호수", n_total=5), "user")
+rows1 = rconn.execute(
+    "SELECT label, n_total FROM labels WHERE user_id=? AND species='회귀어종'", (uid_r,)).fetchall()
+check("15분룰: 같은 키 연속 재제보는 행 1개", len(rows1)==1)
+check("15분룰: 라벨이 최신 값으로 갱신", rows1[0][0]=="활성")
+check("15분룰: 스냅샷도 최신 값으로 갱신", rows1[0][1]==5)
+
+# 2) window 다르면 별개 행
+labels_mod.add_label(rconn, uid_r, "회귀어종2", "탐색", _mk_card("회귀호수", window="today"), "user")
+labels_mod.add_label(rconn, uid_r, "회귀어종2", "탐색", _mk_card("회귀호수", window="6h"), "user")
+cnt2 = rconn.execute(
+    "SELECT COUNT(*) FROM labels WHERE user_id=? AND species='회귀어종2'", (uid_r,)).fetchone()[0]
+check("15분룰: window 다르면 별개 행", cnt2==2)
+
+# 3) 수역 다르면 별개 행
+labels_mod.add_label(rconn, uid_r, "회귀어종3", "탐색", _mk_card("회귀호수A"), "user")
+labels_mod.add_label(rconn, uid_r, "회귀어종3", "탐색", _mk_card("회귀호수B"), "user")
+cnt3 = rconn.execute(
+    "SELECT COUNT(*) FROM labels WHERE user_id=? AND species='회귀어종3'", (uid_r,)).fetchone()[0]
+check("15분룰: 수역 다르면 별개 행", cnt3==2)
+
+# 4) 기존 행의 labeled_at을 16분 전으로 돌린 뒤 재제보 → 새 행(2행)
+labels_mod.add_label(rconn, uid_r, "회귀어종4", "탐색", _mk_card("회귀호수"), "user")
+rconn.execute(
+    "UPDATE labels SET labeled_at = datetime('now', '-16 minutes') WHERE user_id=? AND species='회귀어종4'",
+    (uid_r,))
+rconn.commit()
+labels_mod.add_label(rconn, uid_r, "회귀어종4", "활성", _mk_card("회귀호수"), "user")
+cnt4 = rconn.execute(
+    "SELECT COUNT(*) FROM labels WHERE user_id=? AND species='회귀어종4'", (uid_r,)).fetchone()[0]
+check("15분룰: 15분 지난 뒤 재제보는 새 행", cnt4==2)
+
+# 5) 갱신이 weekly_ranking의 활동 카운트를 늘리지 않는지
+since_r = "2020-01-01 00:00:00"
+before_count = labels_mod.my_activity(rconn, uid_r, since_r)
+labels_mod.add_label(rconn, uid_r, "회귀어종", "강한 활성", _mk_card("회귀호수", n_total=9), "user")
+after_count = labels_mod.my_activity(rconn, uid_r, since_r)
+check("15분룰: 갱신은 활동 카운트를 늘리지 않음", after_count==before_count)
+
+rconn.close()
 
 # 라벨 권한 개방: 일반 유저도 버튼 보이고 저장됨, source로 구분 박제
-usr = TestClient(app)
-usr.post("/signup", data={"username":"angler_x","password":"secret123"})
+usr = TestClient(app, base_url="https://testserver")
+usr.post("/signup", data={"username":"angler_x","password":"secret123","nickname":"angler_x_nick"})
 usr.post("/api/favorites/검은 잉어")
 r = usr.get("/species/검은 잉어")
 check("일반유저 라벨 버튼 보임(제한 풀림)", "label-btn" in r.text)
@@ -129,20 +194,20 @@ r = c.post("/api/label/용잉어", data={"label":"활성","window":"today","wate
 check("존재하지 않는 수역 400", r.status_code==400)
 
 # 리더보드 / 순위 검증
-import auth
-import labels as labels_mod
-
 lconn = sqlite3.connect("rf4.db")
 auth.init_db(lconn)
 
-uid_a, _ = auth.create_user(lconn, "lb_alice", "secret123")
-uid_b, _ = auth.create_user(lconn, "lb_bob", "secret123")
-uid_hidden, _ = auth.create_user(lconn, "lb_hidden", "secret123")
-uid_nonick, _ = auth.create_user(lconn, "lb_nonick", "secret123")
+uid_a, _ = auth.create_user(lconn, "lb_alice", "secret123", "lb_alice_tmp")
+uid_b, _ = auth.create_user(lconn, "lb_bob", "secret123", "lb_bob_tmp")
+uid_hidden, _ = auth.create_user(lconn, "lb_hidden", "secret123", "lb_hidden_tmp")
+uid_nonick, _ = auth.create_user(lconn, "lb_nonick", "secret123", "lb_nonick_tmp")
 auth.change_nickname(lconn, uid_a, "lb_alice")
 auth.change_nickname(lconn, uid_b, "lb_bob")
 auth.change_nickname(lconn, uid_hidden, "lb_hidden")
 # uid_nonick은 닉네임 미등록 상태로 둔다 (visible=1이어도 리더보드 제외돼야 함)
+# — 가입 시엔 닉네임 필수(D-52)라 가입 직후 NULL로 되돌려, 기존 무닉네임 레거시 유저를 재현
+lconn.execute("UPDATE users SET nickname = NULL WHERE id = ?", (uid_nonick,))
+lconn.commit()
 auth.set_leaderboard_visible(lconn, uid_hidden, False)
 uid_admin = lconn.execute("SELECT id FROM users WHERE username='admin'").fetchone()[0]
 
@@ -188,12 +253,12 @@ check("weekly_ranking: 닉네임 등록 후 노출", "lb_nonick" in [r["nickname
 mr_nonick2 = labels_mod.my_rank(lconn, uid_nonick, since, "admin")
 check("my_rank: 닉네임 등록 후 rank 부여", mr_nonick2["rank"] is not None)
 
-uid_none, _ = auth.create_user(lconn, "lb_none", "secret123")
+uid_none, _ = auth.create_user(lconn, "lb_none", "secret123", "lb_none_nick")
 check("my_rank: 제보 0건은 None", labels_mod.my_rank(lconn, uid_none, since, "admin") is None)
 
 # 동점 타이브레이크: 제보수 같으면 마지막 제보 시각이 이른 쪽이 위
-uid_tie1, _ = auth.create_user(lconn, "lb_tie1", "secret123")
-uid_tie2, _ = auth.create_user(lconn, "lb_tie2", "secret123")
+uid_tie1, _ = auth.create_user(lconn, "lb_tie1", "secret123", "lb_tie1_tmp")
+uid_tie2, _ = auth.create_user(lconn, "lb_tie2", "secret123", "lb_tie2_tmp")
 auth.change_nickname(lconn, uid_tie1, "lb_tie1")
 auth.change_nickname(lconn, uid_tie2, "lb_tie2")
 _label(uid_tie1, "2026-01-02 00:00:00", 3)

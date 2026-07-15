@@ -50,9 +50,9 @@ _model_mod.predict_proba = lambda features: _FAKE_PROBS.get(
 
 from fastapi.testclient import TestClient
 from app import app
-c = TestClient(app)
+c = TestClient(app, base_url="https://testserver")  # secure 쿠키(D-52)는 https에서만 전송됨
 # 인증 추가됨: 테스트용 계정 생성 후 로그인된 클라이언트 사용
-c.post("/signup", data={"username":"tester","password":"secret123"})
+c.post("/signup", data={"username":"tester","password":"secret123","nickname":"tester0"})
 fails = []
 def check(label, cond):
     print(('PASS' if cond else 'FAIL'), label)
@@ -165,7 +165,8 @@ r = c.get("/me")
 check("GET /me 200 + 닉네임 폼 렌더", r.status_code == 200 and "닉네임" in r.text and "tester" in r.text)
 
 r = c.post("/me/nickname", data={"nickname": "tester_nick"}, follow_redirects=False)
-check("POST /me/nickname 리다이렉트", r.status_code == 303 and "/me" in r.headers["location"])
+check("POST /me/nickname 리다이렉트", r.status_code == 303 and r.headers["location"] == "/me")
+check("POST /me/nickname 성공 플래시 쿠키 발급", "rf4_flash" in r.cookies)
 import auth as _auth_mod
 _conn4 = sqlite3.connect("rf4.db")
 _uid_tester = _conn4.execute("SELECT id FROM users WHERE username='tester'").fetchone()[0]
@@ -174,6 +175,9 @@ check("닉네임 실제 변경 확인(get_profile)", _profile["nickname"] == "te
 _conn4.close()
 r = c.get("/me")
 check("GET /me에 변경된 닉네임 반영", "tester_nick" in r.text)
+check("플래시 메시지 1회 표시(D-52)", "닉네임을 변경했습니다" in r.text)
+r = c.get("/me")
+check("플래시 메시지는 1회성 — 다음 GET엔 사라짐", "닉네임을 변경했습니다" not in r.text)
 
 r = c.post("/me/visibility", data={"visible": "0"}, follow_redirects=False)
 check("POST /me/visibility(끄기) 리다이렉트", r.status_code == 303)
