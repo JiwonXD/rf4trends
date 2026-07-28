@@ -64,13 +64,23 @@ def _collect_loop(stop_event):
             conn.execute("PRAGMA journal_mode=WAL")
             conn.executescript(collector.SCHEMA)
             print(f"\n===== 수집 시작 {datetime.now():%m-%d %H:%M:%S} =====")
-            collector.collect(conn)
-            unknown = [r[0] for r in conn.execute(
-                "SELECT DISTINCT species FROM catches WHERE species NOT IN (SELECT species FROM species_master)")]
-            if unknown:
-                print(f"[경고] 마스터 미등록 어종 수집됨(맵 업데이트?): {', '.join(unknown)} — species_master에 수동 INSERT 필요")
+            try:
+                collector.collect(conn)
+                unknown = [r[0] for r in conn.execute(
+                    "SELECT DISTINCT species FROM catches WHERE species NOT IN (SELECT species FROM species_master)")]
+                if unknown:
+                    print(f"[경고] 마스터 미등록 어종 수집됨(맵 업데이트?): {', '.join(unknown)} — species_master에 수동 INSERT 필요")
+            except Exception as e:
+                print(f"[수집 실패] {e}")
+
+            # 수집 성공 여부와 무관하게 점수 사전계산은 실행 (D-53, 시간창 롤링 신선도 유지)
+            try:
+                n = scoring.refresh_scores(conn)
+                print(f"[점수 사전계산] {n}종 완료")
+            except Exception as e:
+                print(f"[점수 사전계산 실패] {e}")
         except Exception as e:
-            print(f"[수집 실패] {e}")
+            print(f"[수집 준비 실패] {e}")
         finally:
             conn.close()
 
@@ -171,6 +181,7 @@ def dashboard(request: Request, window: str = "today"):
         fav_top = [{"species": r[0], "count": r[1]} for r in conn.execute(
             "SELECT species, COUNT(*) FROM favorites GROUP BY species ORDER BY COUNT(*) DESC, species ASC LIMIT 5")]
         reported_top = labels_mod.top_reported_species(conn, since, auth.ADMIN_USERNAME, 5)
+        active_top = scoring.top_active(window, 5)
 
         return templates.TemplateResponse(request, "dashboard.html", {
             "cards": cards,
@@ -182,6 +193,7 @@ def dashboard(request: Request, window: str = "today"):
             "my_rank": my_rank,
             "fav_top": fav_top,
             "reported_top": reported_top,
+            "active_top": active_top,
         })
     finally:
         conn.close()

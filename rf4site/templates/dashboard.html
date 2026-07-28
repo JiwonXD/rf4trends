@@ -93,4 +93,17 @@
   </ol>
   {% else %}<div class="lb-empty">아직 제보가 없어요</div>{% endif %}
 </div>
+
+<div class="lb-panel">
+  <div class="lb-head"><h2>지금 뜨는 어종</h2><p class="lb-sub">활성도 점수 기준</p></div>
+  {% if active_top %}
+  <ol class="lb-list">
+  {% for row in active_top %}
+    <li><a class="lb-row" href="/species/{{ row.species | urlencode }}?window={{ window }}">
+      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ row.species }}</span><span class="lb-count">{{ row.score }}</span>
+    </a></li>
+  {% endfor %}
+  </ol>
+  {% else %}<div class="lb-empty">지금은 뜨는 어종이 없어요</div>{% endif %}
+</div>
 {% endblock %}

@@ -200,5 +200,17 @@ check("aside 리더보드에 닉네임 표시(block aside 캡처 동작 확인)"
 check("즐겨찾기 TOP 어종 패널 렌더", "즐겨찾기 TOP 어종" in r.text and "검은 잉어" in r.text.split("즐겨찾기 TOP 어종")[1])
 check("이번 주 최다 제보 어종 패널 렌더", "이번 주 최다 제보 어종" in r.text)
 
+# 지금 뜨는 어종 패널 렌더 확인 (D-54) — 스토어에 직접 카드를 심어야 나온다(폴백 없음)
+# 즐겨찾기(검은 잉어 등)와 겹치지 않는 이름을 써서, 이 스텁이 cards(즐겨찾기 카드) 렌더에 섞이지 않게 함
+_sc._store.setdefault("today", {})["급상승어"] = {
+    "species": "급상승어", "state": _sc.STATE_STRONG, "score": 88.0, "n_total": 8}
+r = c.get("/")
+from urllib.parse import quote
+_panel = r.text.split("지금 뜨는 어종")[1] if "지금 뜨는 어종" in r.text else ""
+check("지금 뜨는 어종 패널 렌더", "지금 뜨는 어종" in r.text and "급상승어" in _panel)
+check("지금 뜨는 어종 패널: 활성도 점수·상세 링크 렌더",
+      "88.0" in _panel and f"/species/{quote('급상승어')}?window=today" in _panel)
+_sc._store = {}  # 테스트 종료 후 스토어 초기화(오염 방지)
+
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")

@@ -97,7 +97,7 @@ ifconfig wlan0 | grep inet
 
 - **서버 끄기**: Termux에서 `Ctrl + C`
 - **다시 켜기**: `cd ~/rf4site && python app.py` (RF4_SECRET 미설정 시 기동 거부 — 4단계에서 .bashrc에 넣었다면 자동 적용)
-- **코드 수정본 반영**: USB로 바뀐 파일만 Download에 복사 → `cp ~/storage/shared/Download/<파일> ~/rf4site/`
+- **코드 수정본 반영**: `cd ~/rf4site && git pull` 후 서버 재시작
 - **수집 잘 되는지 확인**: 실행 중인 Termux 화면에 15분마다 수집 로그가 찍힘
 
 ---

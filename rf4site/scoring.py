@@ -326,9 +326,54 @@ def score_species_at(conn, species, window="today", waterbody=None):
     }
 
 
+# 전 어종 사전계산 스토어 (D-53): {window: {species: card_dict}}.
+# 데이터는 15분 수집 주기에만 바뀌는데 활성도는 요청마다 다시 계산됐다 — 같은 사이클
+# 안에서 접속할 때마다 같은 계산을 반복하던 것을, 수집 사이클(_collect_loop, app.py)
+# 끝에 refresh_scores로 한 번만 계산해 두고 요청은 cached_card로 조회만 하게 바꿨다.
+# 계산 비용을 아무도 기다리지 않는 백그라운드 스레드로 옮긴 셈(251종 × 두 시간창
+# 전량이 태블릿 기준으로도 15분 주기에 충분히 들어간다). 저장된 점수는 다음 사이클까지 최대 15분 낡을 수
+# 있다(시간창이 datetime('now') 기준 롤링이고 hours_since_reset 피처도 시간 의존이지만,
+# 데이터 자체가 15분 주기로만 바뀌므로 이 정도 지연은 의도된 트레이드오프다).
+_store = {}
+
+
+def refresh_scores(conn):
+    """species_master 전 어종 × WINDOWS 전 시간창의 활성도를 새로 계산해 스토어를
+    통째로 교체한다. 새 dict를 완전히 채운 뒤 모듈 변수에 한 번에 대입하는 원자
+    교체 방식 — 단일 프로세스 + GIL 덕분에 dict 참조 대입 자체가 원자적이라, 조회
+    스레드가 절반만 채워진 스토어를 볼 일이 없다(락 불필요). 계산한 어종 수를 반환."""
+    species_list = [r[0] for r in conn.execute("SELECT species FROM species_master")]
+    new_store = {window: {sp: score_species(conn, sp, window) for sp in species_list}
+                 for window in WINDOWS}
+    global _store
+    _store = new_store
+    return len(species_list)
+
+
+def cached_card(conn, species, window="today"):
+    """스토어에서 어종 카드 조회. 스토어에 없으면(기동 직후 등 첫 refresh_scores
+    전) score_species로 즉석 계산해 반환한다 — 단, 그 결과를 스토어에 쓰지는
+    않는다(스토어 쓰기는 refresh_scores 한곳으로 유지).
+    반환된 카드는 스토어에 담긴 그 객체다. 호출부에서 고치면 다음 사이클까지 모든
+    사용자에게 번지므로 읽기 전용으로만 쓸 것."""
+    card = _store.get(window, {}).get(species)
+    if card is not None:
+        return card
+    return score_species(conn, species, window)
+
+
+def top_active(window, limit=5):
+    """전 어종 중 활성도 상위 limit개(비활성 제외). 스토어만 읽고 즉석 계산으로
+    폴백하지 않는다 — 스토어가 비어 있으면(기동 직후 첫 refresh_scores 전) 빈
+    리스트를 반환한다(251종 즉석 계산은 D-51에서 보류됐던 성능 함정 재현이므로)."""
+    cards = [c for c in _store.get(window, {}).values() if c["state"] != STATE_INACTIVE]
+    cards.sort(key=lambda c: (c["score"], c["n_total"]), reverse=True)
+    return cards[:limit]
+
+
 def dashboard(conn, favorites, window="today"):
     """선호 어종 전체 평가. 활성도 점수 내림차순, 비활성은 항상 하단."""
-    cards = [score_species(conn, sp, window) for sp in favorites]
+    cards = [cached_card(conn, sp, window) for sp in favorites]
     active = [c for c in cards if c["state"] != STATE_INACTIVE]
     inactive = [c for c in cards if c["state"] == STATE_INACTIVE]
     active.sort(key=lambda c: c["score"], reverse=True)
