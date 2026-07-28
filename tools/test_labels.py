@@ -297,3 +297,4 @@ lconn.close()
 
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")
+sys.exit(1 if fails else 0)

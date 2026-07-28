@@ -66,6 +66,7 @@
   <div class="lb-empty">아직 제보가 없어요</div>
   {% endif %}
   {% if my_rank %}<div class="lb-me-row">나 · {{my_rank.count}}회{% if my_rank.rank %} ({{my_rank.rank}}위){% endif %}</div>{% endif %}
+  {% if not has_nickname %}<p class="lb-sub" style="margin-top:8px;"><a href="/me" style="color:var(--accent);">마이페이지</a>에서 닉네임을 설정하면 리더보드에 등록됩니다</p>{% endif %}
 </div>
 
 <div class="lb-panel">

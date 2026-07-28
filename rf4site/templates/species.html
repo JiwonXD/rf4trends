@@ -21,7 +21,7 @@
 </div>
 
 {% if can_label %}
-<div id="label-panel" style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;
+<div id="label-panel" style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;
             padding:10px 14px; background:var(--surface); border:1px solid var(--line); border-radius:10px;">
   <span style="font-size:13px; color:var(--muted); margin-right:4px;">
     <span id="label-wb">이 어종</span> 판정 <span style="color:var(--faint);">({{ '24h' if window == 'today' else '6h' }} 기준)</span>:
@@ -33,6 +33,7 @@
   <span id="label-hint" style="font-size:13px; color:var(--faint); margin-left:6px;"></span>
   <span id="label-msg" style="font-size:13px; color:var(--ok); margin-left:6px;"></span>
 </div>
+<p style="font-size:12px; color:var(--faint); margin-bottom:16px;">주간 기록을 보고 느껴지는 활성도를 제보해주시면 판정 향상에 도움이 됩니다</p>
 {% endif %}
 
 {% if d.card.n_total == 0 %}

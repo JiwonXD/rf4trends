@@ -85,6 +85,7 @@ t = r.text
 check("어종 상세 200", r.status_code == 200)
 check("트로피 기준선 표기", "28.0 kg" in t and "40.0 kg" in t)
 check("미끼/장소/트로피 블록 제목", "미끼 순위" in t and "장소 분포" in t and "최근 트로피 기록" in t)
+check("제보 유도 안내 문구 렌더", "주간 기록을 보고 느껴지는 활성도를 제보해주시면 판정 향상에 도움이 됩니다" in t)
 # 교차 필터링: 서버가 원본 records와 수역별 점수를 JSON으로 넘긴다(집계는 JS)
 check("RECORDS 데이터 전달", "const RECORDS = [" in t and '"tier"' in t and '"waterbody"' in t)
 check("WATER_SCORES 전달", "const WATER_SCORES = {" in t)
@@ -195,6 +196,9 @@ check("리더보드용 라벨 제보 성공", r.status_code == 200)
 r = c.get("/")
 check("대시보드(aside 포함) 정상 렌더", r.status_code == 200)
 check("aside 리더보드에 닉네임 표시(block aside 캡처 동작 확인)", "tester_nick" in r.text and "이번 주 리더보드" in r.text)
+# 안내 문구의 "마이페이지"는 <a> 태그로 감싸여 있어 원문 그대로는 텍스트가 연속되지 않는다 —
+# 링크 뒤에 이어지는 부분(고유 문자열)으로 존재 여부를 확인한다.
+check("닉네임 있는 사용자에겐 리더보드 안내 문구 미표시", "에서 닉네임을 설정하면 리더보드에 등록됩니다" not in r.text)
 
 # 즐겨찾기 TOP / 이번 주 최다 제보 패널 렌더 확인 (현재 favorites: 검은 잉어, 타이멘, 무지개 송어)
 check("즐겨찾기 TOP 어종 패널 렌더", "즐겨찾기 TOP 어종" in r.text and "검은 잉어" in r.text.split("즐겨찾기 TOP 어종")[1])
@@ -210,7 +214,19 @@ _panel = r.text.split("지금 뜨는 어종")[1] if "지금 뜨는 어종" in r.
 check("지금 뜨는 어종 패널 렌더", "지금 뜨는 어종" in r.text and "급상승어" in _panel)
 check("지금 뜨는 어종 패널: 활성도 점수·상세 링크 렌더",
       "88.0" in _panel and f"/species/{quote('급상승어')}?window=today" in _panel)
-_sc._store = {}  # 테스트 종료 후 스토어 초기화(오염 방지)
+_sc._store = {}  # 이후 검증은 스토어 없이(폴백 경로로) 렌더된다 — 스토어 오염 방지
+
+# 닉네임 미설정 사용자 대시보드 안내 — 양방향 검증(위 tester_nick 검증과 짝)
+r = c.post("/signup", data={"username":"nonick_user","password":"secret123","nickname":"nonick_temp"})
+assert r.status_code in (200, 302, 303, 307), f"가입 실패: {r.status_code}"
+_conn6 = sqlite3.connect("rf4.db")
+_conn6.execute("UPDATE users SET nickname=NULL WHERE username='nonick_user'")
+_conn6.commit(); _conn6.close()
+r = c.post("/api/favorites/검은 잉어")
+assert r.status_code == 200, f"즐겨찾기 추가 실패: {r.status_code}"
+r = c.get("/")
+check("닉네임 없는 사용자에겐 리더보드 안내 문구 표시", "에서 닉네임을 설정하면 리더보드에 등록됩니다" in r.text)
 
 print("="*40)
 print("실패", len(fails), "건" if fails else "— 전체 통과")
+sys.exit(1 if fails else 0)

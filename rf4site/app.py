@@ -182,6 +182,7 @@ def dashboard(request: Request, window: str = "today"):
             "SELECT species, COUNT(*) FROM favorites GROUP BY species ORDER BY COUNT(*) DESC, species ASC LIMIT 5")]
         reported_top = labels_mod.top_reported_species(conn, since, auth.ADMIN_USERNAME, 5)
         active_top = scoring.top_active(window, 5)
+        has_nickname = bool(auth.get_profile(conn, uid)["nickname"])
 
         return templates.TemplateResponse(request, "dashboard.html", {
             "cards": cards,
@@ -194,6 +195,7 @@ def dashboard(request: Request, window: str = "today"):
             "fav_top": fav_top,
             "reported_top": reported_top,
             "active_top": active_top,
+            "has_nickname": has_nickname,
         })
     finally:
         conn.close()
