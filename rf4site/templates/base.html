@@ -131,7 +131,7 @@ a.lb-row:hover .lb-name { color: var(--accent); }
       <a href="?window=6h" class="{{ 'on' if window == '6h' }}">6h</a>
       <a href="?window=today" class="{{ 'on' if window == 'today' }}">24h</a>
     </nav>
-    <a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>
+    {% block nav_btn %}<a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>{% endblock %}
     {% if username is defined and username %}
       <a class="btn" href="/me">마이페이지</a>
       <form method="post" action="/logout" style="display:inline">

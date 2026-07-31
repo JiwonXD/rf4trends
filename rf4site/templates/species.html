@@ -13,9 +13,8 @@
         트로피 {{ d.trophy_str }}{% if d.rare_str %} · 레어 {{ d.rare_str }}{% endif %}
       </span>
     {% endif %}
-    {% if not is_favorite %}
-      <button id="addfav" class="btn" style="font-size:12px; padding:4px 10px;">☆ 선호에 추가</button>
-    {% endif %}
+    <button id="addfav" class="btn" data-on="{{ '1' if is_favorite else '0' }}"
+            style="font-size:12px; padding:4px 10px;{{ ' color:var(--star);' if is_favorite }}">{{ '★' if is_favorite else '☆' }} 즐겨찾기</button>
   </div>
   <button id="trophy-toggle" class="btn" style="font-size:13px;">트로피만</button>
 </div>
@@ -246,13 +245,17 @@ document.querySelectorAll('.label-btn').forEach(btn => {
 </script>
 {% endif %}
 
-{% if not is_favorite %}
 <script>
-document.getElementById('addfav').addEventListener('click', async (e) => {
-  const res = await fetch('/api/favorites/' + encodeURIComponent('{{ name }}'), { method: 'POST' });
-  if (res.ok) { e.target.textContent = '★ 추가됨'; e.target.disabled = true; }
+const addfav = document.getElementById('addfav');
+addfav.addEventListener('click', async () => {
+  const on = addfav.dataset.on === '1';
+  const method = on ? 'DELETE' : 'POST';
+  const res = await fetch('/api/favorites/' + encodeURIComponent('{{ name }}'), { method });
+  if (!res.ok) return;
+  addfav.dataset.on = on ? '0' : '1';
+  addfav.textContent = (on ? '☆' : '★') + ' 즐겨찾기';
+  addfav.style.color = on ? '' : 'var(--star)';
 });
 </script>
-{% endif %}
 
 {% endblock %}

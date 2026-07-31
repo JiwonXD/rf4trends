@@ -63,14 +63,27 @@ check("선호 0개 → 온보딩 리다이렉트", r.status_code in (302,303,307
 
 r = c.get("/onboarding")
 check("온보딩에 어종 목록 표시", r.status_code == 200 and "검은 잉어" in r.text and "대시보드 보기" in r.text)
+check("온보딩엔 어종 관리 버튼 없음(헤더 컨텍스트 전환)", "/onboarding?window=" not in r.text)
+_hdr = r.text.split("</header>")[0]
+check("온보딩 헤더 안에 대시보드 보기(id=go) 렌더", 'id="go"' in _hdr and "대시보드 보기" in _hdr)
+check("선호 0종이면 헤더 대시보드 보기 비활성", "opacity:.4; pointer-events:none;" in _hdr)
+check("하단 고정 바 제거 + 카운트는 검색창 아래", "position:fixed" not in r.text
+      and r.text.index('id="q"') < r.text.index('id="count"'))
+from urllib.parse import quote as _quote
+check("온보딩 목록: 어종명이 상세 링크로 렌더", f"/species/{_quote('검은 잉어')}?window=" in r.text)
 
 for sp in ["검은 잉어", "타이멘", "무지개 송어", "붕어"]:
     r = c.post(f"/api/favorites/{sp}")
     assert r.status_code == 200
 
+r = c.get("/onboarding")
+_hdr = r.text.split("</header>")[0]
+check("선호 등록 후 헤더 대시보드 보기 활성", 'id="go"' in _hdr and "opacity:.4" not in _hdr)
+
 r = c.get("/")
 t = r.text
 check("대시보드 200", r.status_code == 200)
+check("대시보드엔 어종 관리 버튼 표시(헤더 컨텍스트 전환)", "어종 관리" in t)
 check("강한 활성 분류", "강한 활성" in t)
 check("활성 분류", ">활성<" in t.replace("강한 활성",""))
 check("탐색 분류", "탐색" in t)
@@ -83,6 +96,8 @@ check("탐색도 미끼 분산 표기", "분산" in t)
 r = c.get("/species/검은 잉어")
 t = r.text
 check("어종 상세 200", r.status_code == 200)
+check("어종 상세엔 어종 관리 버튼 표시(헤더 컨텍스트 전환)", "어종 관리" in t)
+check("즐겨찾기인 어종은 ★ 즐겨찾기 버튼", "★ 즐겨찾기" in t)
 check("트로피 기준선 표기", "28.0 kg" in t and "40.0 kg" in t)
 check("미끼/장소/트로피 블록 제목", "미끼 순위" in t and "장소 분포" in t and "최근 트로피 기록" in t)
 check("제보 유도 안내 문구 렌더", "주간 기록을 보고 느껴지는 활성도를 제보해주시면 판정 향상에 도움이 됩니다" in t)
@@ -101,6 +116,7 @@ r = c.get("/onboarding")
 check("마스터 어종은 기록 없어도 온보딩에 표시", "유령어" in r.text)
 r = c.get("/species/유령어", follow_redirects=False)
 check("기록 없는 마스터 어종 상세 200", r.status_code == 200)
+check("즐겨찾기 아닌 어종은 ☆ 즐겨찾기 버튼", "☆ 즐겨찾기" in r.text)
 
 r = c.get("/species/없는어종", follow_redirects=False)
 check("없는 어종 → 대시보드 리다이렉트", r.status_code in (302,307))
