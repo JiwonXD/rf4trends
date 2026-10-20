@@ -30,3 +30,7 @@ start-rf4.sh
 # OS / 에디터
 .DS_Store
 *.swp
+
+# 로컬 AI 에이전트 설정 (서비스 배포 대상 아님)
+.claude/
+.codex/
