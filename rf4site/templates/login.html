@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RF4 트렌드 — 로그인</title>
+<title>{{ t("RF4 트렌드 — 로그인") }}</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 :root {
@@ -51,40 +51,41 @@ button:hover { opacity:.92; }
 </head>
 <body>
 <div class="box">
-  <div class="brand">RF4 트렌드<small>내 선호 어종 활성도 대시보드</small></div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">{% include "language.html" %}</div>
+  <div class="brand">{{ t("RF4 트렌드") }}<small>{{ t("내 선호 어종 활성도 대시보드") }}</small></div>
 
   <div class="tabs">
-    <a href="/login?mode=login" class="{{ 'on' if mode != 'signup' }}">로그인</a>
-    <a href="/login?mode=signup" class="{{ 'on' if mode == 'signup' }}">회원가입</a>
+    <a href="/login?mode=login" class="{{ 'on' if mode != 'signup' }}">{{ t("로그인") }}</a>
+    <a href="/login?mode=signup" class="{{ 'on' if mode == 'signup' }}">{{ t("회원가입") }}</a>
   </div>
 
-  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+  {% if error %}<div class="err">{{ t(error) }}</div>{% endif %}
 
   <form method="post" action="{{ '/signup' if mode == 'signup' else '/login' }}">
-    <label>아이디</label>
+    <label>{{ t("아이디") }}</label>
     <input name="username" value="{{ username or '' }}" autocomplete="username"
            autofocus required>
-    {% if mode == 'signup' %}<p class="hint">영문/숫자와 _ - @ . 3~20자</p>{% endif %}
+    {% if mode == 'signup' %}<p class="hint">{{ t("영문/숫자와 _ - @ . 3~20자") }}</p>{% endif %}
 
     {% if mode == 'signup' %}
-    <label>닉네임</label>
+    <label>{{ t("닉네임") }}</label>
     <input name="nickname" value="{{ nickname or '' }}" required>
-    <p class="hint">한글/영문/숫자와 _ - @ . 3~20자 — 리더보드에 표시됩니다</p>
+    <p class="hint">{{ t("한글/영문/숫자와 _ - @ . 3~20자 — 리더보드에 표시됩니다") }}</p>
     {% endif %}
 
-    <label>비밀번호</label>
+    <label>{{ t("비밀번호") }}</label>
     <input name="password" type="password"
            autocomplete="{{ 'new-password' if mode == 'signup' else 'current-password' }}"
            required>
-    {% if mode == 'signup' %}<p class="hint">6자 이상</p>{% endif %}
+    {% if mode == 'signup' %}<p class="hint">{{ t("6자 이상") }}</p>{% endif %}
 
-    <button type="submit">{{ '가입하고 시작하기' if mode == 'signup' else '로그인' }}</button>
+    <button type="submit">{{ t('가입하고 시작하기' if mode == 'signup' else '로그인') }}</button>
   </form>
 
   <div class="footer">
-    ⚠️ 본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.<br>
-    © 모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.<br>
-    문의: <a href="mailto:rf4trends@gmail.com">rf4trends@gmail.com</a>
+    {{ t("⚠️ 본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.") }}<br>
+    {{ t("© 모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.") }}<br>
+    {{ t("문의:") }} <a href="mailto:rf4trends@gmail.com">rf4trends@gmail.com</a>
   </div>
 </div>
 </body>

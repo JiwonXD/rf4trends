@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}RF4 트렌드{% endblock %}</title>
+<title>{% block title %}{{ t("RF4 트렌드") }}{% endblock %}</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 :root {
@@ -54,7 +54,12 @@ header {
 .brand small { display: block; font-size: 12px; font-weight: 400; color: var(--faint); letter-spacing: 0; }
 .meta { font-size: 12px; color: var(--faint); }
 .meta.stale { color: var(--warn); }
-.controls { display: flex; gap: 8px; align-items: center; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 600px) {
+  .controls { width: 100%; }
+  .controls .toggle { margin-right: auto; }
+}
+.controls .btn, .controls .toggle a { min-height: 44px; display: inline-flex; align-items: center; }
 .toggle { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .toggle a { padding: 6px 14px; font-size: 13px; color: var(--muted); }
 .toggle a.on { background: var(--surface-2); color: var(--text); font-weight: 600; }
@@ -119,23 +124,24 @@ a.lb-row:hover .lb-name { color: var(--accent); }
 {% set aside_html %}{% block aside %}{% endblock %}{% endset %}
 <div class="layout{% if aside_html|trim %} has-aside{% endif %}">
 <header>
-  <a class="brand" href="/?window={{ window }}">RF4 트렌드
+  <a class="brand" href="/?window={{ window }}">{{ t("RF4 트렌드") }}
     <small>
       {% if last_collected is defined and last_collected %}
-        마지막 수집 {{ last_collected }}
+        {{ t("마지막 수집") }} {{ last_collected }} KST
       {% endif %}
     </small>
   </a>
+  {% include "language.html" %}
   <div class="controls">
     <nav class="toggle">
       <a href="?window=6h" class="{{ 'on' if window == '6h' }}">6h</a>
       <a href="?window=today" class="{{ 'on' if window == 'today' }}">24h</a>
     </nav>
-    {% block nav_btn %}<a class="btn" href="/onboarding?window={{ window }}">어종 관리</a>{% endblock %}
+    {% block nav_btn %}<a class="btn" href="/onboarding?window={{ window }}">{{ t("어종 관리") }}</a>{% endblock %}
     {% if username is defined and username %}
-      <a class="btn" href="/me">마이페이지</a>
+      <a class="btn" href="/me">{{ t("마이페이지") }}</a>
       <form method="post" action="/logout" style="display:inline">
-        <button type="submit" class="btn" title="{{ username }} 로그아웃">로그아웃</button>
+        <button type="submit" class="btn" title="{{ username }} {{ t('로그아웃') }}">{{ t("로그아웃") }}</button>
       </form>
     {% endif %}
   </div>
@@ -148,9 +154,9 @@ a.lb-row:hover .lb-name { color: var(--accent); }
 {% endif %}
 </div>
 <footer class="site-footer">
-  ⚠️ 본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.<br>
-  © 모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.<br>
-  문의: <a href="mailto:rf4trends@gmail.com">rf4trends@gmail.com</a>
+  {{ t("⚠️ 본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.") }}<br>
+  {{ t("© 모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.") }}<br>
+  {{ t("문의:") }} <a href="mailto:rf4trends@gmail.com">rf4trends@gmail.com</a>
 </footer>
 </body>
 </html>

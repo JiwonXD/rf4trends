@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}어종 관리{% endblock %}
+{% block title %}{{ t("어종 관리") }}{% endblock %}
 {% block nav_btn %}
 <a id="go" class="btn" href="/?window={{ window }}"
    style="{{ 'opacity:.4; pointer-events:none;' if favorites | length == 0 }}">
-  대시보드 보기
+  {{ t("대시보드 보기") }}
 </a>
 {% endblock %}
 {% block head %}
@@ -15,37 +15,37 @@
 
 {% if first_visit %}
   <p style="color:var(--muted); margin-bottom:16px;">
-    노리는 어종을 등록하면 대시보드가 만들어집니다. 별표를 눌러 선택하세요.
+    {{ t("노리는 어종을 등록하면 대시보드가 만들어집니다. 별표를 눌러 선택하세요.") }}
   </p>
 {% endif %}
 
-<input id="q" type="search" placeholder="어종 검색"
+<input id="q" type="search" placeholder="{{ t('어종 검색') }}"
   style="width:100%; padding:11px 14px; font-size:15px; margin-bottom:14px;
          background:var(--surface); border:1px solid var(--line);
          border-radius:10px; color:var(--text); outline:none;">
 
 <div style="text-align:right; margin-bottom:8px;">
   <span style="font-size:13px; color:var(--muted);">
-    선택한 어종 <b id="count" style="color:var(--text);">{{ favorites | length }}</b>종
+    {{ t("선택한 어종") }} <b id="count" style="color:var(--text);">{{ favorites | length }}</b>{{ t("종") }}
   </span>
 </div>
 
 {% if not species %}
 <div style="text-align:center; color:var(--muted); padding:40px 16px;
             border:1px dashed var(--line); border-radius:10px;">
-  어종 목록이 비어 있습니다.<br>
+  {{ t("어종 목록이 비어 있습니다.") }}<br>
   <span style="font-size:13px; color:var(--faint);">
-    어종 마스터가 시드되지 않았습니다 — trophy_weights.csv 확인 후 서버를 재시작해 주세요.
+    {{ t("어종 마스터가 시드되지 않았습니다 — trophy_weights.csv 확인 후 서버를 재시작해 주세요.") }}
   </span>
 </div>
 {% endif %}
 
 <div id="list">
   {% for sp in species %}
-  <div class="row" data-name="{{ sp }}"
+  <div class="row" data-name="{{ sp }}" data-search="{{ sp }} {{ tr_name('species', sp) }}"
        style="display:flex; justify-content:space-between; align-items:center;
               padding:9px 14px; border-bottom:1px solid var(--line);">
-    <a class="sp-link" href="/species/{{ sp | urlencode }}?window={{ window }}" style="flex:1; min-width:0;">{{ sp }}</a>
+    <a class="sp-link" href="/species/{{ sp | urlencode }}?window={{ window }}" style="flex:1; min-width:0;">{{ tr_name('species', sp) }}</a>
     <button class="star btn" data-name="{{ sp }}"
             data-on="{{ '1' if sp in favorites else '0' }}"
             style="border:none; background:none; font-size:18px; padding:4px 8px;
@@ -56,7 +56,7 @@
   {% endfor %}
 </div>
 <p id="noresult" style="display:none; text-align:center; color:var(--faint); padding:30px 0;">
-  해당 어종 없음
+  {{ t("해당 어종 없음") }}
 </p>
 
 <script>
@@ -64,10 +64,10 @@ const q = document.getElementById('q');
 const rows = [...document.querySelectorAll('.row')];
 const noresult = document.getElementById('noresult');
 q.addEventListener('input', () => {
-  const v = q.value.trim();
+  const v = q.value.trim().toLocaleLowerCase();
   let visible = 0;
   rows.forEach(r => {
-    const show = !v || r.dataset.name.includes(v);
+    const show = !v || r.dataset.search.toLocaleLowerCase().includes(v);
     r.style.display = show ? 'flex' : 'none';
     if (show) visible++;
   });

@@ -1,0 +1,9 @@
+<form method="post" action="/language" style="margin-left:auto;">
+  <input type="hidden" name="next" value="{% if mode is defined %}/login?mode={{ 'signup' if mode == 'signup' else 'login' }}{% else %}{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}{% endif %}">
+  <select name="language" aria-label="{{ t('언어') }}" onchange="this.form.submit()"
+          style="min-height:44px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;">
+    {% for code, label in languages.items() %}
+    <option value="{{ code }}"{% if lang == code %} selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>

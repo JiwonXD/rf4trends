@@ -1,0 +1,120 @@
+ko,en,ru,zh_CN
+RF4 트렌드,RF4 Trends,RF4 Тренды,RF4 趋势
+언어,Language,Язык,语言
+마지막 수집,Last collected,Последний сбор,上次采集
+어종 관리,Manage species,Выбор рыб,管理鱼种
+마이페이지,My account,Мой профиль,我的账户
+로그아웃,Log out,Выйти,退出登录
+로그인,Log in,Войти,登录
+회원가입,Sign up,Регистрация,注册
+내 선호 어종 활성도 대시보드,Activity dashboard for your favorite fish,Активность ваших избранных рыб,收藏鱼种活跃度看板
+아이디,Username,Логин,用户名
+닉네임,Nickname,Никнейм,昵称
+비밀번호,Password,Пароль,密码
+영문/숫자와 _ - @ . 3~20자,"3–20 characters: Latin letters, digits and _ - @ .","3–20 символов: латинские буквы, цифры и _ - @ .",3–20 个字符：英文字母、数字及 _ - @ .
+한글/영문/숫자와 _ - @ . 3~20자 — 리더보드에 표시됩니다,"3–20 characters: Korean or Latin letters, digits and _ - @ . — shown on the leaderboard","3–20 символов: корейские или латинские буквы, цифры и _ - @ . — отображается в рейтинге",3–20 个字符：韩文、英文字母、数字及 _ - @ . — 将显示在排行榜上
+6자 이상,At least 6 characters,Не менее 6 символов,至少 6 个字符
+가입하고 시작하기,Sign up and get started,Зарегистрироваться и начать,注册并开始使用
+본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.,This is a non-commercial fan project for Russian Fishing 4 (RF4).,Это некоммерческий фанатский проект по игре «Русская Рыбалка 4» (RF4).,本站是《俄罗斯钓鱼4》(RF4) 的非商业玩家自制项目。
+모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.,All game content and materials belong to their respective copyright holders.,Все права на игровые материалы принадлежат их правообладателям.,所有游戏内容及资料的版权归原权利人所有。
+문의:,Contact:,Контакты:,联系：
+내 어종 대시보드,My fish dashboard,Мои рыбы,我的鱼种看板
+수집된 데이터가 없습니다.,No data collected yet.,Данные ещё не собраны.,暂无采集数据。
+서버가 15분 주기로 자동 수집합니다 — 첫 수집이 끝나면 채워집니다.,Data is collected every 15 minutes — results appear after the first collection.,Данные собираются каждые 15 минут и появятся после первого сбора.,服务器每 15 分钟自动采集一次，首次采集完成后将显示数据。
+강한 활성,Highly active,Высокая активность,高度活跃
+활성,Active,Активность,活跃
+탐색,Explore,Поиск,探索
+비활성,Inactive,Неактивно,不活跃
+활성도,Activity,Активность,活跃度
+트로피,Trophy,Трофей,奖杯
+레어,Rare,Редкий,稀有
+일반,Normal,Обычный,普通
+일관성,Consistency,Однородность наживок,鱼饵一致性
+미끼 분산,Mixed baits,Разные наживки,鱼饵分散
+기록,Records,Записи,记录
+표본 부족,Insufficient samples,Недостаточно данных,样本不足
+활성 신호 없음,No activity signal,Нет признаков активности,无活跃信号
+6시간 창에는 표본이 적습니다 —,Few samples in the 6-hour window —,Мало данных за 6 часов —,近 6 小时内样本较少 —
+오늘로 넓혀보세요,Try the past 24 hours,Посмотреть последние 24 часа,查看近 24 小时
+이번 주 리더보드,This week's leaderboard,Рейтинг за неделю,本周排行榜
+매주 월 04:00 초기화,Resets Mondays at 04:00 KST,Сброс по понедельникам в 04:00 KST,每周一韩国时间 04:00 重置
+아직 제보가 없어요,No reports yet,Сообщений пока нет,暂无反馈
+나,Me,Я,我
+에서 닉네임을 설정하면 리더보드에 등록됩니다,: set a nickname to appear on the leaderboard,: укажите никнейм для участия в рейтинге,：设置昵称后即可显示在排行榜上
+즐겨찾기 TOP 어종,Most favorited fish,Популярные избранные рыбы,最受欢迎的收藏鱼种
+아직 즐겨찾기가 없어요,No favorites yet,Избранных рыб пока нет,暂无收藏
+이번 주 최다 제보 어종,Most reported fish this week,Чаще всего отмечаемые рыбы за неделю,本周反馈最多的鱼种
+지금 뜨는 어종,Active fish right now,Активные рыбы сейчас,当前活跃鱼种
+활성도 점수 기준,Ranked by activity score,По баллу активности,按活跃度评分排序
+지금은 뜨는 어종이 없어요,No active fish right now,Сейчас нет активных рыб,当前暂无活跃鱼种
+대시보드 보기,View dashboard,Открыть панель,查看看板
+노리는 어종을 등록하면 대시보드가 만들어집니다. 별표를 눌러 선택하세요.,Choose your target fish to build your dashboard. Select them using the stars.,"Выберите нужных рыб звёздочками, чтобы создать свою панель.",点击星标选择目标鱼种，即可创建专属看板。
+어종 검색,Search fish,Поиск рыбы,搜索鱼种
+선택한 어종,Selected species,Выбрано видов,已选鱼种
+종, species, видов,种
+어종 목록이 비어 있습니다.,The species list is empty.,Список рыб пуст.,鱼种列表为空。
+어종 마스터가 시드되지 않았습니다 — trophy_weights.csv 확인 후 서버를 재시작해 주세요.,Species data has not been initialized — check trophy_weights.csv and restart the server.,Справочник рыб не заполнен — проверьте trophy_weights.csv и перезапустите сервер.,鱼种数据尚未初始化，请检查 trophy_weights.csv 并重启服务器。
+해당 어종 없음,No matching fish,Рыбы не найдены,未找到匹配鱼种
+가입 시 정한 아이디는 변경할 수 없습니다.,Your username cannot be changed.,"Логин, указанный при регистрации, изменить нельзя.",注册时设置的用户名无法更改。
+리더보드 등 다른 사용자에게 보이는 이름입니다.,"This name is visible to other users, including on the leaderboard.","Это имя видно другим пользователям, в том числе в рейтинге.",其他用户会在排行榜等位置看到此名称。
+닉네임을 등록하면 리더보드에 표시됩니다. (미등록 시 리더보드 비공개),Set a nickname to appear on the leaderboard. (Hidden until a nickname is set.),"Укажите никнейм, чтобы появиться в рейтинге. (Без никнейма профиль скрыт.)",设置昵称后即可显示在排行榜上。（未设置时不公开）
+변경,Change,Изменить,更改
+등록,Set,Задать,设置
+닉네임 변경,Change nickname,Изменить никнейм,更改昵称
+닉네임 등록,Set nickname,Задать никнейм,设置昵称
+비밀번호 변경,Change password,Изменить пароль,更改密码
+현재 비밀번호,Current password,Текущий пароль,当前密码
+새 비밀번호,New password,Новый пароль,新密码
+리더보드 노출,Leaderboard visibility,Видимость в рейтинге,排行榜可见性
+끄면 다른 사용자에게 내 순위·닉네임이 보이지 않습니다.,"When hidden, other users cannot see your rank or nickname.","Если скрыть профиль, другие пользователи не увидят ваш никнейм и место в рейтинге.",关闭后，其他用户将看不到您的排名和昵称。
+공개 중 · 누르면 숨김,Visible · click to hide,"Виден · нажмите, чтобы скрыть",已公开 · 点击隐藏
+비공개 · 누르면 공개,Hidden · click to show,"Скрыт · нажмите, чтобы показать",已隐藏 · 点击公开
+즐겨찾기,Favorite,В избранное,收藏
+트로피만,Trophies only,Только трофеи,仅奖杯
+이 어종,This fish,Эта рыба,此鱼种
+판정,Assessment,Оценка,评价
+기준,window,период,范围
+주간 기록을 보고 느껴지는 활성도를 제보해주시면 판정 향상에 도움이 됩니다,Report the activity you observe in the weekly records to help improve assessments.,"Сообщайте свою оценку активности по недельным рекордам, чтобы улучшить определение активности.",根据周记录反馈您观察到的活跃度，有助于提高判断准确性。
+최근 기록 없음,No recent records,Нет свежих записей,暂无近期记录
+오늘로 넓혀보기,View the past 24 hours,Посмотреть последние 24 часа,查看近 24 小时
+미끼 순위,Bait ranking,Рейтинг наживок,鱼饵排名
+장소 분포,Location distribution,Распределение по водоёмам,钓场分布
+수역별 활성도,Activity by waterbody,Активность по водоёмам,各水域活跃度
+최근 트로피 기록,Recent trophy records,Свежие трофейные записи,近期奖杯记录
+트로피이상만,Trophies and rare trophies only,Только трофеи и редкие трофеи,仅奖杯及稀有奖杯
+기록 없음,No records,Нет записей,暂无记录
+시간창 내 트로피 기록 없음,No trophy records in this time window,Нет трофейных записей за этот период,此时间范围内暂无奖杯记录
+장소 분포에서 기록 있는 수역을 선택하세요,Select a waterbody with records in the location distribution.,Выберите водоём с записями в распределении по водоёмам.,请在钓场分布中选择有记录的水域
+저장 실패,Failed to save,Не удалось сохранить,保存失败
+로그인 필요,Login required,Требуется вход,请先登录
+권한 없음,Access denied,Нет доступа,无权限
+해당 수역에 기록이 없습니다.,No records for this waterbody.,Для этого водоёма нет записей.,此水域暂无记录。
+알 수 없는 라벨입니다.,Unknown activity label.,Неизвестная метка активности.,未知的活跃度标签。
+아이디 또는 비밀번호가 올바르지 않습니다.,Incorrect username or password.,Неверный логин или пароль.,用户名或密码错误。
+아이디는 영문/숫자와 _ - @ . 3~20자여야 합니다.,"Username must be 3–20 characters using Latin letters, digits and _ - @ .","Логин должен содержать 3–20 символов: латинские буквы, цифры и _ - @ .",用户名须为 3–20 个字符，仅限英文字母、数字及 _ - @ .
+닉네임은 한글/영문/숫자와 _ - @ . 3~20자여야 합니다.,"Nickname must be 3–20 characters using Korean or Latin letters, digits and _ - @ .","Никнейм должен содержать 3–20 символов: корейские или латинские буквы, цифры и _ - @ .",昵称须为 3–20 个字符，仅限韩文、英文字母、数字及 _ - @ .
+비밀번호는 6자 이상이어야 합니다.,Password must be at least 6 characters.,Пароль должен содержать не менее 6 символов.,密码须至少包含 6 个字符。
+이미 사용 중인 아이디입니다.,This username is already taken.,Этот логин уже занят.,此用户名已被使用。
+이미 사용 중인 닉네임입니다.,This nickname is already taken.,Этот никнейм уже занят.,此昵称已被使用。
+이미 사용 중인 아이디 또는 닉네임입니다.,This username or nickname is already taken.,Этот логин или никнейм уже занят.,此用户名或昵称已被使用。
+현재 비밀번호가 올바르지 않습니다.,Incorrect current password.,Неверный текущий пароль.,当前密码错误。
+닉네임을 변경했습니다.,Nickname updated.,Никнейм изменён.,昵称已更改。
+비밀번호를 변경했습니다.,Password updated.,Пароль изменён.,密码已更改。
+리더보드 노출 설정을 변경했습니다.,Leaderboard visibility updated.,Видимость в рейтинге изменена.,排行榜可见性设置已更改。
+건, records, записей, 条
+건 —, records —, записей —, 条 —
+(레어,(rare,(редких,(稀有
+· 일반,· normal,· обычных,· 普通
+— 미끼 분산,— mixed baits,— разные наживки,— 鱼饵分散
+회, reports, сообщений, 次
+명, users, игроков, 人
+위), in ranking), место), 名)
+나 ·,Me ·,Я ·,我 ·
+기준),window),период),范围)
+· 수역별 활성도,· activity by waterbody,· активность по водоёмам,· 各水域活跃度
+· 레어,· rare,· редкий,· 稀有
+— RF4 트렌드,— RF4 Trends,— RF4 Тренды,— RF4 趋势
+RF4 트렌드 — 로그인,RF4 Trends — Log in,RF4 Тренды — Вход,RF4 趋势 — 登录
+기록됨,saved,сохранено,已保存
+⚠️ 본 사이트는 러시안피싱4(RF4)의 팬메이드 프로젝트이며 상업적 목적이 없습니다.,⚠️ This is a non-commercial fan project for Russian Fishing 4 (RF4).,⚠️ Это некоммерческий фанатский проект по игре «Русская Рыбалка 4» (RF4).,⚠️ 本站是《俄罗斯钓鱼4》(RF4) 的非商业玩家自制项目。
+© 모든 게임 콘텐츠 및 자료의 저작권은 원작자에게 있습니다.,© All game content and materials belong to their respective copyright holders.,© Все права на игровые материалы принадлежат их правообладателям.,© 所有游戏内容及资料的版权归原权利人所有。

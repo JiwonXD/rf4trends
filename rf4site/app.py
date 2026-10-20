@@ -29,6 +29,7 @@ import scoring
 import auth
 import labels as labels_mod
 import maintenance
+import i18n
 
 
 def _load_species_master(conn):
@@ -116,7 +117,7 @@ async def lifespan(app):
 
 
 app = FastAPI(title="RF4 선호 어종 대시보드", lifespan=lifespan)
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"), context_processors=[i18n.context])
 # tojson 필터가 한글을 \uXXXX로 이스케이프하지 않고 그대로 출력하도록 (HTML 가독성)
 templates.env.policies["json.dumps_kwargs"] = {"ensure_ascii": False, "sort_keys": True}
 
@@ -150,6 +151,21 @@ def norm_window(w):
 def require_login(conn, request):
     """로그인 사용자 (uid, username) 반환, 없으면 None."""
     return auth.current_user(conn, request)
+
+
+@app.post("/language")
+def set_language(request: Request, language: str = Form(...), next: str = Form("/")):
+    if language not in i18n.LANGUAGES:
+        return JSONResponse({"ok": False}, status_code=400)
+    # 브라우저가 외부 주소로 해석할 수 있는 경로는 루트로 돌린다.
+    decoded = unquote(next)
+    if (not decoded.startswith("/") or decoded.startswith("//") or
+            "\\" in decoded or any(ord(c) < 32 for c in decoded)):
+        next = "/"
+    resp = RedirectResponse(next, status_code=303)
+    resp.set_cookie(i18n.COOKIE_NAME, language, max_age=365 * 24 * 60 * 60,
+                    httponly=True, secure=auth.COOKIE_SECURE, samesite="lax")
+    return resp
 
 
 @app.get("/")
@@ -242,6 +258,7 @@ def species_page(request: Request, name: str, window: str = "today"):
             (uid, name)).fetchone()
         return templates.TemplateResponse(request, "species.html", {
             "d": detail,
+            "detail_names": i18n.detail_names(detail, i18n.language(request)),
             "name": name,
             "window": window,
             "is_favorite": bool(is_favorite),
@@ -261,7 +278,7 @@ def add_favorite(request: Request, name: str):
     try:
         user = require_login(conn, request)
         if not user:
-            return JSONResponse({"ok": False, "error": "로그인 필요"}, status_code=401)
+            return JSONResponse({"ok": False, "error": i18n.translate("로그인 필요", i18n.language(request))}, status_code=401)
         conn.execute("INSERT OR IGNORE INTO favorites (user_id, species) VALUES (?, ?)",
                      (user[0], name))
         conn.commit()
@@ -276,7 +293,7 @@ def remove_favorite(request: Request, name: str):
     try:
         user = require_login(conn, request)
         if not user:
-            return JSONResponse({"ok": False, "error": "로그인 필요"}, status_code=401)
+            return JSONResponse({"ok": False, "error": i18n.translate("로그인 필요", i18n.language(request))}, status_code=401)
         conn.execute("DELETE FROM favorites WHERE user_id = ? AND species = ?",
                      (user[0], name))
         conn.commit()
@@ -446,24 +463,24 @@ def add_label(request: Request, name: str,
     try:
         user = require_login(conn, request)
         if not user:
-            return JSONResponse({"ok": False, "error": "로그인 필요"}, status_code=401)
+            return JSONResponse({"ok": False, "error": i18n.translate("로그인 필요", i18n.language(request))}, status_code=401)
         # 라벨 권한 게이트. 현재는 모든 로그인 유저 허용.
         # admin 여부는 source로 박제해 사후 정제 대비(D-32) — admin 라벨이 golden set.
         # 다시 admin 전용으로 좁히려면 아래 조건에서 'or not is_admin'만 지우면 됨.
         is_admin = auth.is_admin(user[1])
         source = "admin" if is_admin else "user"
         if not (is_admin or not is_admin):
-            return JSONResponse({"ok": False, "error": "권한 없음"}, status_code=403)
+            return JSONResponse({"ok": False, "error": i18n.translate("권한 없음", i18n.language(request))}, status_code=403)
         # 라벨 찍는 시점의 활성도 스냅샷 + 무게 비율 + 리셋 경과시간을 박제 (수역 단위)
         card = scoring.score_species_at(conn, name, window, waterbody)
         if card["n_total"] == 0:
-            return JSONResponse({"ok": False, "error": "해당 수역에 기록이 없습니다."}, status_code=400)
+            return JSONResponse({"ok": False, "error": i18n.translate("해당 수역에 기록이 없습니다.", i18n.language(request))}, status_code=400)
         card["window"] = window
         card.update(scoring.ratio_stats(conn, name, window, waterbody))
         card["hours_since_reset"] = scoring.hours_since_reset()
         ok, err = labels_mod.add_label(conn, user[0], name, label, card, source)
         if not ok:
-            return JSONResponse({"ok": False, "error": err}, status_code=400)
+            return JSONResponse({"ok": False, "error": i18n.translate(err, i18n.language(request))}, status_code=400)
         return JSONResponse({"ok": True, "label": label})
     finally:
         conn.close()

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}내 어종 대시보드{% endblock %}
+{% block title %}{{ t("내 어종 대시보드") }}{% endblock %}
 {% block content %}
 
 {% if not has_data %}
   <div class="empty">
-    수집된 데이터가 없습니다.<br>
-    <span style="font-size:13px">서버가 15분 주기로 자동 수집합니다 — 첫 수집이 끝나면 채워집니다.</span>
+    {{ t("수집된 데이터가 없습니다.") }}<br>
+    <span style="font-size:13px">{{ t("서버가 15분 주기로 자동 수집합니다 — 첫 수집이 끝나면 채워집니다.") }}</span>
   </div>
 {% else %}
   {% set state_cls = {'강한 활성': 'strong', '활성': 'active', '탐색': 'unclear', '비활성': 'off'} %}
@@ -16,35 +16,35 @@
        style="display:block; border-left-color: var(--{{ cls }});">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:16px; font-weight:700;">{{ c.species }}</span>
-          <span class="badge b-{{ cls }}">{{ c.state }}</span>
+          <span style="font-size:16px; font-weight:700;">{{ tr_name('species', c.species) }}</span>
+          <span class="badge b-{{ cls }}">{{ t(c.state) }}</span>
         </div>
-        <span style="font-size:13px; color:var(--muted);">활성도 {{ c.score }}</span>
+        <span style="font-size:13px; color:var(--muted);">{{ t("활성도") }} {{ c.score }}</span>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13px; color:var(--muted);">
         <div style="display:flex; gap:18px; flex-wrap:wrap;">
-          <span>트로피 {{ c.n_rare + c.n_trophy }}건{% if c.n_rare %} (레어 {{ c.n_rare }}){% endif %} · 일반 {{ c.n_normal }}건</span>
-          <span>일관성 {{ c.consistency }}%{% if c.state == '탐색' %} — 미끼 분산{% endif %}</span>
-          {% if c.top_bait %}<span style="color:var(--text);">{{ c.top_bait }}</span>{% endif %}
+          <span>{{ t("트로피") }} {{ c.n_rare + c.n_trophy }}{{ t("건") }}{% if c.n_rare %} {{ t("(레어") }} {{ c.n_rare }}){% endif %} {{ t("· 일반") }} {{ c.n_normal }}{{ t("건") }}</span>
+          <span>{{ t("일관성") }} {{ c.consistency }}%{% if c.state == '탐색' %} {{ t("— 미끼 분산") }}{% endif %}</span>
+          {% if c.top_bait %}<span style="color:var(--text);">{{ tr_name('baits', c.top_bait) }}</span>{% endif %}
         </div>
-        {% if c.top_waterbody %}<span style="color:var(--text); white-space:nowrap; margin-left:12px;">{{ c.top_waterbody }}</span>{% endif %}
+        {% if c.top_waterbody %}<span style="color:var(--text); white-space:nowrap; margin-left:12px;">{{ tr_name('waterbodies', c.top_waterbody) }}</span>{% endif %}
       </div>
     </a>
     {% else %}
     <a class="card" href="/species/{{ c.species | urlencode }}?window={{ window }}"
        style="display:flex; justify-content:space-between; align-items:center; opacity:.5; padding:10px 18px;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:15px;">{{ c.species }}</span>
-        <span class="badge b-off">비활성</span>
+        <span style="font-size:15px;">{{ tr_name('species', c.species) }}</span>
+        <span class="badge b-off">{{ t("비활성") }}</span>
       </div>
-      <span style="font-size:13px; color:var(--faint);">기록 {{ c.n_total }}건 — {% if c.low_sample %}표본 부족{% else %}활성 신호 없음{% endif %}</span>
+      <span style="font-size:13px; color:var(--faint);">{{ t("기록") }} {{ c.n_total }}{{ t("건 —") }} {% if c.low_sample %}{{ t("표본 부족") }}{% else %}{{ t("활성 신호 없음") }}{% endif %}</span>
     </a>
     {% endif %}
   {% endfor %}
 
   {% if cards and cards[0].state == '비활성' and window == '6h' %}
     <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:16px;">
-      6시간 창에는 표본이 적습니다 — <a href="?window=today" style="color:var(--accent);">오늘로 넓혀보세요</a>
+      {{ t("6시간 창에는 표본이 적습니다 —") }} <a href="?window=today" style="color:var(--accent);">{{ t("오늘로 넓혀보세요") }}</a>
     </p>
   {% endif %}
 {% endif %}
@@ -53,58 +53,58 @@
 
 {% block aside %}
 <div class="lb-panel">
-  <div class="lb-head"><h2>이번 주 리더보드</h2><p class="lb-sub">매주 월 04:00 초기화</p></div>
+  <div class="lb-head"><h2>{{ t("이번 주 리더보드") }}</h2><p class="lb-sub">{{ t("매주 월 04:00 초기화") }}{% if lang == "ko" %} KST{% endif %}</p></div>
   {% if leaderboard %}
   <ol class="lb-list">
   {% for row in leaderboard %}
     <li class="lb-row{% if row.rank<=3 %} lb-medal-{{row.rank}}{% endif %}{% if row.is_me %} lb-me{% endif %}">
-      <span class="lb-rank">{{row.rank}}</span><span class="lb-name">{{row.name}}</span><span class="lb-count">{{row.count}}회</span>
+      <span class="lb-rank">{{row.rank}}</span><span class="lb-name">{{row.name}}</span><span class="lb-count">{{row.count}}{{ t("회") }}</span>
     </li>
   {% endfor %}
   </ol>
   {% else %}
-  <div class="lb-empty">아직 제보가 없어요</div>
+  <div class="lb-empty">{{ t("아직 제보가 없어요") }}</div>
   {% endif %}
-  {% if my_rank %}<div class="lb-me-row">나 · {{my_rank.count}}회{% if my_rank.rank %} ({{my_rank.rank}}위){% endif %}</div>{% endif %}
-  {% if not has_nickname %}<p class="lb-sub" style="margin-top:8px;"><a href="/me" style="color:var(--accent);">마이페이지</a>에서 닉네임을 설정하면 리더보드에 등록됩니다</p>{% endif %}
+  {% if my_rank %}<div class="lb-me-row">{{ t("나 ·") }} {{my_rank.count}}{{ t("회") }}{% if my_rank.rank %} ({{my_rank.rank}}{{ t("위)") }}{% endif %}</div>{% endif %}
+  {% if not has_nickname %}<p class="lb-sub" style="margin-top:8px;"><a href="/me" style="color:var(--accent);">{{ t("마이페이지") }}</a>{{ t("에서 닉네임을 설정하면 리더보드에 등록됩니다") }}</p>{% endif %}
 </div>
 
 <div class="lb-panel">
-  <div class="lb-head"><h2>즐겨찾기 TOP 어종</h2></div>
+  <div class="lb-head"><h2>{{ t("즐겨찾기 TOP 어종") }}</h2></div>
   {% if fav_top %}
   <ol class="lb-list">
   {% for row in fav_top %}
     <li><a class="lb-row" href="/species/{{ row.species | urlencode }}?window={{ window }}">
-      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ row.species }}</span><span class="lb-count">{{ row.count }}명</span>
+      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ tr_name('species', row.species) }}</span><span class="lb-count">{{ row.count }}{{ t("명") }}</span>
     </a></li>
   {% endfor %}
   </ol>
-  {% else %}<div class="lb-empty">아직 즐겨찾기가 없어요</div>{% endif %}
+  {% else %}<div class="lb-empty">{{ t("아직 즐겨찾기가 없어요") }}</div>{% endif %}
 </div>
 
 <div class="lb-panel">
-  <div class="lb-head"><h2>이번 주 최다 제보 어종</h2></div>
+  <div class="lb-head"><h2>{{ t("이번 주 최다 제보 어종") }}</h2></div>
   {% if reported_top %}
   <ol class="lb-list">
   {% for row in reported_top %}
     <li><a class="lb-row" href="/species/{{ row.species | urlencode }}?window={{ window }}">
-      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ row.species }}</span><span class="lb-count">{{ row.count }}회</span>
+      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ tr_name('species', row.species) }}</span><span class="lb-count">{{ row.count }}{{ t("회") }}</span>
     </a></li>
   {% endfor %}
   </ol>
-  {% else %}<div class="lb-empty">아직 제보가 없어요</div>{% endif %}
+  {% else %}<div class="lb-empty">{{ t("아직 제보가 없어요") }}</div>{% endif %}
 </div>
 
 <div class="lb-panel">
-  <div class="lb-head"><h2>지금 뜨는 어종</h2><p class="lb-sub">활성도 점수 기준</p></div>
+  <div class="lb-head"><h2>{{ t("지금 뜨는 어종") }}</h2><p class="lb-sub">{{ t("활성도 점수 기준") }}</p></div>
   {% if active_top %}
   <ol class="lb-list">
   {% for row in active_top %}
     <li><a class="lb-row" href="/species/{{ row.species | urlencode }}?window={{ window }}">
-      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ row.species }}</span><span class="lb-count">{{ row.score }}</span>
+      <span class="lb-rank">{{ loop.index }}</span><span class="lb-name">{{ tr_name('species', row.species) }}</span><span class="lb-count">{{ row.score }}</span>
     </a></li>
   {% endfor %}
   </ol>
-  {% else %}<div class="lb-empty">지금은 뜨는 어종이 없어요</div>{% endif %}
+  {% else %}<div class="lb-empty">{{ t("지금은 뜨는 어종이 없어요") }}</div>{% endif %}
 </div>
 {% endblock %}

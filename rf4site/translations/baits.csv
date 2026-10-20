@@ -1,0 +1,513 @@
+ko,en,ru,zh_CN,entry_id,type,maker
+베이스 오렌지,Base Orange,Базовый оранжевый,基础的橙色,ingredients:2,싱킹 보일리,Craft Baits
+베이스 녹색,Base Green,Базовый зеленый,基础的绿色,ingredients:3,싱킹 보일리,Craft Baits
+베이스 화이트,Base White,Базовый белый,基础的白色,ingredients:4,싱킹 보일리,Craft Baits
+밀크 크림,Milk Cream,Молочный крем,牛奶糊状,ingredients:5,싱킹 보일리,Craft Baits
+신선한 라임,Fresh Lime,Свежий лайм,鲜青柠,ingredients:6,싱킹 보일리,Craft Baits
+달콤한 바나나,Sweet Banana,Сладкий банан,甜香蕉,ingredients:7,싱킹 보일리,Craft Baits
+달콤한 자두,Sweet Plum,Сладкая слива,甜李子,ingredients:9,싱킹 보일리,Craft Baits
+연어와 허브,Salmon & Herbs,Лосось и пряности,鲑鱼与香料,ingredients:10,싱킹 보일리,Craft Baits
+꿀 배,Honey Pear,Медовая груша,蜜梨,ingredients:11,싱킹 보일리,Craft Baits
+신선한 라즈베리,Fresh Raspberry,Свежая малина,新鲜树莓,ingredients:12,싱킹 보일리,Craft Baits
+신선한 크랜베리,Fresh Cranberry,Свежая клюква,新鲑小红莓,ingredients:13,싱킹 보일리,Craft Baits
+고추참치,Tuna & Pepper,Тунец и перец,吞拿鱼与辣椒,ingredients:14,싱킹 보일리,Craft Baits
+넙치와 베리,Halibut & Berries,Палтус и ягоды,庸鲽与浆果,ingredients:15,싱킹 보일리,Craft Baits
+연어와 허브 수용성,Salmon & Herbs Soluble,Лосось и пряности Soluble,鲑鱼与香草 可溶,ingredients:16,싱킹 보일리,Craft Baits
+고추참치 수용성,Tuna & Pepper Soluble,Тунец и перец Soluble,吞拿鱼与辣椒Soluble,ingredients:17,싱킹 보일리,Craft Baits
+넙치와 베리 수용성,Halibut & Berries Soluble,Палтус и ягоды Soluble,庸鲽与浆果Soluble,ingredients:18,싱킹 보일리,Craft Baits
+꿀 배 수용성,Honey Pear Soluble,Медовая груша Soluble,蜜梨Soluble,ingredients:19,싱킹 보일리,Craft Baits
+TF,Tutti Frutti,Тутти Фрутти,什锦水果,ingredients:20,싱킹 보일리,Craft Baits
+굴,Oyesters,Устрицы,牡蛎,ingredients:21,싱킹 보일리,Craft Baits
+문어,Octopus,Осьминог,章鱼,ingredients:22,싱킹 보일리,Craft Baits
+캐비어,Caviar,Икра,鱼子,ingredients:23,싱킹 보일리,Craft Baits
+베이스 오렌지 팝업,Base Orange Pop Ups,Базовый оранжевый Роp Ups,基础的橙色 Pop Ups,ingredients:24,팝업 보일리,Craft Baits
+베이스 녹색 팝업,Base Green Pop Ups,Базовый зеленый Рор Ups,基础的绿色 Pop Ups,ingredients:25,팝업 보일리,Craft Baits
+베이스 화이트 팝업,Base White Pop Ups,Базовый белый Рор Ups,基础的白色 Pop Ups,ingredients:26,팝업 보일리,Craft Baits
+밀크 크림 팝업,Milk Cream Pop Ups,Молочный крем Рор Ups,牛奶糊状 Pop Ups,ingredients:27,팝업 보일리,Craft Baits
+신선한 라임 팝업,Fresh Lime Pop Ups,Свежий лайм Рop Ups,鲜青柠 Pop Ups,ingredients:28,팝업 보일리,Craft Baits
+마늘 홍합 팝업,Garlic Mussels Pop Ups,Чесночные мидии РоpUps,大蒜似的贻贝 Pop Ups,ingredients:29,팝업 보일리,Craft Baits
+연어와 허브 팝업,Salmon & Herbs Pop Ups,Лосось и пряности Рор Ups,鲑鱼与香料 Pop Ups,ingredients:30,팝업 보일리,Craft Baits
+꿀 배 팝업,Honey Pear Pop Ups,Медовая груша Рop Ups,蜜梨 Pop Ups,ingredients:31,팝업 보일리,Craft Baits
+신선한 라즈베리 팝업,Fresh Raspberry Pop Ups,Свежая малина Pop Ups,新鲜树莓 Pop Ups,ingredients:32,팝업 보일리,Craft Baits
+신선한 크랜베리 팝업,Fresh Cranberry Pop Ups,Свежая клюква Pop Ups,新鲑小红莓 Pop Ups,ingredients:33,팝업 보일리,Craft Baits
+고추참치 팝업,Tuna & Pepper Pop Ups,Тунец и перец Рop Ups,吞拿鱼与辣椒 Pop Ups,ingredients:34,팝업 보일리,Craft Baits
+넙치와 베리 팝업,Halibut & Berries Pop Ups,Палтус и ягоды Рop Ups,庸鲽与浆果 Pop Ups,ingredients:35,팝업 보일리,Craft Baits
+TF 팝업,TF Pop Ups,Тутти Фрутти Рор Ups,什锦水果 Pop Ups,ingredients:36,팝업 보일리,Craft Baits
+굴 팝업,Oyesters Pop Ups,Устрицы Роp Ups,牡蛎 Pop Ups,ingredients:37,팝업 보일리,Craft Baits
+문어 팝업,Octopus Pop Ups,Осьминог Рор Ups,章鱼 Pop Ups,ingredients:38,팝업 보일리,Craft Baits
+캐비어 팝업,Caviar Pop Ups,Икра Роp Ups,鱼子 Pop Ups,ingredients:39,팝업 보일리,Craft Baits
+해바라기 페이스트 펠릿,Sunflower Paste,Подсолнечная паста,葵花籽泥,ingredients:40,펠릿,Craft Baits
+스파이시 마늘 펠릿,Spicy Garlic,Пряный чеснок,辛香的大蒜,ingredients:41,펠릿,Craft Baits
+슈퍼 아미노 펠릿,Super Amino,Супер амино,特超氨基,ingredients:42,펠릿,Craft Baits
+스파이시 파인애플 펠릿,Spicy Pineapple,Терпкий ананас,涩嘴的菠萝颗粒成饵,ingredients:43,펠릿,Craft Baits
+복숭아 펠릿,Peach,Персик,桃子,ingredients:44,펠릿,Craft Baits
+오징어와 허브 펠릿,Squid & Herbs,Кальмар и травы,鱿鱼和香草,ingredients:45,펠릿,Craft Baits
+홍합과 고추 펠릿,Pepper Mussels,Мидии с перцем,贻贝和胡椒,ingredients:46,펠릿,Craft Baits
+가재 펠릿,Crawfish,Речной рак,螯虾,ingredients:47,펠릿,Craft Baits
+캐비어 펠릿,Cavior,Икра,鱼子,ingredients:48,펠릿,Craft Baits
+천연 향료 FLR,Natural Flavor FLR,Натуральный вкус FLR,自然风味FLR,ingredients:49,인공 옥수수,Craft Baits
+천연 향료 NEO,Natural Flavor NEO,Натуральный вкус NEO,自然风味NEO,ingredients:50,인공 옥수수,Craft Baits
+천연 향료 ORG,Natural Flavor ORG,Натуральный вкус ORG,自然风味ORG,ingredients:51,인공 옥수수,Craft Baits
+천연 향료 RED,Natural Flavor RED,Натуральный вкус RED,自然风味RED,ingredients:52,인공 옥수수,Craft Baits
+크림과 과일,Creme & Fruits Flavor,Сливки и фрукты,奶油与水果,ingredients:56,인공 옥수수,Craft Baits
+과일,Fruits Flavor,Фрукты,水果,ingredients:58,인공 옥수수,Craft Baits
+복숭아,Peach Flavor,Персик,桃子,ingredients:62,인공 옥수수,Craft Baits
+시트러스,Citrus Flavor,Цитрусы,柑桔,ingredients:63,인공 옥수수,Craft Baits
+게,Crab Flavor,Краб,螃蟹,ingredients:64,인공 옥수수,Craft Baits
+오징어,Squid & Herbs Flavor,Кальмар,鱿鱼,ingredients:65,인공 옥수수,Craft Baits
+홍합,Mussels Flavor,Мидии,贻贝,ingredients:66,인공 옥수수,Craft Baits
+스파이시 헴프,Spicy Hemp,Терпкая конопля,涩味大麻,ingredients:69,싱킹 보일리,헬렌 반 잰트
+강렬한 마늘,Intense Garlic,Насыщенный чеснок,饱和大蒜,ingredients:70,싱킹 보일리,헬렌 반 잰트
+바닐라 폭발성,Explosive Vanilla,Взрывная ваниль,爆炸香子兰,ingredients:71,싱킹 보일리,헬렌 반 잰트
+홈메이드 딸기,Homemade Strawberry,Клубника,大草莓,ingredients:72,싱킹 보일리,헬렌 반 잰트
+달콤한 배,Sweet Pear,Сладкая груша,甜梨子,ingredients:73,싱킹 보일리,헬렌 반 잰트
+달콤한 옥수수,Sweet Corn,Сладкая кукуруза,甜玉米,ingredients:74,싱킹 보일리,헬렌 반 잰트
+아미노,Amino,Амино,氨基,ingredients:75,싱킹 보일리,헬렌 반 잰트
+야생 자두,Wild Plum,Дикая слива,野李子,ingredients:76,싱킹 보일리,헬렌 반 잰트
+트로피컬 파인애플,Tropical Pineapple,Тропический ананас,热带的菠萝,ingredients:77,싱킹 보일리,헬렌 반 잰트
+밀크 복숭아,Milk Peach,Сочный персик,水蜜桃,ingredients:78,싱킹 보일리,헬렌 반 잰트
+마일드 아니스씨,Mild Aniseed,Нежный анис,细致的茴芹,ingredients:80,싱킹 보일리,헬렌 반 잰트
+야생 자두 폭발성,Explosive Plum,Взрывная слива,爆炸李子,ingredients:82,싱킹 보일리,헬렌 반 잰트
+핫 페퍼,Hot Pepper,Острый перец,辣椒,ingredients:83,싱킹 보일리,헬렌 반 잰트
+킹크랩,King Crab,Королевский краб,帝王蟹,ingredients:84,싱킹 보일리,헬렌 반 잰트
+마운틴 허니,Mountain Honey,Горный мёд,高山蜂蜜,ingredients:85,싱킹 보일리,헬렌 반 잰트
+오징어와 문어,Squids & Octopus,Кальмар и Осьминог,鱿鱼与章鱼,ingredients:86,싱킹 보일리,헬렌 반 잰트
+핫 페퍼 폭발성,Explosive Pepper,Взрывной перец,爆炸辣椒,ingredients:87,싱킹 보일리,헬렌 반 잰트
+대서양 홍합,Atlantic Mussel,Атлантические мидии,大西洋贻贝,ingredients:88,싱킹 보일리,헬렌 반 잰트
+강렬한 마늘 팝업,Intense Garlic Pop-Ups,Насыщенный чеснок Рор-Ups,饱和大蒜,ingredients:90,팝업 보일리,헬렌 반 잰트
+달콤한 옥수수 팝업,Sweet Corn Pop-Ups,Сладкая кукуруза Рор-Ups,甜玉米,ingredients:91,팝업 보일리,헬렌 반 잰트
+아미노 팝업,Amino Pop-Ups,Амино Рор-Ups,氨基,ingredients:92,팝업 보일리,헬렌 반 잰트
+야생 자두 팝업,Wild Plum Pop-Ups,Дикая слива Рор-Ups,野李子,ingredients:93,팝업 보일리,헬렌 반 잰트
+트로피컬 파인애플 팝업,Tropical Pineapple Pop-Ups,Тропический ананас Рор-Ups,热带的菠萝,ingredients:94,팝업 보일리,헬렌 반 잰트
+밀크 복숭아 팝업,Milk Peach Pop-Ups,Сочный персик Рор-Ups,水蜜桃,ingredients:95,팝업 보일리,헬렌 반 잰트
+투티 프루티 팝업,Tutti-Frutti Pop-Ups,Тутти-Фрутти Рор-Ups,什锦水果,ingredients:96,팝업 보일리,헬렌 반 잰트
+핫 페퍼 팝업,Hot Pepper Pop-Ups,Острый перец Рор-Ups,辣椒,ingredients:97,팝업 보일리,헬렌 반 잰트
+스파이시 넙치 팝업,Spicy Halibut Pop-Ups,Пикантный палтус Рор-Ups,带辣味的庸鲽,ingredients:98,팝업 보일리,헬렌 반 잰트
+킹크랩 팝업,King Crab Pop-Ups,Королевский краб Рор-Ups,帝王蟹,ingredients:99,팝업 보일리,헬렌 반 잰트
+오리지널 펠릿,Original,Оригинальный,奇特颗粒,ingredients:100,펠릿,헬렌 반 잰트
+옥수수 펠릿,Corn Pellets,Кукуруза,玉米,ingredients:101,펠릿,헬렌 반 잰트
+해바라기 씨 펠릿,Sunflower Seeds,Семена подсолнуха,葵花子,ingredients:102,펠릿,헬렌 반 잰트
+마늘 펠릿,Garlic Pellets,Чеснок,大蒜,ingredients:103,펠릿,헬렌 반 잰트
+바닐라 펠릿,Vanilla,Ваниль,香子兰,ingredients:104,펠릿,헬렌 반 잰트
+아미노 펠릿,Amino,Амино,氨基,ingredients:105,펠릿,헬렌 반 잰트
+붉은 크릴새우 펠릿,Red Krill Pellets,Красный криль,红磷虾,ingredients:106,펠릿,헬렌 반 잰트
+대서양 연어 펠릿,Atlantic Salmon Pellets,Атлантичекий лосось,大西洋鲑,ingredients:107,펠릿,헬렌 반 잰트
+킹크랩 펠릿,King Crab Pellets,Королевский краб,帝王蟹,ingredients:108,펠릿,헬렌 반 잰트
+참치 펠릿,Tuna Pellets,Тунец,吞拿鱼,ingredients:109,펠릿,헬렌 반 잰트
+달콤한 해바라기,Sweet Sunflower,Сладкий подсолнух,甜向日葵,ingredients:130,싱킹 보일리,Mad Mayers
+바닐라 크림,Vanilla Cream,Ванильный крем,香子兰糊状,ingredients:131,싱킹 보일리,Mad Mayers
+아니스 씨,Aniseed,Анисовое семя,茴芹子,ingredients:132,싱킹 보일리,Mad Mayers
+카라멜 후르츠,Caramel Fruits,Карамельные фрукты,焦糖与水果,ingredients:133,싱킹 보일리,Mad Mayers
+마늘과 허브,Garlic & Herbs,Чеснок и пряности,大蒜,ingredients:134,싱킹 보일리,Mad Mayers
+망고와 허브,Mango & Herbs,Манго и травы,芒果和香草,ingredients:135,싱킹 보일리,Mad Mayers
+복숭아와 허브,Peach & Herbs,Персик и травы,桃子和香草,ingredients:136,싱킹 보일리,Mad Mayers
+카카오 믹스,Cacao Mix,Какао-смесь,可可混合,ingredients:138,싱킹 보일리,Mad Mayers
+코코넛과 과일,Cocos & Fruits,Кокос и фрукты,椰子与水果,ingredients:139,싱킹 보일리,Mad Mayers
+페퍼민트,Peppermint,Перечная мята,胡椒薄荷,ingredients:140,싱킹 보일리,Mad Mayers
+허니 크림,Honey Cream,Медовый крем,蜂蜜奶油,ingredients:141,싱킹 보일리,Mad Mayers
+카카오 믹스 수용성,Cacao Mix Soluble,Какао-смесь Soluble,可可混合Soluble,ingredients:142,싱킹 보일리,Mad Mayers
+스프링 허브,Spring Herbs,Весенние травы,春草,ingredients:143,싱킹 보일리,Mad Mayers
+더블 헴프,Double Hemp,Двойная конопля,双大麻,ingredients:144,싱킹 보일리,Mad Mayers
+스파이스 어택,Spice Attack,Пряная атака,辛香冲锋,ingredients:145,싱킹 보일리,Mad Mayers
+쥬시 멀베리,Juicy Mulberry,Сочная шелковица,水桑椹,ingredients:146,싱킹 보일리,Mad Mayers
+뉴트럴 팝업,Neutral Pop-Up,Нейтральный PopUp,中立的 PopUp,ingredients:148,팝업 보일리,Mad Mayers
+달콤한 해바라기 팝업,Sweet Sunflower Pop-Up,Сладкий подсолнух PopUp,甜向日葵 PopUp,ingredients:149,팝업 보일리,Mad Mayers
+바닐라 크림 팝업,Vanilla Cream Pop-Up,Ванильный крем PopUp,香子兰糊状 PopUp,ingredients:150,팝업 보일리,Mad Mayers
+아니스 씨 팝업,Aniseed Pop-Up,Анисовое семя PopUp,茴芹子 PopUp,ingredients:151,팝업 보일리,Mad Mayers
+카라멜 후르츠 팝업,Caramel Fruits Pop-Up,Карамельные фрукты PopUp,焦糖与水果 PopUp,ingredients:152,팝업 보일리,Mad Mayers
+마늘과 허브 팝업,Garlic & Herbs Pop-Up,Чеснок и пряности PopUp,大蒜与香料 PopUp,ingredients:153,팝업 보일리,Mad Mayers
+망고와 허브 팝업,Mango & Herbs Pop-Up,Манго и травы PopUp,芒果和香草 PopUp,ingredients:154,팝업 보일리,Mad Mayers
+복숭아와 허브 팝업,Peach & Herbs Pop-Up,Персик и травы PopUp,桃子和香草 PopUp,ingredients:155,팝업 보일리,Mad Mayers
+블랙 커런트 팝업,Blackcurrant Pop-Up,Черная смородина PopUp,黑加仑 PopUp,ingredients:156,팝업 보일리,Mad Mayers
+코코넛과 과일 팝업,Cocos & Fruits Pop-Up,Кокос и фрукты PopUp,椰子与水果 PopUp,ingredients:157,팝업 보일리,Mad Mayers
+페퍼민트 팝업,Peppermint Pop-Up,Перечная мята PopUp,胡椒薄荷 PopUp,ingredients:158,팝업 보일리,Mad Mayers
+허니 크림 팝업,Honey Cream Pop-Up,Медовый крем PopUp,蜂蜜糊状 PopUp,ingredients:159,팝업 보일리,Mad Mayers
+스프링 허브 팝업,Spring Herbs Pop-Up,Весенние травы PopUp,春草 PopUp,ingredients:160,팝업 보일리,Mad Mayers
+더블 헴프 팝업,Double Hemp Pop-Up,Двойная конопля PopUp,双大麻 PopUp,ingredients:161,팝업 보일리,Mad Mayers
+스파이스 어택 팝업,Spice Attack Pop-Up,Пряная атака PopUp,辛香冲锋 PopUp,ingredients:162,팝업 보일리,Mad Mayers
+쥬시 멀베리 팝업,Juicy Mulberry Pop-Up,Сочная шелковица PopUp,水桑椹 PopUp,ingredients:163,팝업 보일리,Mad Mayers
+타이거 너트 팝업,Tiger Nut Pop-Up,Тигровый орех PopUp,老虎坚果 PopUp,ingredients:164,팝업 보일리,Mad Mayers
+붉은 장구벌레,Bloodworm,Мотыль,孑孓,ingredients:181,싱킹 보일리,Old pal
+붉은 지렁이,Redworm,Земляной червь,蚯蚓,ingredients:182,싱킹 보일리,Old pal
+해바라기,Sunflower,Семена подсолнуха,葵花子,ingredients:183,싱킹 보일리,Old pal
+스위트콘,Sweet Corn,Сахарная кукуруза,甜玉米,ingredients:184,싱킹 보일리,Old pal
+해바라기 씨 수용성,Sunflower Soluble,Семена подсолнуха Soluble,葵花子 Soluble,ingredients:185,싱킹 보일리,Old pal
+노르딕 에스터베리,Nordic Esterberry,Северные ягоды,北方浆果,ingredients:186,싱킹 보일리,Old pal
+왕자두,King Plum,Королевская слива,王李子,ingredients:188,싱킹 보일리,Old pal
+파인애플,Pineapple,Ананас,菠萝,ingredients:189,싱킹 보일리,Old pal
+화이트 초콜릿,White Chocolate,Белый шоколад,白巧克力,ingredients:191,싱킹 보일리,Old pal
+크림 브륄레,Creme Brulee,Крем-брюле,焦糖布丁,ingredients:192,싱킹 보일리,Old pal
+라즈베리 잼,Raspberry Jam,Малиновый джем,树莓果酱,ingredients:194,싱킹 보일리,Old pal
+코코넛과 크림,Coconut and Cream,Кокос и сливки,椰子和奶油,ingredients:195,싱킹 보일리,Old pal
+견과류 믹스,Nut Mix,Ореховая смесь,坚果混合,ingredients:197,싱킹 보일리,Old pal
+민트 케이크,Mint Cake,Мятный торт,薄荷蛋糕,ingredients:198,싱킹 보일리,Old pal
+게와 홍합,Crab & Mussels,Краб и мидии,螃蟹和贻贝,ingredients:199,싱킹 보일리,Old pal
+넙치,Halibut,Палтус,庸鲽,ingredients:200,싱킹 보일리,Old pal
+민물 크릴새우,Freshwater Krill,Пресноводный криль,淡水磷虾,ingredients:201,싱킹 보일리,Old pal
+연어,Salmon,Лосось,鲑鱼,ingredients:202,싱킹 보일리,Old pal
+투티 프루티 수용성,Tutti Frutti Soluble,Тутти Фрутти Soluble,什锦水果味 Soluble,ingredients:203,싱킹 보일리,Old pal
+게와 홍합 수용성,Crab & Mussels Soluble,Краб и мидии Soluble,螃蟹和贻贝 Soluble,ingredients:204,싱킹 보일리,Old pal
+훈제,Smoked Pop Up,Копчёности,熏制食品,ingredients:205,싱킹 보일리,Old pal
+카라멜 팝업,Caramel Pop Up,Карамель,焦糖 Pop Up,ingredients:207,팝업 보일리,Old pal
+스위트콘 팝업,Sweet Corn Pop Up,Сахарная кукуруза Роp Up,甜玉米 Pop Up,ingredients:208,팝업 보일리,Old pal
+딸기 팝업,Strawberry Pop Up,Земляника Роp Up,大草莓 Pop Up,ingredients:209,팝업 보일리,Old pal
+바나나 팝업,Banana Pop Up,Банан Роp Up,香蕉 Pop Up,ingredients:210,팝업 보일리,Old pal
+화이트 초콜릿 팝업,White Chocolate Pop Up,Белый шоколад Роp Up,白巧克力 Pop Up,ingredients:211,팝업 보일리,Old pal
+코코넛과 크림 팝업,Cocos & Cream Pop Up,Кокос и сливки Роp Up,椰子和奶油 Pop Up,ingredients:212,팝업 보일리,Old pal
+견과류 팝업,Nutmix Pop Up,Ореховая смесь Роp Up,坚果混合 Pop Up,ingredients:213,팝업 보일리,Old pal
+연어 팝업,Salmon Pop Up,Лосось Роp Up,鲑鱼 Pop Up,ingredients:214,팝업 보일리,Old pal
+뉴트럴 펠릿,Neutral,Нейтральный,中立的,ingredients:215,펠릿,Old pal
+달콤한 카라멜 펠릿,Sweet Caramel,Сладкая карамель,甜硬糖,ingredients:216,펠릿,Old pal
+달콤한 크림 펠릿,Sweet Cream,Сладкие сливки,甜奶油,ingredients:217,펠릿,Old pal
+스위트콘 펠릿,Sweet Corn,Сахарная кукуруза,甜玉米,ingredients:218,펠릿,Old pal
+코코넛과 크림 펠릿,Cocos & Cream,Кокос и сливки,椰子和奶油,ingredients:219,펠릿,Old pal
+민트 케이크 펠릿,Mint Cake,Мятный торт,薄荷蛋糕,ingredients:220,펠릿,Old pal
+허브 디저트 펠릿,Grass Cake,Десерт из трав,香草甜点,ingredients:221,펠릿,Old pal
+게와 생선 펠릿 펠릿,Crab & Fish,Краб и рыба,螃蟹和鱼,ingredients:222,펠릿,Old pal
+민물 크릴새우 펠릿,Freshwater Krill,Пресноводный криль,淡水磷虾,ingredients:223,펠릿,Old pal
+넙치 펠릿,Halibut,Палтус,庸鲽,ingredients:224,펠릿,Old pal
+훈제 펠릿,Smoked Pellets,Копчёности,熏货,ingredients:225,펠릿,Old pal
+천연 향료 그린,Natural Flavor Green,Натуральный Зеленый,自然风味 绿色的,ingredients:226,인공 옥수수,Old pal
+천연 향료 레드,Natural Flavor Red,Натуральный Красный,自然风味 红色的,ingredients:227,인공 옥수수,Old pal
+천연 향료 옐로우,Natural Flavor Yellow,Натуральный Желтый,自然风味 黄色的,ingredients:228,인공 옥수수,Old pal
+천연 향료 오렌지,Natural Flavor Orange,Натуральный Оранжевый,自然风味 橙色的,ingredients:229,인공 옥수수,Old pal
+천연 향료 퍼플,Natural Flavor Pink,Натуральный Розовый,自然风味 粉色的,ingredients:230,인공 옥수수,Old pal
+천연 향료 형광,Natural Flavor Fluorescent,Натуральный Флуоресцентный,萤光的自然风味,ingredients:231,인공 옥수수,Old pal
+천연 향료 화이트,Natural Flavor White,Натуральный Белый,自然风味白色的,ingredients:232,인공 옥수수,Old pal
+달콤한 카라멜,Sweet Caramel Flavor,Сладкая карамель,甜焦糖,ingredients:233,인공 옥수수,Old pal
+크림 화이트,Cream Flavor White,Сливки,奶油,ingredients:234,인공 옥수수,Old pal
+마늘 그린,Garlic Flavor Green,Чеснок,大蒜,ingredients:235,인공 옥수수,Old pal
+딸기 레드,Strawberry Flavor Red,Клубника,大草莓,ingredients:237,인공 옥수수,Old pal
+라즈베리 퍼플,Raspberry Flavor Purple,Малина,树莓,ingredients:238,인공 옥수수,Old pal
+멀베리 옐로우,Mulberry Yellow,Шелковица Желтый,桑椹 黄色,ingredients:239,인공 옥수수,Old pal
+멀베리 퍼플,Mulberry Purple,Шелковица Фиолетовый,桑椹 紫色,ingredients:240,인공 옥수수,Old pal
+밀크 복숭아 옐로우,Milk Peach Flavor Yellow,Сочный персик,水蜜桃,ingredients:241,인공 옥수수,Old pal
+바나나 옐로우,Banana Flavor Yellow,Банан,芭蕉,ingredients:242,인공 옥수수,Old pal
+에스터베리 레드,Berry Mix Flavor Red,Ягодный микс,浆果混合,ingredients:243,인공 옥수수,Old pal
+복숭아 옐로우,Peach Yellow,Персик Желтый,桃子 黄色,ingredients:244,인공 옥수수,Old pal
+복숭아 형광,Peach Fluorescent,Персик Флуоресцентный,萤光的桃子,ingredients:245,인공 옥수수,Old pal
+블랙 커런트 옐로우,Blackcurrent Flavor Yellow,Черная смородина Желтый,黑茶藨子 黄色,ingredients:246,인공 옥수수,Old pal
+블랙 커런트 퍼플,Blackcurrent Flavor Purple,Черная смородина Фиолетовый,黑茶藨子 紫色,ingredients:247,인공 옥수수,Old pal
+코코넛 크림 화이트,Coco & Cream Flavor White,Кокосовый крем,椰子奶油,ingredients:248,인공 옥수수,Old pal
+크랜베리 레드,Cranberry Flavor Red,Клюква,小红莓,ingredients:249,인공 옥수수,Old pal
+연어 퍼플,Salmon Flavor Purple,Лосось,鲑鱼,ingredients:250,인공 옥수수,Old pal
+오징어 레드,Squid Flavor Red,Кальмар Красный,鱿鱼 红色的,ingredients:251,인공 옥수수,Old pal
+오징어 옐로우,Squid Yellow,Кальмар Желтый,鱿鱼 黄色的,ingredients:252,인공 옥수수,Old pal
+캐비어 레드,Caviar Flavor Red,Икра Красный,鱼子 红色,ingredients:253,인공 옥수수,Old pal
+캐비어 옐로우,Caviar Flavor Yellow,Икра Желтый,鱼子 黄色,ingredients:254,인공 옥수수,Old pal
+투티 프루티 레드,Tutti Frutti Red,Тутти Фрутти Красный,什锦水果味 红色的,ingredients:255,인공 옥수수,Old pal
+투티 프루티 옐로우,Tutti Frutti Yellow,Тутти Фрутти Желтый,什锦水果味 黄色的,ingredients:256,인공 옥수수,Old pal
+홍합 그린,Mussel Flavor Green,Мидии,贻贝,ingredients:257,인공 옥수수,Old pal
+달콤한 크림,Sweet Cream,Сладкие сливки,甜奶油,ingredients:273,싱킹 보일리,Smart Boilies
+마늘과 칠리,Garlic & Chili,Чеснок и перец чили,大蒜和辣子,ingredients:274,싱킹 보일리,Smart Boilies
+진한 붉은 장구벌레,Intense Bloodworm,Яркий мотыль,鲜艳的孑孓,ingredients:275,싱킹 보일리,Smart Boilies
+스파이시 복숭아,Spicy Peach,Aроматный персик,芳香的桃子,ingredients:276,싱킹 보일리,Smart Boilies
+스파이시 파인애플,Spicy Pineapple,Терпкий ананас,涩嘴的菠萝,ingredients:277,싱킹 보일리,Smart Boilies
+산딸기,Forest Strawberry,Лесная земляника,野草莓,ingredients:278,싱킹 보일리,Smart Boilies
+크림 망고,Cream Mango,Нежный манго,细致的芒果,ingredients:279,싱킹 보일리,Smart Boilies
+핫 체리,Hot Cherry,Пикантная вишня,诱人的樱桃,ingredients:280,싱킹 보일리,Smart Boilies
+스파이스 믹스,Spice Mix,Смесь специй,七种香料,ingredients:281,싱킹 보일리,Smart Boilies
+스파이시 복숭아 수용성,Fragrant Peach Soluble,Ароматный персик Soluble,芳香的桃子 可溶,ingredients:282,싱킹 보일리,Smart Boilies
+핫 체리 수용성,Hot Cherry Soluble,Пикантная вишня Soluble,诱人的樱桃 Soluble,ingredients:283,싱킹 보일리,Smart Boilies
+쥬시 레몬,Juicy Lemon,Сочный лимон,多汁的柠檬,ingredients:284,싱킹 보일리,Smart Boilies
+검은 후추와 생선,BLack Pepper & Fish,Чёрный перец и рыба,黑胡椒和鱼,ingredients:285,싱킹 보일리,Smart Boilies
+달콤한 크림 수용성,Sweet Cream Soluble,Сладкие сливки Soluble,甜奶油 Soluble,ingredients:286,싱킹 보일리,Smart Boilies
+바다 크릴새우,Ocean Krill,Океанский криль,海洋的磷虾,ingredients:287,싱킹 보일리,Smart Boilies
+홍합과 과일,Mussels & Fruits,Мидии и фрукты,贻贝和水果,ingredients:288,싱킹 보일리,Smart Boilies
+참치,Tuna,Тунец,吞拿鱼,ingredients:289,싱킹 보일리,Smart Boilies
+살라미,Salami,Салями,萨拉米,ingredients:290,싱킹 보일리,Smart Boilies
+심해 오징어,Deep Squid,Насыщенный кальмар,饱和鱿鱼,ingredients:291,싱킹 보일리,Smart Boilies
+가재,Crawfish,Речной рак,螯虾,ingredients:292,싱킹 보일리,Smart Boilies
+필드 그래스,Field Grass,Полевые травы,野草,ingredients:293,싱킹 보일리,Smart Boilies
+러시안 블랙,Russian Black,Русская икра,俄罗斯鱼子酱,ingredients:294,싱킹 보일리,Smart Boilies
+달콤한 크림 팝업,Sweet Cream Pop-Up,Сладкие сливки РоpUp,甜奶油 PopUp,ingredients:295,팝업 보일리,Smart Boilies
+핫 체리 팝업,Hot Cherry Pop-Up,Пикантная вишня РоpUp,诱人的樱桃 PopUp,ingredients:296,팝업 보일리,Smart Boilies
+스파이스 믹스 팝업,Spice Mix Pop-Up,Смесь специй РоpUp,七种香料 PopUp,ingredients:297,팝업 보일리,Smart Boilies
+쥬시 레몬 팝업,Juicy Lemon Pop-Up,Сочный лимон РоpUp,多汁的柠檬 PopUp,ingredients:298,팝업 보일리,Smart Boilies
+바다 크릴새우 팝업,Ocean Krill Pop-Up,Океанский криль РоpUp,海洋的磷虾 PopUp,ingredients:299,팝업 보일리,Smart Boilies
+에스터 베리 팝업,Esterberry Pop-Up,Ежевика РоpUp,黑莓 PopUp,ingredients:300,팝업 보일리,Smart Boilies
+참치 팝업,Tuna Pop-Up,Тунец РоpUp,吞拿鱼 PopUp,ingredients:301,팝업 보일리,Smart Boilies
+살라미 팝업,Salami Pop-Up,Салями РоpUp,萨拉米 PopUp,ingredients:302,팝업 보일리,Smart Boilies
+필드 그래스 팝업,Field Grass Pop-Up,Полевые травы РоpUp,野草 PopUp,ingredients:303,팝업 보일리,Smart Boilies
+Zig Sticks Black,Zig Sticks Black,Zig Sticks Black,Zig Sticks Black,ingredients:304,지그-리그 폼,Craft Baits
+Zig Sticks Black/Green,Zig Sticks Black/Green,Zig Sticks Black/Green,Zig Sticks Black/Green,ingredients:305,지그-리그 폼,Craft Baits
+Zig Sticks Black/Rose,Zig Sticks Black/Rose,Zig Sticks Black/Rose,Zig Sticks Black/Rose,ingredients:306,지그-리그 폼,Craft Baits
+Zig Sticks Black/Yellow,Zig Sticks Black/Yellow,Zig Sticks Black/Yellow,Zig Sticks Black/Yellow,ingredients:307,지그-리그 폼,Craft Baits
+Zig Sticks Fluor,Zig Sticks Fluor,Zig Sticks Fluor,Zig Sticks Fluor,ingredients:308,지그-리그 폼,Craft Baits
+Zig Sticks Green,Zig Sticks Green,Zig Sticks Green,Zig Sticks Green,ingredients:309,지그-리그 폼,Craft Baits
+Zig Sticks Red,Zig Sticks Red,Zig Sticks Red,Zig Sticks Red,ingredients:310,지그-리그 폼,Craft Baits
+Zig Sticks Rose,Zig Sticks Rose,Zig Sticks Rose,Zig Sticks Rose,ingredients:311,지그-리그 폼,Craft Baits
+Zig Sticks Yellow,Zig Sticks Yellow,Zig Sticks Yellow,Zig Sticks Yellow,ingredients:312,지그-리그 폼,Craft Baits
+Zig Balls Black/Fluor,Zig Balls Black/Fluor,Zig Balls Black/Fluor,Zig Balls Black/Fluor,ingredients:313,지그-리그 폼,Mad Mayers
+Zig Balls Black/Green,Zig Balls Black/Green,Zig Balls Black/Green,Zig Balls Black/Green,ingredients:314,지그-리그 폼,Mad Mayers
+Zig Balls Black/Yellow,Zig Balls Black/Yellow,Zig Balls Black/Yellow,Zig Balls Black/Yellow,ingredients:315,지그-리그 폼,Mad Mayers
+Zig Balls Brown,Zig Balls Brown,Zig Balls Brown,Zig Balls Brown,ingredients:316,지그-리그 폼,Mad Mayers
+Zig Balls Green,Zig Balls Green,Zig Balls Green,Zig Balls Green,ingredients:317,지그-리그 폼,Mad Mayers
+Zig Balls Orange,Zig Balls Orange,Zig Balls Orange,Zig Balls Orange,ingredients:318,지그-리그 폼,Mad Mayers
+Zig Balls Rose,Zig Balls Rose,Zig Balls Rose,Zig Balls Rose,ingredients:319,지그-리그 폼,Mad Mayers
+Zig Balls White,Zig Balls White,Zig Balls White,Zig Balls White,ingredients:320,지그-리그 폼,Mad Mayers
+Zig Balls Yellow,Zig Balls Yellow,Zig Balls Yellow,Zig Balls Yellow,ingredients:321,지그-리그 폼,Mad Mayers
+Zig Bait Brown,Zig Bait Brown,Zig Bait Brown,Zig Bait Brown,ingredients:322,지그-리그 폼,Old pal
+Zig Bait Cream,Zig Bait Cream,Zig Bait Cream,Zig Bait Cream,ingredients:323,지그-리그 폼,Old pal
+Zig Bait Cream/Black,Zig Bait Cream/Black,Zig Bait Cream/Black,Zig Bait Cream/Black,ingredients:324,지그-리그 폼,Old pal
+Zig Bait Green,Zig Bait Green,Zig Bait Green,Zig Bait Green,ingredients:325,지그-리그 폼,Old pal
+Zig Bait Lime,Zig Bait Lime,Zig Bait Lime,Zig Bait Lime,ingredients:326,지그-리그 폼,Old pal
+Zig Bait Lime/Black,Zig Bait Lime/Black,Zig Bait Lime/Black,Zig Bait Lime/Black,ingredients:327,지그-리그 폼,Old pal
+Zig Bait Orange,Zig Bait Orange,Zig Bait Orange,Zig Bait Orange,ingredients:328,지그-리그 폼,Old pal
+Zig Bait Orange/Black,Zig Bait Orange/Black,Zig Bait Orange/Black,Zig Bait Orange/Black,ingredients:329,지그-리그 폼,Old pal
+Zig Bait Yellow,Zig Bait Yellow,Zig Bait Yellow,Zig Bait Yellow,ingredients:330,지그-리그 폼,Old pal
+Zig Bait Yellow/Black,Zig Bait Yellow/Black,Zig Bait Yellow/Black,Zig Bait Yellow/Black,ingredients:331,지그-리그 폼,Old pal
+후추,Black Pepper,Черный перец,黑胡椒,ingredients:336,싱킹 보일리,포모르
+지렁이,Worm,Червь,蚯蚓,ingredients:339,지렁이류,Nature
+붉은줄지렁이,Red compost worm,Червь навозный,红蚯蚓,ingredients:340,지렁이류,Nature
+큰 지렁이,Nightcrawler,Выползок,地龙,ingredients:341,지렁이류,Nature
+거머리,Leech,Пиявка,水蛭,ingredients:342,지렁이류,Nature
+"지렁이 ""아스트라칸 품종""",Brandling Worm,Червь навозный,阿斯特拉罕耐久粪蚯蚓,ingredients:343,지렁이류,Nature
+"지렁이 ""모스크바 품종""","Black-headed Worm ""Moscow Variation""","Червь ""Московский сортовой""",莫斯科培育蚯蚓,ingredients:344,지렁이류,Nature
+레드헤드 지렁이,Redhead Worm,"Червь ""Ленинградский""",列宁格勒通普通蚯蚓,ingredients:345,지렁이류,Nature
+"지렁이 ""수라 품종""","Brandling Worm ""Sura Variation""","Червь ""Сурский Навозник""",苏尔斯基粪蚯蚓,ingredients:346,지렁이류,Nature
+"지렁이 ""볼호프 품종""","Brandling Worm ""Volkhov Variation""","Червь навозный ""Волховский""",伏尔霍夫斯基粪蚯蚓,ingredients:347,지렁이류,Nature
+붉은장구벌레,Bloodworm,Мотыль,红虫,ingredients:348,애벌레,Nature
+구더기,Maggot,Опарыш,蛆虫,ingredients:349,애벌레,Nature
+캐스터,Caster,Кастер,蛆虫蛹,ingredients:350,애벌레,Nature
+나무좀 애벌레,Bark beetle larva,Личинка короеда,树皮甲虫幼虫,ingredients:351,애벌레,Nature
+날도래,Caddisfly,Ручейник,毛翅目幼虫,ingredients:352,애벌레,Nature
+하루살이 애벌레,Mayfly larva,Личинка поденки,蜉蝣幼虫,ingredients:353,애벌레,Nature
+스톤플라이 애벌레,Stonefly larva,Личинка веснянки,襀翅幼虫,ingredients:354,애벌레,Nature
+왕풍뎅이 유충,Cockchafer Larva,Личинка майского жука,土蚕,ingredients:355,애벌레,Nature
+장수풍뎅이 애벌레,Righoceros beetle larva,Личинка жука-носорога,犀角金龟幼虫,ingredients:356,애벌레,Nature
+옥수수씨,Corn seeds,Зерна кукурузы,玉米粒,ingredients:357,천연미끼,Nature
+양배추 잎,Cabbage leaf,Капустный лист,菜叶,ingredients:358,천연미끼,Nature
+완두콩,Pea,Горошек,豌豆,ingredients:359,천연미끼,Nature
+큐브 치즈,Diced cheese,Сырный кубик,奶酪块,ingredients:360,천연미끼,Nature
+밀종자,Wheat seeds,Зерна пшеницы,小麦粒,ingredients:361,천연미끼,Nature
+잘게 잘린 감자,Diced potatoes,Картофельный кубик,马铃薯块,ingredients:362,천연미끼,Nature
+오트밀 죽,Oatmeal porridge,Каша овсяная,燕麦粥,ingredients:363,천연미끼,Nature
+젖은 빵,Wet Bread,Хлеб,面包,ingredients:364,천연미끼,Nature
+달콤한 반죽,Sweet dough,Тесто сладкое,甜面团,ingredients:365,천연미끼,Nature
+통보리,Pearl barley,Каша перловая,大麦粥,ingredients:366,천연미끼,Nature
+달걀 반죽,Egg dough,Тесто яичное,鸡蛋面团,ingredients:367,천연미끼,Nature
+세몰리나,Semolina,Каша манная,碎麦米粥,ingredients:368,천연미끼,Nature
+완두콩 죽,Pea porridge,Каша гороховая,豌豆粥,ingredients:369,천연미끼,Nature
+마늘 반죽,Galic dough,Тесто чесночное,大蒜面团,ingredients:370,천연미끼,Nature
+옥수수가루 죽,Cornmeal porridge,Каша кукурузная,玉米粥,ingredients:371,천연미끼,Nature
+꿀 반죽,Honey dough,Тесто медовое,蜂蜜面团,ingredients:372,천연미끼,Nature
+생선 조각,Pieces of fish,Кусочки рыбы,鱼块鱼块,ingredients:373,천연미끼,Nature
+코티지 치즈 반죽,Cottage Cheese dough,Тесто творожное,奶渣面团,ingredients:374,천연미끼,Nature
+해조류,A bunch of algae,Пучок водорослей,一束藻类,ingredients:375,천연미끼,Nature
+어란,Roe,Икра,鱼子,ingredients:376,천연미끼,Nature
+가재살,Crayfish tail,Раковая шейка,虾仁,ingredients:377,천연미끼,Nature
+강홍합살,River mussel meat,Мясо перловицы,珠蚌肉,ingredients:378,천연미끼,Nature
+게살,Crab meat,Крабовое мясо,蟹肉,ingredients:379,천연미끼,Nature
+얼룩홍합살,Zebra mussel meat,Мясо дрейссены,河斑马纹贻贝肉,ingredients:380,천연미끼,Nature
+말파리,Horse-fly,Слепень,牛虻,ingredients:381,곤충류,Nature
+파리,Fly,Муха,苍蝇,ingredients:382,곤충류,Nature
+메뚜기,Grasshopper,Кузнечик,草蜢,ingredients:383,곤충류,Nature
+하루살이,Mayfly,Поденка,蜉蝣,ingredients:384,곤충류,Nature
+쇠똥구리,Cockchafer,Жук навозный,蜣螂,ingredients:385,곤충류,Nature
+왕풍뎅이,Dung beetle,Майский жук,五月金龟子,ingredients:386,곤충류,Nature
+쇠파리,Warble fly,Овод,牛虻,ingredients:387,곤충류,Nature
+귀뚜라미,Cricket,Сверчок,蟋蟀,ingredients:388,곤충류,Nature
+물방개,Diving beetle,Жук-плавунец,龙虱甲虫,ingredients:389,곤충류,Nature
+땅강아지,Mole cricket,Медведка,蝼蛄,ingredients:390,곤충류,Nature
+민물 감마루스,Freshwater Gammarus,Бокоплав пресноводный,淡水钩虾,ingredients:391,갑각류,Nature
+개구리,Frog,Лягушка,蛙,ingredients:392,살아있는 미끼,Nature
+붕어,Crucian Carp,Карась золотой,金鲫,ingredients:393,베이트피쉬,Nature
+시베리아 로치,Siberian Roach,Плотва сибирская,湖拟鲤,ingredients:394,베이트피쉬,Nature
+시베리아 모샘치,Siberian Gudeon,Пескарь сибирский,犬首,ingredients:395,베이트피쉬,Nature
+시베리아 미꾸리,Siberian Loach,Голец сибирский-усач,董氏须鳅,ingredients:396,베이트피쉬,Nature
+지벨 잉어,Gibel Carp,Карась серебряный,银鲫,ingredients:397,베이트피쉬,Nature
+퍼치,Perch,Окунь,河鲈,ingredients:398,베이트피쉬,Nature
+호수 피라미,Lake Minnow,Гольян озерный,湖大吻鱥,ingredients:399,베이트피쉬,Nature
+러프,Ruffe,Ёрш,梅花鲈,ingredients:400,베이트피쉬,Nature
+로치,Roach,Плотва обыкновенная,拟鲤,ingredients:401,베이트피쉬,Nature
+모샘치,Gudeon,Пескарь,鮈鱼,ingredients:402,베이트피쉬,Nature
+빙어,Whitebait,Снеток,小胡瓜鱼,ingredients:403,베이트피쉬,Nature
+왜몰개,Bleak,Уклейка,欧鲌,ingredients:404,베이트피쉬,Nature
+클루포넬라,Clupeonella,Тюлька,棱鲱,ingredients:405,베이트피쉬,Nature
+화이트 브림,White bream,Густера,银鲷鱼,ingredients:406,베이트피쉬,Nature
+칠성장어,Lamprey,Минога,七鳃鳗,ingredients:407,베이트피쉬,Nature
+기자드 샤드,Gizzard Shad,Доросома северная,美洲真鰶,ingredients:408,베이트피쉬,Nature
+붉은귀 선피쉬,Redear sunfish,Солнечник красноухий,小冠太阳鱼,ingredients:409,베이트피쉬,Nature
+블루길,Bluegill,Солнечник синежаберный,蓝鳃太阳鱼,ingredients:410,베이트피쉬,Nature
+작은 필렛 - 고등어,Small fillet - Mackerel,Маленькое филе - Макрель,小块鲭鱼片,ingredients:412,작은 필렛,-
+작은 필렛 - 청어,Small fillet - Herring,Маленькое филе - Сельдь,小块鲱鱼片,ingredients:413,작은 필렛,-
+작은 필렛 - 북대서양 대구,Small fillet - Saithe,Маленькое филе - Сайда,小块绿青鳕鱼片,ingredients:414,작은 필렛,-
+저민 필렛 - 고등어,Fillet strip - Mackerel,Полоска филе - Макрель,鲭鱼柳,ingredients:415,저민 필렛,-
+저민 필렛 - 청어,Fillet strip - Herring,Полоска филе - Сельдь,鲱鱼柳,ingredients:416,저민 필렛,-
+저민 필렛 - 북대서양 대구,Fillet strip - Saithe,Полоска филе - Сайда,绿青鳕柳,ingredients:417,저민 필렛,-
+대형 필렛 - 고등어,Large fillet - Mackerel,Большое филе - Макрель,大块鲭鱼片,ingredients:418,대형 필렛,-
+대형 필렛 - 청어,Large fillet - Herring,Большое филе - Сельдь,大块鲱鱼片,ingredients:419,대형 필렛,-
+대형 필렛 - 북대서양 대구,Large fillet - Saithe,Большое филе - Сайда,大块绿青鳕鱼片,ingredients:420,대형 필렛,-
+초대형 필렛 - 고등어,Huge fillet - Mackerel,Огромное филе - Макрель,巨大的鲭鱼片,ingredients:421,초대형 필렛,-
+초대형 필렛 - 청어,Huge fillet - Herring,Огромное филе - Сельдь,巨大的鲱鱼片,ingredients:422,초대형 필렛,-
+초대형 필렛 - 북대서양 대구,Huge fillet - Saithe,Огромное филе - Сайда,巨大的绿青鳕鱼片,ingredients:423,초대형 필렛,-
+죽은 고등어,Dead mackerel,Мёртвая макрель,死鲭鱼,ingredients:424,생미끼,-
+죽은 청어,Dead herring,Мёртвая сельдь,死鲱鱼,ingredients:425,생미끼,-
+죽은 북대서양 대구,Dead saithe,Мёртвая сайда,死绿青鳕,ingredients:426,생미끼,-
+갯지렁이,Lugworm,Червяк пескожил,海沙蠋,ingredients:427,마린,-
+네레이스,Nereis,Нереис,海沙蚕,ingredients:428,마린,-
+오징어살,Squid meat,Мясо кальмара,鱿鱼肉,ingredients:429,마린,-
+가리비살,Scallop meat,Мясо морского гребешка,扇贝肉,ingredients:431,마린,-
+홍합살,Mussel meat,Мясо мидии,贻贝肉,ingredients:432,마린,-
+가재 30,Crawfish 30,Речной рак 30,螯虾 30,ingredients:292,싱킹 보일리,Smart Boilies
+가재 펠릿 14,Crawfish 14,Речной рак 14,螯虾 14,ingredients:47,펠릿,Craft Baits
+가재 펠릿 24,Crawfish 24,Речной рак 24,螯虾 24,ingredients:47,펠릿,Craft Baits
+검은 후추와 생선 18,BLack Pepper & Fish 18,Чёрный перец и рыба 18,黑胡椒和鱼 18,ingredients:285,싱킹 보일리,Smart Boilies
+게와 생선 펠릿 14,Crab & Fish 14,Краб и рыба 14,螃蟹和鱼 14,ingredients:222,펠릿,Old pal
+게와 생선 펠릿 18,Crab & Fish 18,Краб и рыба 18,螃蟹和鱼 18,ingredients:222,펠릿,Old pal
+게와 생선 펠릿 8,Crab & Fish 8,Краб и рыба 8,螃蟹和鱼 8,ingredients:222,펠릿,Old pal
+게와 홍합 14,Crab & Mussels 14,Краб и мидии 14,螃蟹和贻贝 14,ingredients:199,싱킹 보일리,Old pal
+게와 홍합 수용성 15,Crab & Mussels Soluble 15,Краб и мидии Soluble 15,螃蟹和贻贝 Soluble 15,ingredients:204,싱킹 보일리,Old pal
+게와 홍합 수용성 20,Crab & Mussels Soluble 20,Краб и мидии Soluble 20,螃蟹和贻贝 Soluble 20,ingredients:204,싱킹 보일리,Old pal
+꿀 배 수용성 20,Honey Pear Soluble 20,Медовая груша Soluble 20,蜜梨Soluble 20,ingredients:19,싱킹 보일리,Craft Baits
+넙치 펠릿 14,Halibut 14,Палтус 14,庸鲽 14,ingredients:224,펠릿,Old pal
+넙치와 베리 26,Halibut & Berries 26,Палтус и ягоды 26,庸鲽与浆果 26,ingredients:15,싱킹 보일리,Craft Baits
+노르딕 에스터베리 20,Nordic Esterberry 20,Северные ягоды 20,北方浆果 20,ingredients:186,싱킹 보일리,Old pal
+뉴트럴 펠릿 20,Neutral 20,Нейтральный 20,中立的 20,ingredients:215,펠릿,Old pal
+달콤한 바나나 20,Sweet Banana 20,Сладкий банан 20,甜香蕉 20,ingredients:7,싱킹 보일리,Craft Baits
+달콤한 자두 16,Sweet Plum 16,Сладкая слива 16,甜李子 16,ingredients:9,싱킹 보일리,Craft Baits
+달콤한 카라멜 펠릿 8,Sweet Caramel 8,Сладкая карамель 8,甜硬糖 8,ingredients:216,펠릿,Old pal
+달콤한 크림 12,Sweet Cream 12,Сладкие сливки 12,甜奶油 12,ingredients:273,싱킹 보일리,Smart Boilies
+달콤한 크림 16,Sweet Cream 16,Сладкие сливки 16,甜奶油 16,ingredients:273,싱킹 보일리,Smart Boilies
+달콤한 크림 20,Sweet Cream 20,Сладкие сливки 20,甜奶油 20,ingredients:273,싱킹 보일리,Smart Boilies
+달콤한 크림 수용성 16,Sweet Cream Soluble 16,Сладкие сливки Soluble 16,甜奶油 Soluble 16,ingredients:286,싱킹 보일리,Smart Boilies
+달콤한 크림 수용성 20,Sweet Cream Soluble 20,Сладкие сливки Soluble 20,甜奶油 Soluble 20,ingredients:286,싱킹 보일리,Smart Boilies
+달콤한 크림 팝업 16,Sweet Cream Pop-Up 16,Сладкие сливки РоpUp 16,甜奶油 PopUp 16,ingredients:295,팝업 보일리,Smart Boilies
+달콤한 크림 팝업 20,Sweet Cream Pop-Up 20,Сладкие сливки РоpUp 20,甜奶油 PopUp 20,ingredients:295,팝업 보일리,Smart Boilies
+달콤한 크림 펠릿 14,Sweet Cream 14,Сладкие сливки 14,甜奶油 14,ingredients:217,펠릿,Old pal
+달콤한 크림 펠릿 18,Sweet Cream 18,Сладкие сливки 18,甜奶油 18,ingredients:217,펠릿,Old pal
+달콤한 크림 펠릿 8,Sweet Cream 8,Сладкие сливки 8,甜奶油 8,ingredients:217,펠릿,Old pal
+달콤한 해바라기 15,Sweet Sunflower 15,Сладкий подсолнух 15,甜向日葵 15,ingredients:130,싱킹 보일리,Mad Mayers
+대서양 연어 펠릿 14,Atlantic Salmon Pellets 14,Атлантичекий лосось 14,大西洋鲑 14,ingredients:107,펠릿,헬렌 반 잰트
+대서양 연어 펠릿 18,Atlantic Salmon Pellets 18,Атлантичекий лосось 18,大西洋鲑 18,ingredients:107,펠릿,헬렌 반 잰트
+대서양 연어 펠릿 24,Atlantic Salmon Pellets 24,Атлантичекий лосось 24,大西洋鲑 24,ingredients:107,펠릿,헬렌 반 잰트
+대서양 홍합 15,Atlantic Mussel 15,Атлантические мидии 15,大西洋贻贝 15,ingredients:88,싱킹 보일리,헬렌 반 잰트
+대서양 홍합 18,Atlantic Mussel 18,Атлантические мидии 18,大西洋贻贝 18,ingredients:88,싱킹 보일리,헬렌 반 잰트
+대서양 홍합 24,Atlantic Mussel 24,Атлантические мидии 24,大西洋贻贝 24,ingredients:88,싱킹 보일리,헬렌 반 잰트
+더블 헴프 15,Double Hemp 15,Двойная конопля 15,双大麻 15,ingredients:144,싱킹 보일리,Mad Mayers
+더블 헴프 팝업 20,Double Hemp Pop-Up 20,Двойная конопля PopUp 20,双大麻 PopUp 20,ingredients:161,팝업 보일리,Mad Mayers
+더블 헴프 팝업 25,Double Hemp Pop-Up 25,Двойная конопля PopUp 25,双大麻 PopUp 25,ingredients:161,팝업 보일리,Mad Mayers
+딸기 팝업 15,Strawberry Pop Up 15,Земляника Роp Up 15,大草莓 Pop Up 15,ingredients:209,팝업 보일리,Old pal
+마늘 펠릿 24,Garlic Pellets 24,Чеснок 24,大蒜 24,ingredients:103,펠릿,헬렌 반 잰트
+마늘 홍합 팝업 10,Garlic Mussels Pop Ups 10,Чесночные мидии РоpUps 10,大蒜似的贻贝 Pop Ups 10,ingredients:29,팝업 보일리,Craft Baits
+마늘 홍합 팝업 16,Garlic Mussels Pop Ups 16,Чесночные мидии РоpUps 16,大蒜似的贻贝 Pop Ups 16,ingredients:29,팝업 보일리,Craft Baits
+마늘 홍합 팝업 20,Garlic Mussels Pop Ups 20,Чесночные мидии РоpUps 20,大蒜似的贻贝 Pop Ups 20,ingredients:29,팝업 보일리,Craft Baits
+민물 크릴 18,Freshwater Krill 18,Пресноводный криль 18,淡水磷虾 18,ingredients:201,싱킹 보일리,Old pal
+민물 크릴 펠릿 14,Freshwater Krill 14,Пресноводный криль 14,淡水磷虾 14,ingredients:223,펠릿,Old pal
+민물 크릴 펠릿 18,Freshwater Krill 18,Пресноводный криль 18,淡水磷虾 18,ingredients:223,펠릿,Old pal
+민물 크릴 펠릿 25,Freshwater Krill 25,Пресноводный криль 25,淡水磷虾 25,ingredients:223,펠릿,Old pal
+밀크 크림 10,Milk Cream 10,Молочный крем 10,牛奶糊状 10,ingredients:5,싱킹 보일리,Craft Baits
+밀크 크림 26,Milk Cream 26,Молочный крем 26,牛奶糊状 26,ingredients:5,싱킹 보일리,Craft Baits
+바나나 팝업 20,Banana Pop Up 20,Банан Роp Up 20,香蕉 Pop Up 20,ingredients:210,팝업 보일리,Old pal
+바나나 팝업 26,Banana Pop Up 26,Банан Роp Up 26,香蕉 Pop Up 26,ingredients:210,팝업 보일리,Old pal
+바닐라 크림 15,Vanilla Cream 15,Ванильный крем 15,香子兰糊状 15,ingredients:131,싱킹 보일리,Mad Mayers
+바닐라 크림 20,Vanilla Cream 20,Ванильный крем 20,香子兰糊状 20,ingredients:131,싱킹 보일리,Mad Mayers
+바닐라 크림 25,Vanilla Cream 25,Ванильный крем 25,香子兰糊状 25,ingredients:131,싱킹 보일리,Mad Mayers
+바닐라 크림 팝업 15,Vanilla Cream Pop-Up 15,Ванильный крем PopUp 15,香子兰糊状 PopUp 15,ingredients:150,팝업 보일리,Mad Mayers
+바닐라 크림 팝업 25,Vanilla Cream Pop-Up 25,Ванильный крем PopUp 25,香子兰糊状 PopUp 25,ingredients:150,팝업 보일리,Mad Mayers
+바닐라 펠릿 24,Vanilla 24,Ваниль 24,香子兰 24,ingredients:104,펠릿,헬렌 반 잰트
+바닐라 폭발성 20,Explosive Vanilla 20,Взрывная ваниль 20,爆炸香子兰 20,ingredients:71,싱킹 보일리,헬렌 반 잰트
+베이스 화이트 20,Base White 20,Базовый белый 20,基础的白色 20,ingredients:4,싱킹 보일리,Craft Baits
+복숭아 펠릿 14,Peach 14,Персик 14,桃子 14,ingredients:44,펠릿,Craft Baits
+복숭아와 허브 15,Peach & Herbs 15,Персик и травы 15,桃子和香草 15,ingredients:136,싱킹 보일리,Mad Mayers
+붉은 크릴 펠릿 14,Red Krill Pellets 14,Красный криль 14,红磷虾 14,ingredients:106,펠릿,헬렌 반 잰트
+붉은 크릴 펠릿 18,Red Krill Pellets 18,Красный криль 18,红磷虾 18,ingredients:106,펠릿,헬렌 반 잰트
+붉은 크릴 펠릿 8,Red Krill Pellets 8,Красный криль 8,红磷虾 8,ingredients:106,펠릿,헬렌 반 잰트
+블랙 커런트 팝업 15,Blackcurrant Pop-Up 15,Черная смородина PopUp 15,黑加仑 PopUp 15,ingredients:156,팝업 보일리,Mad Mayers
+블랙 커런트 팝업 20,Blackcurrant Pop-Up 20,Черная смородина PopUp 20,黑加仑 PopUp 20,ingredients:156,팝업 보일리,Mad Mayers
+스위트콘 팝업 20,Sweet Corn Pop Up 20,Сахарная кукуруза Роp Up 20,甜玉米 Pop Up 20,ingredients:208,팝업 보일리,Old pal
+스파이스 믹스 12,Spice Mix 12,Смесь специй 12,七种香料 12,ingredients:281,싱킹 보일리,Smart Boilies
+스파이스 믹스 16,Spice Mix 16,Смесь специй 16,七种香料 16,ingredients:281,싱킹 보일리,Smart Boilies
+스파이스 믹스 20,Spice Mix 20,Смесь специй 20,七种香料 20,ingredients:281,싱킹 보일리,Smart Boilies
+스파이스 믹스 팝업 12,Spice Mix Pop-Up 12,Смесь специй РоpUp 12,七种香料 PopUp 12,ingredients:297,팝업 보일리,Smart Boilies
+스파이스 믹스 팝업 16,Spice Mix Pop-Up 16,Смесь специй РоpUp 16,七种香料 PopUp 16,ingredients:297,팝업 보일리,Smart Boilies
+스파이스 믹스 팝업 20,Spice Mix Pop-Up 20,Смесь специй РоpUp 20,七种香料 PopUp 20,ingredients:297,팝업 보일리,Smart Boilies
+스파이시 마늘 펠릿 24,Spicy Garlic 24,Пряный чеснок 24,辛香的大蒜 24,ingredients:41,펠릿,Craft Baits
+스파이시 복숭아 수용성 16,Fragrant Peach Soluble 16,Ароматный персик Soluble 16,芳香的桃子 可溶 16,ingredients:282,싱킹 보일리,Smart Boilies
+스프링 허브 15,Spring Herbs 15,Весенние травы 15,春草 15,ingredients:143,싱킹 보일리,Mad Mayers
+스프링 허브 20,Spring Herbs 20,Весенние травы 20,春草 20,ingredients:143,싱킹 보일리,Mad Mayers
+스프링 허브 25,Spring Herbs 25,Весенние травы 25,春草 25,ingredients:143,싱킹 보일리,Mad Mayers
+스프링 허브 팝업 20,Spring Herbs Pop-Up 20,Весенние травы PopUp 20,春草 PopUp 20,ingredients:160,팝업 보일리,Mad Mayers
+신선한 라임 10,Fresh Lime 10,Свежий лайм 10,鲜青柠 10,ingredients:6,싱킹 보일리,Craft Baits
+신선한 라임 16,Fresh Lime 16,Свежий лайм 16,鲜青柠 16,ingredients:6,싱킹 보일리,Craft Baits
+신선한 라임 팝업 16,Fresh Lime Pop Ups 16,Свежий лайм Рop Ups 16,鲜青柠 Pop Ups 16,ingredients:28,팝업 보일리,Craft Baits
+신선한 라임 팝업 20,Fresh Lime Pop Ups 20,Свежий лайм Рop Ups 20,鲜青柠 Pop Ups 20,ingredients:28,팝업 보일리,Craft Baits
+신선한 라즈베리 16,Fresh Raspberry 16,Свежая малина 16,新鲜树莓 16,ingredients:12,싱킹 보일리,Craft Baits
+신선한 라즈베리 팝업 10,Fresh Raspberry Pop Ups 10,Свежая малина Pop Ups 10,新鲜树莓 Pop Ups 10,ingredients:32,팝업 보일리,Craft Baits
+신선한 라즈베리 팝업 16,Fresh Raspberry Pop Ups 16,Свежая малина Pop Ups 16,新鲜树莓 Pop Ups 16,ingredients:32,팝업 보일리,Craft Baits
+신선한 라즈베리 팝업 26,Fresh Raspberry Pop Ups 26,Свежая малина Pop Ups 26,新鲜树莓 Pop Ups 26,ingredients:32,팝업 보일리,Craft Baits
+신선한 크랜베리 20,Fresh Cranberry 20,Свежая клюква 20,新鲑小红莓 20,ingredients:13,싱킹 보일리,Craft Baits
+신선한 크랜베리 26,Fresh Cranberry 26,Свежая клюква 26,新鲑小红莓 26,ingredients:13,싱킹 보일리,Craft Baits
+신선한 크랜베리 팝업 16,Fresh Cranberry Pop Ups 16,Свежая клюква Pop Ups 16,新鲑小红莓 Pop Ups 16,ingredients:33,팝업 보일리,Craft Baits
+신선한 크랜베리 팝업 20,Fresh Cranberry Pop Ups 20,Свежая клюква Pop Ups 20,新鲑小红莓 Pop Ups 20,ingredients:33,팝업 보일리,Craft Baits
+신선한 크랜베리 팝업 26,Fresh Cranberry Pop Ups 26,Свежая клюква Pop Ups 26,新鲑小红莓 Pop Ups 26,ingredients:33,팝업 보일리,Craft Baits
+심해 오징어 30,Deep Squid 30,Насыщенный кальмар 30,饱和鱿鱼 30,ingredients:291,싱킹 보일리,Smart Boilies
+야생 자두 15,Wild Plum 15,Дикая слива 15,野李子 15,ingredients:76,싱킹 보일리,헬렌 반 잰트
+연어 14,Salmon 14,Лосось 14,鲑鱼 14,ingredients:202,싱킹 보일리,Old pal
+연어 20,Salmon 20,Лосось 20,鲑鱼 20,ingredients:202,싱킹 보일리,Old pal
+연어 팝업 14,Salmon Pop Up 14,Лосось Роp Up 14,鲑鱼 Pop Up 14,ingredients:214,팝업 보일리,Old pal
+연어 팝업 20,Salmon Pop Up 20,Лосось Роp Up 20,鲑鱼 Pop Up 20,ingredients:214,팝업 보일리,Old pal
+연어와 허브 20,Salmon & Herbs 20,Лосось и пряности 20,鲑鱼与香料 20,ingredients:10,싱킹 보일리,Craft Baits
+연어와 허브 26,Salmon & Herbs 26,Лосось и пряности 26,鲑鱼与香料 26,ingredients:10,싱킹 보일리,Craft Baits
+오징어와 문어 12,Squids & Octopus 12,Кальмар и Осьминог 12,鱿鱼与章鱼 12,ingredients:86,싱킹 보일리,헬렌 반 잰트
+오징어와 문어 15,Squids & Octopus 15,Кальмар и Осьминог 15,鱿鱼与章鱼 15,ingredients:86,싱킹 보일리,헬렌 반 잰트
+오징어와 허브 펠릿 16,Squid & Herbs 16,Кальмар и травы 16,鱿鱼和香草 16,ingredients:45,펠릿,Craft Baits
+옥수수 펠릿 8,Corn Pellets 8,Кукуруза 8,玉米 8,ingredients:101,펠릿,헬렌 반 잰트
+왕자두 15,King Plum 15,Королевская слива 15,王李子 15,ingredients:188,싱킹 보일리,Old pal
+쥬시 레몬 14,Juicy Lemon 14,Сочный лимон 14,多汁的柠檬 14,ingredients:284,싱킹 보일리,Smart Boilies
+쥬시 레몬 18,Juicy Lemon 18,Сочный лимон 18,多汁的柠檬 18,ingredients:284,싱킹 보일리,Smart Boilies
+쥬시 레몬 팝업 14,Juicy Lemon Pop-Up 14,Сочный лимон РоpUp 14,多汁的柠檬 PopUp 14,ingredients:298,팝업 보일리,Smart Boilies
+쥬시 레몬 팝업 18,Juicy Lemon Pop-Up 18,Сочный лимон РоpUp 18,多汁的柠檬 PopUp 18,ingredients:298,팝업 보일리,Smart Boilies
+쥬시 레몬 팝업 26,Juicy Lemon Pop-Up 26,Сочный лимон РоpUp 26,多汁的柠檬 PopUp 26,ingredients:298,팝업 보일리,Smart Boilies
+쥬시 멀베리 10,Juicy Mulberry 10,Сочная шелковица 10,水桑椹 10,ingredients:146,싱킹 보일리,Mad Mayers
+쥬시 멀베리 20,Juicy Mulberry 20,Сочная шелковица 20,水桑椹 20,ingredients:146,싱킹 보일리,Mad Mayers
+참치 펠릿 14,Tuna Pellets 14,Тунец 14,吞拿鱼 14,ingredients:109,펠릿,헬렌 반 잰트
+카라멜 후르츠 15,Caramel Fruits 15,Карамельные фрукты 15,焦糖与水果 15,ingredients:133,싱킹 보일리,Mad Mayers
+카라멜 후르츠 20,Caramel Fruits 20,Карамельные фрукты 20,焦糖与水果 20,ingredients:133,싱킹 보일리,Mad Mayers
+카라멜 후르츠 25,Caramel Fruits 25,Карамельные фрукты 25,焦糖与水果 25,ingredients:133,싱킹 보일리,Mad Mayers
+카카오 믹스 수용성 15,Cacao Mix Soluble 15,Какао-смесь Soluble 15,可可混合Soluble 15,ingredients:142,싱킹 보일리,Mad Mayers
+카카오 믹스 수용성 20,Cacao Mix Soluble 20,Какао-смесь Soluble 20,可可混合Soluble 20,ingredients:142,싱킹 보일리,Mad Mayers
+캐비어 16,Caviar 16,Икра 16,鱼子 16,ingredients:23,싱킹 보일리,Craft Baits
+캐비어 팝업 16,Caviar Pop Ups 16,Икра Роp Ups 16,鱼子 Pop Ups 16,ingredients:39,팝업 보일리,Craft Baits
+캐비어 팝업 20,Caviar Pop Ups 20,Икра Роp Ups 20,鱼子 Pop Ups 20,ingredients:39,팝업 보일리,Craft Baits
+캐비어 팝업 26,Caviar Pop Ups 26,Икра Роp Ups 26,鱼子 Pop Ups 26,ingredients:39,팝업 보일리,Craft Baits
+캐비어 펠릿 14,Cavior 14,Икра 14,鱼子 14,ingredients:48,펠릿,Craft Baits
+코코넛과 크림 16,Coconut and Cream 16,Кокос и сливки 16,椰子和奶油 16,ingredients:195,싱킹 보일리,Old pal
+코코넛과 크림 팝업 12,Cocos & Cream Pop Up 12,Кокос и сливки Роp Up 12,椰子和奶油 Pop Up 12,ingredients:212,팝업 보일리,Old pal
+코코넛과 크림 팝업 16,Cocos & Cream Pop Up 16,Кокос и сливки Роp Up 16,椰子和奶油 Pop Up 16,ingredients:212,팝업 보일리,Old pal
+코코넛과 크림 팝업 22,Cocos & Cream Pop Up 22,Кокос и сливки Роp Up 22,椰子和奶油 Pop Up 22,ingredients:212,팝업 보일리,Old pal
+코코넛과 크림 펠릿 14,Cocos & Cream 14,Кокос и сливки 14,椰子和奶油 14,ingredients:219,펠릿,Old pal
+코코넛과 크림 펠릿 18,Cocos & Cream 18,Кокос и сливки 18,椰子和奶油 18,ingredients:219,펠릿,Old pal
+코코넛과 크림 펠릿 25,Cocos & Cream 25,Кокос и сливки 25,椰子和奶油 25,ingredients:219,펠릿,Old pal
+코코넛과 크림 펠릿 8,Cocos & Cream 8,Кокос и сливки 8,椰子和奶油 8,ingredients:219,펠릿,Old pal
+크림 브륄레 14,Creme Brulee 14,Крем-брюле 14,焦糖布丁 14,ingredients:192,싱킹 보일리,Old pal
+크림 브륄레 18,Creme Brulee 18,Крем-брюле 18,焦糖布丁 18,ingredients:192,싱킹 보일리,Old pal
+크림 브륄레 8,Creme Brulee 8,Крем-брюле 8,焦糖布丁 8,ingredients:192,싱킹 보일리,Old pal
+킹크랩 15,King Crab 15,Королевский краб 15,帝王蟹 15,ingredients:84,싱킹 보일리,헬렌 반 잰트
+킹크랩 팝업 18,King Crab Pop-Ups 18,Королевский краб Рор-Ups 18,帝王蟹 18,ingredients:99,팝업 보일리,헬렌 반 잰트
+투티 프루티 수용성 20,Tutti Frutti Soluble 20,Тутти Фрутти Soluble 20,什锦水果味 Soluble 20,ingredients:203,싱킹 보일리,Old pal
+필드 그래스 18,Field Grass 18,Полевые травы 18,野草 18,ingredients:293,싱킹 보일리,Smart Boilies
+필드 그래스 22,Field Grass 22,Полевые травы 22,野草 22,ingredients:293,싱킹 보일리,Smart Boilies
+핫 체리 22,Hot Cherry 22,Пикантная вишня 22,诱人的樱桃 22,ingredients:280,싱킹 보일리,Smart Boilies
+핫 체리 26,Hot Cherry 26,Пикантная вишня 26,诱人的樱桃 26,ingredients:280,싱킹 보일리,Smart Boilies
+핫 체리 수용성 16,Hot Cherry Soluble 16,Пикантная вишня Soluble 16,诱人的樱桃 Soluble 16,ingredients:283,싱킹 보일리,Smart Boilies
+핫 체리 수용성 20,Hot Cherry Soluble 20,Пикантная вишня Soluble 20,诱人的樱桃 Soluble 20,ingredients:283,싱킹 보일리,Smart Boilies
+핫 체리 팝업 26,Hot Cherry Pop-Up 26,Пикантная вишня РоpUp 26,诱人的樱桃 PopUp 26,ingredients:296,팝업 보일리,Smart Boilies
+핫 페퍼 15,Hot Pepper 15,Острый перец 15,辣椒 15,ingredients:83,싱킹 보일리,헬렌 반 잰트
+핫 페퍼 18,Hot Pepper 18,Острый перец 18,辣椒 18,ingredients:83,싱킹 보일리,헬렌 반 잰트
+핫 페퍼 팝업 18,Hot Pepper Pop-Ups 18,Острый перец Рор-Ups 18,辣椒 18,ingredients:97,팝업 보일리,헬렌 반 잰트
+핫 페퍼 폭발성 18,Explosive Pepper 18,Взрывной перец 18,爆炸辣椒 18,ingredients:87,싱킹 보일리,헬렌 반 잰트
+허브 디저트 펠릿 14,Grass Cake 14,Десерт из трав 14,香草甜点 14,ingredients:221,펠릿,Old pal
+허브 디저트 펠릿 18,Grass Cake 18,Десерт из трав 18,香草甜点 18,ingredients:221,펠릿,Old pal
+허브 디저트 펠릿 25,Grass Cake 25,Десерт из трав 25,香草甜点 25,ingredients:221,펠릿,Old pal
+홈메이드 딸기 15,Homemade Strawberry 15,Клубника 15,大草莓 15,ingredients:72,싱킹 보일리,헬렌 반 잰트
+홍합과 고추 펠릿 14,Pepper Mussels 14,Мидии с перцем 14,贻贝和胡椒 14,ingredients:46,펠릿,Craft Baits
+홍합과 고추 펠릿 18,Pepper Mussels 18,Мидии с перцем 18,贻贝和胡椒 18,ingredients:46,펠릿,Craft Baits
+홍합과 고추 펠릿 24,Pepper Mussels 24,Мидии с перцем 24,贻贝和胡椒 24,ingredients:46,펠릿,Craft Baits
+홍합과 과일 12,Mussels & Fruits 12,Мидии и фрукты 12,贻贝和水果 12,ingredients:288,싱킹 보일리,Smart Boilies
+홍합과 과일 16,Mussels & Fruits 16,Мидии и фрукты 16,贻贝和水果 16,ingredients:288,싱킹 보일리,Smart Boilies
+화이트 초콜릿 14,White Chocolate 14,Белый шоколад 14,白巧克力 14,ingredients:191,싱킹 보일리,Old pal
+화이트 초콜릿 18,White Chocolate 18,Белый шоколад 18,白巧克力 18,ingredients:191,싱킹 보일리,Old pal
+화이트 초콜릿 25,White Chocolate 25,Белый шоколад 25,白巧克力 25,ingredients:191,싱킹 보일리,Old pal
+후추 15,Black Pepper 15,Черный перец 15,黑胡椒 15,ingredients:336,싱킹 보일리,포모르

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>밑밥 조합식 번역 프로토타입</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f4f4f2; color: #222; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .grp { display: flex; gap: 6px; align-items: center; }
+  .grp label { font-size: 13px; color: #555; }
+  button, select { font: inherit; padding: 6px 10px; border: 1px solid #bbb; border-radius: 6px; background: #fff; cursor: pointer; }
+  button.on { background: #2b6; color: #fff; border-color: #2b6; }
+  button:disabled { opacity: .45; cursor: default; }
+  #drop { border: 2px dashed #aaa; border-radius: 10px; padding: 18px; text-align: center; color: #666; background: #fff; }
+  #drop.over { border-color: #2b6; background: #eefbf3; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+  @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+  .box { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 10px; }
+  .box h2 { font-size: 14px; margin: 0 0 8px; color: #444; }
+  canvas { max-width: 100%; display: block; }
+  #preview { cursor: crosshair; touch-action: none; }
+  #status { font-size: 13px; color: #555; min-height: 18px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  th { font-size: 12px; color: #777; font-weight: 600; }
+  .sc { font-size: 11px; padding: 2px 6px; border-radius: 10px; color: #fff; display: inline-block; }
+  .sc.hi { background: #2b6; } .sc.mid { background: #e9a825; } .sc.lo { background: #d44; }
+  pre { font-size: 12px; white-space: pre-wrap; background: #fafafa; border: 1px solid #eee; padding: 8px; border-radius: 6px; max-height: 260px; overflow: auto; }
+  .muted { color: #888; font-size: 12px; }
+  .warn { color: #b22; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>밑밥 조합식 번역 프로토타입</h1>
+
+<div class="row">
+  <div class="grp"><label>스샷 언어</label>
+    <button data-src="ko" class="on">한국어</button><button data-src="ru">러시아어</button><button data-src="cn">중국어</button>
+    <button data-src="en" disabled title="영어 라벨 미확보">영어</button>
+  </div>
+  <div class="grp"><label>번역할 언어</label>
+    <select id="tgt"><option value="ko">한국어</option><option value="en">English</option><option value="ru">Русский</option><option value="cn">中文</option></select>
+  </div>
+  <div class="grp">
+    <button id="run" disabled>인식</button>
+    <button id="synth">합성 테스트 이미지</button>
+  </div>
+</div>
+
+<div id="drop">이미지를 붙여넣거나(Ctrl+V) 여기에 끌어다 놓거나 <input type="file" id="file" accept="image/*"> </div>
+<div id="status"></div>
+
+<div class="cols">
+  <div class="box">
+    <h2>입력 <span class="muted">— 자동으로 툴팁을 찾습니다. 틀리면 드래그로 영역을 직접 지정하세요.</span></h2>
+    <canvas id="preview"></canvas>
+  </div>
+  <div class="box">
+    <h2>결과</h2>
+    <div id="result"><span class="muted">아직 없음</span></div>
+    <h2 style="margin-top:12px">OCR 원문</h2>
+    <pre id="raw"></pre>
+    <h2>OCR에 넘긴 이미지</h2>
+    <canvas id="ocrcanvas"></canvas>
+  </div>
+</div>
+
+<script src="dictionary.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script>
+'use strict';
+const DICT = window.RF4_DICT, LABELS = window.RF4_LABELS;
+const TESS_LANG = { ko: 'kor', ru: 'rus', cn: 'chi_sim', en: 'eng' };
+const ROLES = ['base', 'feed', 'sinking', 'popup', 'pellet', 'attractant'];
+const ALLOWED = { base: ['base'], feed: ['feed', 'pellet'], sinking: ['sinking'], popup: ['popup'], pellet: ['pellet', 'feed'], attractant: ['attractant'] };
+const ADDITIVE_CATS = ['feed', 'pellet', 'sinking', 'popup'];
+
+let src = 'ko', img = null, crop = null, worker = null, workerLang = null;
+const $ = id => document.getElementById(id);
+const status = t => { $('status').textContent = t; };
+
+// ---------- 문자열 유사도 (순수 JS, 공백 제거 후 편집거리) ----------
+function norm(s) { return (s || '').toLowerCase().replace(/\s+/g, '').replace(/ё/g, 'е').replace(/[‐-–—]/g, '-'); }
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = new Array(n + 1), cur = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    [prev, cur] = [cur, prev];
+  }
+  return prev[n];
+}
+function sim(a, b) { a = norm(a); b = norm(b); const L = Math.max(a.length, b.length); return L ? 1 - lev(a, b) / L : 0; }
+
+// ---------- 툴팁(검은 패널) 자동 탐지 ----------
+function findDarkPanels(image) {
+  const W = 480, s = Math.min(1, W / image.width), w = Math.round(image.width * s), h = Math.round(image.height * s);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const ctx = c.getContext('2d'); ctx.drawImage(image, 0, 0, w, h);
+  const d = ctx.getImageData(0, 0, w, h).data, mask = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) { const l = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]; mask[i] = l < 22 ? 1 : 0; }
+  const seen = new Uint8Array(w * h), comps = [], stack = [];
+  for (let p = 0; p < w * h; p++) {
+    if (!mask[p] || seen[p]) continue;
+    let x0 = w, x1 = 0, y0 = h, y1 = 0, cnt = 0; stack.push(p); seen[p] = 1;
+    while (stack.length) {
+      const q = stack.pop(), x = q % w, y = (q / w) | 0; cnt++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      const nb = [q - 1, q + 1, q - w, q + w];
+      if (x === 0) nb[0] = -1; if (x === w - 1) nb[1] = -1;
+      for (const r of nb) if (r >= 0 && r < w * h && mask[r] && !seen[r]) { seen[r] = 1; stack.push(r); }
+    }
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = cnt / (bw * bh);
+    if (bw >= 50 && bh >= 50 && fill >= 0.55 && bw * bh < 0.85 * w * h) comps.push({ x: x0 / s, y: y0 / s, w: bw / s, h: bh / s, area: bw * bh, fill });
+  }
+  comps.sort((a, b) => b.area - a.area);
+  return comps.slice(0, 3);
+}
+
+// ---------- OCR용 전처리: 크롭 → 확대 → 그레이 반전 → 대비 ----------
+function prepare(image, r) {
+  const scale = Math.min(3, Math.max(1, 1200 / r.w));
+  const c = $('ocrcanvas'); c.width = Math.round(r.w * scale); c.height = Math.round(r.h * scale);
+  const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(image, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
+  const im = ctx.getImageData(0, 0, c.width, c.height), d = im.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const l = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    let v = 255 - l; v = (v - 30) * 1.5; v = v < 0 ? 0 : v > 255 ? 255 : v;   // 밝은 글자 → 검은 글자
+    d[i] = d[i + 1] = d[i + 2] = v;
+  }
+  ctx.putImageData(im, 0, 0);
+  return c;
+}
+
+async function getWorker(lang) {
+  if (worker && workerLang === lang) return worker;
+  if (worker) { await worker.terminate(); worker = null; }
+  status(`언어 데이터(${lang}) 준비 중… 처음 한 번만 내려받습니다.`);
+  worker = await Tesseract.createWorker(lang, 1, {
+    langPath: 'https://cdn.jsdelivr.net/gh/tesseract-ocr/tessdata_fast@main', gzip: false,
+    logger: m => { if (m.status === 'recognizing text') status(`인식 중 ${Math.round(m.progress * 100)}%`); else if (m.status) status(m.status); },
+  });
+  await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1' });
+  workerLang = lang;
+  return worker;
+}
+
+// ---------- 파싱 ----------
+function labelOf(line, lang) {
+  // 라벨은 값과 붙어 나올 수 있으니 공백 제거 문자열의 접두사로 비교
+  const n = norm(line); let best = null;
+  for (const role of ROLES) {
+    const lab = LABELS[role][lang]; if (!lab) continue;
+    const ln = norm(lab); const pre = n.slice(0, ln.length);
+    const s = sim(pre, ln);
+    if (s >= 0.6 && (!best || s > best.s)) best = { role, s, rest: n.slice(ln.length) };
+  }
+  return best;
+}
+function parseValue(v) {
+  let crushed = false;
+  const m = v.match(/[(（]([^()（）]*)[)）]\s*$/);
+  if (m) { crushed = true; v = v.slice(0, m.index); }
+  let size = null;
+  const s = v.match(/(\d{1,2})$/);
+  if (s) { size = +s[1]; v = v.slice(0, s.index); }
+  return { name: v, size, crushed };
+}
+function matchName(name, lang, cats) {
+  const scored = [];
+  for (const e of DICT) {
+    if (!cats.includes(e.cat)) continue;
+    let best = 0;
+    for (const a of e[lang]) { const s = sim(a, name); if (s > best) best = s; }
+    if (best > 0) scored.push({ e, s: best, p: cats.indexOf(e.cat) });
+  }
+  scored.sort((a, b) => b.s - a.s || a.p - b.p);   // 동점이면 라벨 자체 분류(cats 앞쪽) 우선 — ru '사료 펠릿'과 '펠릿'은 이름이 같음
+  return scored.slice(0, 5);
+}
+function parseLines(lines, lang) {
+  const sec = norm(LABELS.section[lang]), end = norm(LABELS.end[lang]);
+  let inSec = false; const rows = [];
+  for (const raw of lines) {
+    const line = raw.trim(); if (!line) continue;
+    const n = norm(line);
+    if (!inSec) { if (sim(n.slice(0, sec.length), sec) >= 0.6 || labelOf(line, lang)?.role === 'base') inSec = true; else continue; }
+    if (sim(n.slice(0, end.length), end) >= 0.7) break;
+    const lab = labelOf(line, lang); if (!lab) continue;
+    const val = parseValue(lab.rest);
+    let cands = matchName(val.name, lang, ALLOWED[lab.role]), note = '';
+    if (!cands.length || cands[0].s < 0.45) {
+      const alt = matchName(val.name, lang, [...ADDITIVE_CATS, 'base', 'attractant']);
+      if (alt.length && (!cands.length || alt[0].s > cands[0].s)) { cands = alt; note = '라벨과 다른 분류에서 매칭'; }
+    }
+    rows.push({ role: lab.role, ...val, cands, note, raw: line });
+    if (rows.length >= 7) break;
+  }
+  return rows;
+}
+
+// ---------- 결과 렌더 ----------
+function render(rows, tgt) {
+  const el = $('result');
+  if (!rows.length) { el.innerHTML = '<span class="warn">재료 구역을 찾지 못했습니다. 영역을 직접 지정해 보세요.</span>'; return; }
+  const lab = role => LABELS[role][tgt] || LABELS[role].ko || role;
+  const crushedTxt = LABELS.crushed[tgt] || LABELS.crushed.ko;
+  let html = '<table><tr><th>역할</th><th>재료</th><th>크기</th><th>신뢰도</th><th>원문</th></tr>';
+  rows.forEach((r, i) => {
+    const top = r.cands[0]; const s = top ? top.s : 0;
+    const cls = s >= 0.8 ? 'hi' : s >= 0.55 ? 'mid' : 'lo';
+    const name = top ? top.e[tgt][0] || top.e.ko[0] : '?';
+    let cell = name;
+    if (s < 0.8 && r.cands.length) cell = `<select data-i="${i}">` + r.cands.map((c, j) => `<option value="${j}">${c.e[tgt][0] || c.e.ko[0]} (${Math.round(c.s * 100)}%)</option>`).join('') + '</select>';
+    html += `<tr><td>${lab(r.role)}</td><td>${cell}</td><td>${r.size ?? ''}${r.crushed ? ' (' + crushedTxt + ')' : ''}</td>` +
+      `<td><span class="sc ${cls}">${Math.round(s * 100)}%</span>${r.note ? '<div class="muted">' + r.note + '</div>' : ''}</td><td class="muted">${r.raw}</td></tr>`;
+  });
+  html += '</table>';
+  // 중복 검사: (이름, 크기, 으깨짐)
+  const keys = rows.map(r => r.cands[0] ? `${r.cands[0].e.id}|${r.size}|${r.crushed}` : null).filter(Boolean);
+  if (new Set(keys).size !== keys.length) html += '<div class="warn" style="margin-top:6px">같은 재료·크기가 두 번 나왔습니다. 오독일 수 있어요.</div>';
+  el.innerHTML = html;
+}
+
+// ---------- 실행 ----------
+async function run() {
+  if (!img) return;
+  $('run').disabled = true;
+  try {
+    const regions = crop ? [crop] : findDarkPanels(img);
+    if (!regions.length) regions.push({ x: 0, y: 0, w: img.width, h: img.height });
+    const w = await getWorker(TESS_LANG[src]);
+    let best = null;
+    for (const r of regions) {
+      const c = prepare(img, r);
+      status('인식 중…');
+      const { data } = await w.recognize(c);
+      const lines = data.text.split('\n');
+      const rows = parseLines(lines, src);
+      if (!best || rows.length > best.rows.length) best = { r, rows, text: data.text };
+      if (rows.length >= 3) break;   // 재료 구역이 들어 있는 패널을 찾았으면 종료
+    }
+    crop = best.r; drawPreview();
+    $('raw').textContent = best.text;
+    render(best.rows, $('tgt').value);
+    status(`완료 — 재료 ${best.rows.length}줄`);
+    window.__rows = best.rows;
+  } catch (e) { status('오류: ' + e.message); console.error(e); }
+  $('run').disabled = false;
+}
+
+// ---------- 입력·미리보기 ----------
+function setImage(image) { img = image; crop = null; $('run').disabled = false; drawPreview(); status(`이미지 ${image.width}×${image.height}`); $('result').innerHTML = '<span class="muted">아직 없음</span>'; $('raw').textContent = ''; }
+function drawPreview() {
+  const c = $('preview'), W = 520, s = Math.min(1, W / img.width);
+  c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+  const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
+  const boxes = crop ? [crop] : findDarkPanels(img);
+  ctx.lineWidth = 2; ctx.strokeStyle = crop ? '#2b6' : '#e9a825';
+  for (const b of boxes) ctx.strokeRect(b.x * s, b.y * s, b.w * s, b.h * s);
+}
+function loadFile(f) { if (!f || !f.type.startsWith('image/')) return; const im = new Image(); im.onload = () => setImage(im); im.src = URL.createObjectURL(f); }
+document.addEventListener('paste', e => { for (const it of e.clipboardData.items) if (it.type.startsWith('image/')) loadFile(it.getAsFile()); });
+$('file').addEventListener('change', e => loadFile(e.target.files[0]));
+const drop = $('drop');
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
+// 수동 영역 지정(드래그)
+(() => {
+  const c = $('preview'); let start = null;
+  const pos = e => { const r = c.getBoundingClientRect(), k = img.width / r.width; return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k }; };
+  c.addEventListener('pointerdown', e => { if (!img) return; start = pos(e); c.setPointerCapture(e.pointerId); });
+  c.addEventListener('pointermove', e => { if (!start) return; const p = pos(e); crop = { x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) }; drawPreview(); });
+  c.addEventListener('pointerup', () => { if (start && crop && (crop.w < 20 || crop.h < 20)) crop = null; start = null; drawPreview(); });
+})();
+document.querySelectorAll('[data-src]').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('[data-src]').forEach(x => x.classList.remove('on')); b.classList.add('on'); src = b.dataset.src; }));
+$('tgt').addEventListener('change', () => { if (window.__rows) render(window.__rows, $('tgt').value); });
+$('run').addEventListener('click', run);
+
+// ---------- 합성 테스트 이미지: 실제 툴팁 레이아웃을 흉내 (실스샷 확보 전 파이프라인 검증용) ----------
+const SYNTH = {
+  ko: { head: ['정보', ['수량', '1 개'], ['품질', '9/10'], ['무게', '50 g'], ['기간', '18 시간']], sec: '재료', rows: [['베이스', '유채씨'], ['사료 첨가제', '스파이시 사료 펠릿 8'], ['사료 첨가제', '스파이시 사료 펠릿 12'], ['사료 첨가제', '핫 사료 펠릿 6'], ['싱킹 보일리', '핫 페퍼 폭발성 18 (으깨짐)'], ['유인제', '후추']], tail: ['상태', '사용 가능'] },
+  ru: { head: ['ПАРАМЕТРЫ', ['Кол-во', '1 шт'], ['Качество', '9/10'], ['Масса', '50 г'], ['Время действия', '16 ч']], sec: 'СОСТАВ', rows: [['Основа', 'Молотая кукуруза'], ['Добавка в прикорму', 'Кокос и сливки 5'], ['Добавка в прикорму', 'Кокос и сливки 7'], ['Добавка в прикорму', 'Сладкие сливки 6'], ['Добавка в прикорму', 'Кокос и сливки 12'], ['Ароматизатор', 'Кокосовый крем']], tail: ['СОСТОЯНИЕ', 'Можно использовать'] },
+  cn: { head: ['参数', ['数量', '60 份'], ['质量', '10/10'], ['质量', '600 克'], ['有效期', '17 小时']], sec: '类型:', rows: [['基础料', '磨碎的豌豆'], ['诱饵添加剂', '黑加仑 5'], ['诱饵添加剂', '黑加仑 8'], ['诱饵添加剂', '北黑莓 8'], ['Pop-up 香煮成饵', '黑加仑 PopUp 15 （碎的）'], ['香料', '黑加仑']], tail: ['情况', '可以使用'] },
+};
+$('synth').addEventListener('click', () => {
+  const t = SYNTH[src] || SYNTH.ko;
+  const W = 1280, H = 720, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#4a4a48'; ctx.fillRect(0, 0, W, H);                       // 게임 배경 흉내
+  ctx.fillStyle = '#5a5a58'; for (let y = 60; y < H; y += 90) ctx.fillRect(560, y, 680, 70);
+  const px = 800, py = 300, pw = 360, lh = 19; let y = py + 22;
+  const lines = 1 + t.head.length + 2 + t.rows.length + 2 + 2;
+  ctx.fillStyle = '#0b0b0b'; ctx.fillRect(px, py, pw, lines * lh + 30);
+  ctx.font = '13px sans-serif';
+  const L = (a, b, col) => { ctx.fillStyle = col || '#fff'; ctx.textAlign = 'left'; ctx.fillText(a, px + 14, y); if (b) { ctx.textAlign = 'right'; ctx.fillText(b, px + pw - 14, y); } y += lh; };
+  L(t.head[0]); for (const [a, b] of t.head.slice(1)) L(a, b);
+  y += 6; ctx.fillStyle = '#777'; ctx.fillRect(px + 14, y - 12, pw - 28, 1); y += 8;
+  L(t.sec); for (const [a, b] of t.rows) L(a, b);
+  y += 6; ctx.fillStyle = '#777'; ctx.fillRect(px + 14, y - 12, pw - 28, 1); y += 8;
+  L(t.tail[0]); L(t.tail[1], null, '#cde04a');
+  const im = new Image(); im.onload = () => setImage(im); im.src = c.toDataURL();
+});
+</script>
+</body>
+</html>

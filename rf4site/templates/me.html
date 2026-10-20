@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}마이페이지{% endblock %}
+{% block title %}{{ t("마이페이지") }}{% endblock %}
 {% block head %}
 <style>
 .card label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 5px; }
@@ -28,47 +28,47 @@
 {% endblock %}
 {% block content %}
 
-<h1 style="font-size:18px; font-weight:700; margin-bottom:16px;">마이페이지</h1>
+<h1 style="font-size:18px; font-weight:700; margin-bottom:16px;">{{ t("마이페이지") }}</h1>
 
-{% if ok %}<div class="flash ok">{{ ok }}</div>{% endif %}
-{% if err %}<div class="flash err">{{ err }}</div>{% endif %}
+{% if ok %}<div class="flash ok">{{ t(ok) }}</div>{% endif %}
+{% if err %}<div class="flash err">{{ t(err) }}</div>{% endif %}
 
 <div class="card">
-  <h2>아이디</h2>
-  <p class="desc">가입 시 정한 아이디는 변경할 수 없습니다.</p>
+  <h2>{{ t("아이디") }}</h2>
+  <p class="desc">{{ t("가입 시 정한 아이디는 변경할 수 없습니다.") }}</p>
   <input value="{{ username }}" readonly>
 </div>
 
 <div class="card">
-  <h2>닉네임</h2>
+  <h2>{{ t("닉네임") }}</h2>
   <p class="desc">
-    {% if nickname %}리더보드 등 다른 사용자에게 보이는 이름입니다.
-    {% else %}닉네임을 등록하면 리더보드에 표시됩니다. (미등록 시 리더보드 비공개){% endif %}
+    {% if nickname %}{{ t("리더보드 등 다른 사용자에게 보이는 이름입니다.") }}
+    {% else %}{{ t("닉네임을 등록하면 리더보드에 표시됩니다. (미등록 시 리더보드 비공개)") }}{% endif %}
   </p>
   <form method="post" action="/me/nickname">
     <input name="nickname" value="{{ nickname or '' }}" required>
-    <button type="submit">닉네임 {{ '변경' if nickname else '등록' }}</button>
+    <button type="submit">{{ t("닉네임") }} {{ t('변경' if nickname else '등록') }}</button>
   </form>
 </div>
 
 <div class="card">
-  <h2>비밀번호 변경</h2>
+  <h2>{{ t("비밀번호 변경") }}</h2>
   <form method="post" action="/me/password">
-    <label>현재 비밀번호</label>
+    <label>{{ t("현재 비밀번호") }}</label>
     <input name="current_password" type="password" required>
-    <label>새 비밀번호</label>
+    <label>{{ t("새 비밀번호") }}</label>
     <input name="new_password" type="password" required>
-    <button type="submit">비밀번호 변경</button>
+    <button type="submit">{{ t("비밀번호 변경") }}</button>
   </form>
 </div>
 
 <div class="card">
-  <h2>리더보드 노출</h2>
-  <p class="desc">끄면 다른 사용자에게 내 순위·닉네임이 보이지 않습니다.</p>
+  <h2>{{ t("리더보드 노출") }}</h2>
+  <p class="desc">{{ t("끄면 다른 사용자에게 내 순위·닉네임이 보이지 않습니다.") }}</p>
   <form method="post" action="/me/visibility">
     <input type="hidden" name="visible" value="{{ '0' if leaderboard_visible else '1' }}">
     <button type="submit" class="{{ 'vis-on' if leaderboard_visible else 'vis-off' }}">
-      {{ '공개 중 · 누르면 숨김' if leaderboard_visible else '비공개 · 누르면 공개' }}
+      {{ t('공개 중 · 누르면 숨김' if leaderboard_visible else '비공개 · 누르면 공개') }}
     </button>
   </form>
 </div>
