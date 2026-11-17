@@ -690,6 +690,11 @@ D-51에서 "캐싱 설계가 필요하다"며 접어둔 기능이 두 단계(D-5
 - **검증**: test_app·test_auth·test_labels·test_scoring 네 스위트 통과.
 - **파일**: rf4site/scoring.py, rf4site/app.py, rf4site/templates/dashboard.html, rf4site/ui_translations.csv, tools/test_app.py
 
+`[변경]` **로그아웃 후 메인으로 이동(D-60)**
+
+- 로그아웃하면 로그인 화면 대신 비로그인 메인 화면으로 이동함.
+- **파일**: rf4site/app.py, tools/test_auth.py
+
 ---
 
 ## 부록 — 운영 환경
