@@ -2,7 +2,7 @@
 {% block title %}{{ t("어종 관리") }}{% endblock %}
 {% block nav_btn %}
 <a id="go" class="btn" href="/?window={{ window }}"
-   style="{{ 'opacity:.4; pointer-events:none;' if favorites | length == 0 }}">
+   style="{{ 'opacity:.4; pointer-events:none;' if username and favorites | length == 0 }}">
   {{ t("대시보드 보기") }}
 </a>
 {% endblock %}
@@ -24,11 +24,13 @@
          background:var(--surface); border:1px solid var(--line);
          border-radius:10px; color:var(--text); outline:none;">
 
+{% if username %}
 <div style="text-align:right; margin-bottom:8px;">
   <span style="font-size:13px; color:var(--muted);">
     {{ t("선택한 어종") }} <b id="count" style="color:var(--text);">{{ favorites | length }}</b>{{ t("종") }}
   </span>
 </div>
+{% endif %}
 
 {% if not species %}
 <div style="text-align:center; color:var(--muted); padding:40px 16px;
@@ -81,6 +83,7 @@ document.querySelectorAll('.star').forEach(btn => {
     const on = btn.dataset.on === '1';
     const method = on ? 'DELETE' : 'POST';
     const res = await fetch('/api/favorites/' + encodeURIComponent(btn.dataset.name), { method });
+    if (res.status === 401) { location.href = '/login'; return; }  // 비로그인(D-58)
     if (!res.ok) return;
     btn.dataset.on = on ? '0' : '1';
     btn.textContent = on ? '☆' : '★';

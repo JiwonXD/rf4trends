@@ -143,6 +143,8 @@ a.lb-row:hover .lb-name { color: var(--accent); }
       <form method="post" action="/logout" style="display:inline">
         <button type="submit" class="btn" title="{{ username }} {{ t('로그아웃') }}">{{ t("로그아웃") }}</button>
       </form>
+    {% else %}
+      <a class="btn" href="/login">{{ t("로그인") }}</a>
     {% endif %}
   </div>
 </header>

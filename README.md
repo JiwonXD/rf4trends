@@ -673,6 +673,16 @@ D-51에서 "캐싱 설계가 필요하다"며 접어둔 기능이 두 단계(D-5
 - **검증**: test_app·test_auth·test_labels·test_scoring 네 스위트 통과. 브라우저에서 영어·러시아어·중국어 전환, 한국어 및 번역명 검색, 미끼 교차 필터, 즐겨찾기 왕복, 제보 저장, 기록 없는 상세 화면을 확인함.
 - **파일**: rf4site/i18n.py, rf4site/ui_translations.csv, rf4site/translations/, rf4site/app.py, rf4site/templates/, tools/test_app.py
 
+### 11-17 · 비로그인 구경 허용
+
+`[기능추가]` **로그인 없이 사이트 둘러보기(D-58)**
+
+- 대시보드·어종 목록·어종 상세를 로그인 없이 볼 수 있음. 대시보드는 선호 카드 대신 로그인 안내를 띄우고 우측 패널 4종은 그대로 보여줌.
+- 즐겨찾기 별표를 누르면 로그인 화면으로 이동함. 판정 제보 패널과 마이페이지는 로그인한 사용자에게만 보임.
+- 헤더는 비로그인이면 '로그인' 버튼을 보여줌. 쓰기 API는 기존대로 로그인 필수이며 DB 변경은 없음.
+- **검증**: test_app·test_auth·test_labels·test_scoring 네 스위트 통과.
+- **파일**: rf4site/app.py, rf4site/templates/(base·dashboard·onboarding·species), rf4site/ui_translations.csv, tools/test_app.py, tools/test_auth.py
+
 ---
 
 ## 부록 — 운영 환경

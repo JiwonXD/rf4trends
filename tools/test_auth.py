@@ -26,10 +26,12 @@ def check(label, cond):
     print(('PASS' if cond else 'FAIL'), label)
     if not cond: fails.append(label)
 
-# 비로그인 → 로그인 리다이렉트 (secure 쿠키(D-52)는 https에서만 전송되므로 base_url을 https로)
+# 비로그인도 구경 가능(D-58), 개인 화면은 로그인 리다이렉트 (secure 쿠키(D-52)는 https에서만 전송되므로 base_url을 https로)
 c = TestClient(app, follow_redirects=False, base_url="https://testserver")
 r = c.get("/")
-check("비로그인 → /login 리다이렉트", r.status_code in (302,303,307) and "/login" in r.headers["location"])
+check("비로그인 대시보드 200 + 로그인 버튼", r.status_code == 200 and 'href="/login"' in r.text and "로그아웃" not in r.text)
+r = c.get("/me")
+check("비로그인 /me → /login 리다이렉트", r.status_code in (302,303,307) and "/login" in r.headers["location"])
 
 # 회원가입
 r = c.post("/signup", data={"username":"angler1","password":"secret123","nickname":"angler1_nick"})
@@ -98,7 +100,7 @@ check("같은 클라이언트는 재발급 쿠키로 로그인 유지", r.status
 
 cold = TestClient(app, base_url="https://testserver", follow_redirects=False)
 cold.cookies.set("rf4_session", old_cookie)
-r = cold.get("/", follow_redirects=False)
+r = cold.get("/me", follow_redirects=False)  # "/"는 비로그인도 열리므로(D-58) 로그인 전용 화면으로 검증
 check("옛 쿠키를 쓰는 별도 요청은 /login 리다이렉트", r.status_code in (302,303,307) and "/login" in r.headers["location"])
 
 # 아이디/닉네임 검증
