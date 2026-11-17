@@ -173,14 +173,19 @@ def dashboard(request: Request, window: str = "today"):
     window = norm_window(window)
     conn = db()
     try:
-        # 비로그인 방문자도 구경 가능(D-58) — 선호 카드 없이 우측 패널만 보여준다.
+        # 비로그인 방문자도 구경 가능(D-58) — 선호 대신 전 어종 카드를 보여준다(D-59).
         user = require_login(conn, request)
         uid, username = user if user else (None, None)
         favorites = get_favorites(conn, uid) if user else []
         if user and not favorites:
             return RedirectResponse(f"/onboarding?window={window}")
         has_data = conn.execute("SELECT 1 FROM catches LIMIT 1").fetchone()
-        cards = scoring.dashboard(conn, favorites, window) if (has_data and favorites) else []
+        if not has_data:
+            cards = []
+        elif user:
+            cards = scoring.dashboard(conn, favorites, window)
+        else:
+            cards = scoring.all_cards(window)
 
         since = scoring.week_start_utc().strftime("%Y-%m-%d %H:%M:%S")
         ranking = labels_mod.weekly_ranking(conn, since, auth.ADMIN_USERNAME)

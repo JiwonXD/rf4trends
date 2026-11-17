@@ -371,6 +371,12 @@ def top_active(window, limit=5):
     return cards[:limit]
 
 
+def all_cards(window):
+    """비로그인 대시보드용 전 어종 카드(D-59). top_active와 같은 이유로 스토어만 읽고
+    즉석 계산으로 폴백하지 않는다 — 스토어가 비면 빈 리스트."""
+    return dashboard(None, list(_store.get(window, {})), window)
+
+
 def dashboard(conn, favorites, window="today"):
     """선호 어종 전체 평가. 활성도 점수 내림차순, 비활성은 항상 하단."""
     cards = [cached_card(conn, sp, window) for sp in favorites]

@@ -283,8 +283,17 @@ check("로그인 오류 번역", _i18n.translate('아이디 또는 비밀번호�
 # 비로그인 구경(D-58): 읽기 화면은 열리고, 쓰기·개인 기능은 막힌다.
 _guest = TestClient(app, base_url="https://testserver", follow_redirects=False)
 r = _guest.get("/")
-check("비로그인 대시보드: 패널 표시 + 로그인 안내", r.status_code == 200 and "지금 뜨는 어종" in r.text and "로그인하고 선호 어종을 등록하면" in r.text)
-check("비로그인 대시보드: 닉네임 안내 숨김", "에서 닉네임을 설정하면 리더보드에 등록됩니다" not in r.text)
+check("비로그인 대시보드: 스토어 비면 집계 중 안내", r.status_code == 200 and "활성도를 집계하는 중이에요" in r.text)
+check("비로그인 대시보드: 패널 표시 + 닉네임 안내 숨김", "지금 뜨는 어종" in r.text and "에서 닉네임을 설정하면 리더보드에 등록됩니다" not in r.text)
+_conn_g = sqlite3.connect("rf4.db")
+_sc.refresh_scores(_conn_g)
+_conn_g.close()
+r = _guest.get("/")
+from urllib.parse import quote as _q
+check("비로그인 대시보드: 전 어종 카드 표시(D-59)", all(f"/species/{_q(sp)}?window=today" in r.text.split("</main>")[0]
+      for sp in ("검은 잉어", "타이멘", "무지개 송어", "붕어")) and "활성도를 집계하는 중이에요" not in r.text)
+check("비로그인 대시보드: 선호 모아보기 로그인 안내", "하면 선호 어종만 모아볼 수 있어요." in r.text)
+_sc._store = {}
 r = _guest.get("/onboarding")
 check("비로그인 어종 목록 200, 선택 카운트 숨김", r.status_code == 200 and "검은 잉어" in r.text and 'id="count"' not in r.text)
 r = _guest.get("/species/검은 잉어")
