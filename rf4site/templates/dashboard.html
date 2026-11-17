@@ -2,7 +2,12 @@
 {% block title %}{{ t("내 어종 대시보드") }}{% endblock %}
 {% block content %}
 
-{% if not has_data %}
+{% if not username %}
+  <div class="empty" style="padding:28px 16px; margin-bottom:16px;">
+    {{ t("로그인하고 선호 어종을 등록하면 여기에 활성도 카드가 표시됩니다.") }}<br>
+    <a class="btn" href="/login" style="display:inline-block; margin-top:12px;">{{ t("로그인") }}</a>
+  </div>
+{% elif not has_data %}
   <div class="empty">
     {{ t("수집된 데이터가 없습니다.") }}<br>
     <span style="font-size:13px">{{ t("서버가 15분 주기로 자동 수집합니다 — 첫 수집이 끝나면 채워집니다.") }}</span>

@@ -173,15 +173,14 @@ def dashboard(request: Request, window: str = "today"):
     window = norm_window(window)
     conn = db()
     try:
+        # 비로그인 방문자도 구경 가능(D-58) — 선호 카드 없이 우측 패널만 보여준다.
         user = require_login(conn, request)
-        if not user:
-            return RedirectResponse("/login")
-        uid, username = user
-        favorites = get_favorites(conn, uid)
-        if not favorites:
+        uid, username = user if user else (None, None)
+        favorites = get_favorites(conn, uid) if user else []
+        if user and not favorites:
             return RedirectResponse(f"/onboarding?window={window}")
         has_data = conn.execute("SELECT 1 FROM catches LIMIT 1").fetchone()
-        cards = scoring.dashboard(conn, favorites, window) if has_data else []
+        cards = scoring.dashboard(conn, favorites, window) if (has_data and favorites) else []
 
         since = scoring.week_start_utc().strftime("%Y-%m-%d %H:%M:%S")
         ranking = labels_mod.weekly_ranking(conn, since, auth.ADMIN_USERNAME)
@@ -189,7 +188,7 @@ def dashboard(request: Request, window: str = "today"):
             {"rank": i + 1, "name": r["nickname"], "count": r["count"], "is_me": r["user_id"] == uid}
             for i, r in enumerate(ranking[:10])
         ]
-        my_count = labels_mod.my_activity(conn, uid, since)
+        my_count = labels_mod.my_activity(conn, uid, since) if user else 0
         my_rank_num = next((i + 1 for i, r in enumerate(ranking) if r["user_id"] == uid), None)
         my_in_top = any(row["is_me"] for row in leaderboard)
         my_rank = {"count": my_count, "rank": my_rank_num} if (my_count > 0 and not my_in_top) else None
@@ -198,7 +197,8 @@ def dashboard(request: Request, window: str = "today"):
             "SELECT species, COUNT(*) FROM favorites GROUP BY species ORDER BY COUNT(*) DESC, species ASC LIMIT 5")]
         reported_top = labels_mod.top_reported_species(conn, since, auth.ADMIN_USERNAME, 5)
         active_top = scoring.top_active(window, 5)
-        has_nickname = bool(auth.get_profile(conn, uid)["nickname"])
+        # 비로그인은 닉네임 안내 대상이 아니므로 True로 둬서 안내를 숨긴다.
+        has_nickname = bool(auth.get_profile(conn, uid)["nickname"]) if user else True
 
         return templates.TemplateResponse(request, "dashboard.html", {
             "cards": cards,
@@ -221,18 +221,17 @@ def dashboard(request: Request, window: str = "today"):
 def onboarding(request: Request, window: str = "today"):
     conn = db()
     try:
+        # 비로그인도 어종 목록은 볼 수 있다(D-58). 별표를 누르면 로그인으로 보낸다.
         user = require_login(conn, request)
-        if not user:
-            return RedirectResponse("/login")
-        uid, username = user
-        favorites = set(get_favorites(conn, uid))
+        uid, username = user if user else (None, None)
+        favorites = set(get_favorites(conn, uid)) if user else set()
         species = [r[0] for r in conn.execute(
             "SELECT species FROM species_master ORDER BY species")]
         return templates.TemplateResponse(request, "onboarding.html", {
             "species": species,
             "favorites": favorites,
             "window": norm_window(window),
-            "first_visit": len(favorites) == 0,
+            "first_visit": bool(user) and len(favorites) == 0,
             "username": username,
         })
     finally:
@@ -244,10 +243,9 @@ def species_page(request: Request, name: str, window: str = "today"):
     window = norm_window(window)
     conn = db()
     try:
+        # 비로그인도 상세는 볼 수 있다(D-58). 즐겨찾기 버튼은 로그인으로 보내고, 라벨 패널은 숨긴다.
         user = require_login(conn, request)
-        if not user:
-            return RedirectResponse("/login")
-        uid, username = user
+        uid, username = user if user else (None, None)
         exists = conn.execute(
             "SELECT 1 FROM species_master WHERE species = ?", (name,)).fetchone()
         if not exists:
@@ -264,9 +262,9 @@ def species_page(request: Request, name: str, window: str = "today"):
             "is_favorite": bool(is_favorite),
             "last_collected": last_collected(conn),
             "username": username,
-            # 라벨 버튼 노출 여부. 현재는 모든 로그인 유저 허용.
+            # 라벨 버튼 노출 여부. 현재는 모든 로그인 유저 허용(비로그인은 숨김).
             # admin 전용으로 좁히려면 아래에서 'or not auth.is_admin(username)'만 지우면 됨.
-            "can_label": auth.is_admin(username) or not auth.is_admin(username),
+            "can_label": bool(user) and (auth.is_admin(username) or not auth.is_admin(username)),
         })
     finally:
         conn.close()

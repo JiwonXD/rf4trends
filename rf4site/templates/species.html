@@ -255,6 +255,7 @@ addfav.addEventListener('click', async () => {
   const on = addfav.dataset.on === '1';
   const method = on ? 'DELETE' : 'POST';
   const res = await fetch('/api/favorites/' + encodeURIComponent({{ name | tojson }}), { method });
+  if (res.status === 401) { location.href = '/login'; return; }  // 비로그인(D-58)
   if (!res.ok) return;
   addfav.dataset.on = on ? '0' : '1';
   addfav.textContent = (on ? '☆' : '★') + ' ' + t('즐겨찾기');
