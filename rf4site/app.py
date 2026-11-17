@@ -356,7 +356,8 @@ def signup_submit(request: Request,
 
 @app.post("/logout")
 def logout():
-    resp = RedirectResponse("/login", status_code=303)
+    # 비로그인도 메인을 볼 수 있으므로(D-58) 로그인 화면 대신 메인으로 보낸다(D-60).
+    resp = RedirectResponse("/", status_code=303)
     resp.delete_cookie(auth.COOKIE_NAME)
     return resp
 

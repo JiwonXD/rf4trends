@@ -86,6 +86,7 @@ r = cf.get("/logout", follow_redirects=False)
 check("GET /logout 405(POST 전용)", r.status_code==405)
 r = cf.post("/logout", follow_redirects=False)
 check("로그아웃 시 쿠키 삭제", r.status_code==303)
+check("로그아웃 후 메인으로 이동(D-60)", r.headers["location"]=="/")
 
 # 세션 버저닝 라우트 레벨: 비번 변경 시 현재 기기는 로그인 유지, 옛 쿠키 쓰는 별도 요청은 풀림 (D-52)
 cpw = TestClient(app, base_url="https://testserver", follow_redirects=False)
