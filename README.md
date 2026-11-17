@@ -683,6 +683,13 @@ D-51에서 "캐싱 설계가 필요하다"며 접어둔 기능이 두 단계(D-5
 - **검증**: test_app·test_auth·test_labels·test_scoring 네 스위트 통과.
 - **파일**: rf4site/app.py, rf4site/templates/(base·dashboard·onboarding·species), rf4site/ui_translations.csv, tools/test_app.py, tools/test_auth.py
 
+`[변경]` **비로그인 대시보드에 전 어종 카드 표시(D-59)**
+
+- 비로그인 방문자에게 로그인 안내 대신 전 어종의 활성도 카드를 보여줌. 카드 위에 '로그인하면 선호 어종만 모아볼 수 있다'는 한 줄 안내를 둠.
+- 사전계산 결과만 읽음. 서버 재시작 직후 첫 계산 전에는 '집계 중' 안내를 표시함.
+- **검증**: test_app·test_auth·test_labels·test_scoring 네 스위트 통과.
+- **파일**: rf4site/scoring.py, rf4site/app.py, rf4site/templates/dashboard.html, rf4site/ui_translations.csv, tools/test_app.py
+
 ---
 
 ## 부록 — 운영 환경
